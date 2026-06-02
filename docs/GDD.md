@@ -44,6 +44,8 @@ See [PILLARS.md](PILLARS.md). In short:
   (attrition), grand prix (qualifying sets grid + race).
 - **Two cultures:** **Officials** — clean, contact → time penalty; **Wilds** — ramming is
   valid. Both always available, mixed every chapter.
+- **Checkpoint gates (anti-shortcut):** ordered gates along the spline must be passed in
+  sequence — a lap/stage only counts if all gates are hit, so cutting the track is invalid.
 - **Lenient progression:** no 1st-place requirement; every race pays out; replay optional.
   Most races skippable — so each must be fun enough to play voluntarily.
 - **Rewards economy (banked-best, top-up):** each race has a fixed **money pool** and **CP
@@ -125,6 +127,10 @@ See [PILLARS.md](PILLARS.md). In short:
 - **Readability:** five stat bars front-and-center; instant car comparison.
 - **Avatars:** static pixel portraits throughout (cheap, everywhere); few-frame animated
   talking-head only for boss-rival intros (spend animation budget where it lands).
+- **Career screen:** a region map of selectable races showing CP/boss progress — how you
+  navigate a chapter.
+- **Pre-race screen:** track/surfaces/season/weather + chosen car & its 5 stat bars before
+  the start; a **loading screen** covers async scene load (no hitch into the race).
 - **Systems:** settings + input remapping + save (ship requirements).
 - **Open:** UI theme — deferred to M3 (menus/settings build).
 
