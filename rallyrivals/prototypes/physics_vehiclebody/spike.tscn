@@ -1,0 +1,135 @@
+[gd_scene load_steps=16 format=3 uid="uid://cgufnb71lylmu"]
+
+[ext_resource type="Script" uid="uid://cvdbh0ne61t7b" path="res://prototypes/physics_vehiclebody/vehicle_body_car.gd" id="1_car"]
+[ext_resource type="Script" uid="uid://b7x01ml5uq1kq" path="res://prototypes/physics_vehiclebody/chase_camera.gd" id="2_cam"]
+[ext_resource type="Shader" uid="uid://dkpx5mplr1om8" path="res://prototypes/physics_vehiclebody/grid.gdshader" id="3_grid"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("Sky")
+ambient_light_source = 3
+ambient_light_energy = 0.5
+tonemap_mode = 2
+
+[sub_resource type="BoxShape3D" id="LaneShape"]
+size = Vector3(50, 2, 400)
+
+[sub_resource type="PlaneMesh" id="LaneMesh"]
+size = Vector2(50, 400)
+
+[sub_resource type="ShaderMaterial" id="DefaultMat"]
+render_priority = 0
+shader = ExtResource("3_grid")
+shader_parameter/base_color = Color(0.3, 0.34, 0.3, 1)
+shader_parameter/line_color = Color(0.12, 0.14, 0.12, 1)
+shader_parameter/major_color = Color(0.06, 0.07, 0.06, 1)
+shader_parameter/cell_size = 4.0
+shader_parameter/major_every = 5.0
+
+[sub_resource type="StandardMaterial3D" id="HalfMat"]
+albedo_color = Color(0.2, 0.45, 0.85, 1)
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_xvqh5"]
+friction = 0.25
+
+[sub_resource type="StandardMaterial3D" id="MaxMat"]
+albedo_color = Color(0.82, 0.9, 1, 1)
+
+[sub_resource type="BoxMesh" id="BodyMesh"]
+size = Vector3(2, 1, 4)
+
+[sub_resource type="StandardMaterial3D" id="BodyMat"]
+albedo_color = Color(0.75, 0.18, 0.18, 1)
+
+[sub_resource type="BoxShape3D" id="BodyShape"]
+size = Vector3(2, 1, 4)
+
+[node name="Spike" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.819, 0, 0.574, 0.406, 0.707, -0.579, -0.406, 0.707, 0.579, 0, 10, 0)
+light_energy = 1.2
+shadow_enabled = true
+directional_shadow_max_distance = 200.0
+
+[node name="LaneDefault" type="StaticBody3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LaneDefault"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+shape = SubResource("LaneShape")
+
+[node name="Mesh" type="MeshInstance3D" parent="LaneDefault"]
+mesh = SubResource("LaneMesh")
+surface_material_override/0 = SubResource("DefaultMat")
+
+[node name="LaneHalf" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 0)
+metadata/grip_slip = 6.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LaneHalf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+shape = SubResource("LaneShape")
+
+[node name="Mesh" type="MeshInstance3D" parent="LaneHalf"]
+mesh = SubResource("LaneMesh")
+surface_material_override/0 = SubResource("HalfMat")
+
+[node name="LaneMax" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -50, 0, 0)
+physics_material_override = SubResource("PhysicsMaterial_xvqh5")
+metadata/grip_slip = 3.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LaneMax"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+shape = SubResource("LaneShape")
+
+[node name="Mesh" type="MeshInstance3D" parent="LaneMax"]
+mesh = SubResource("LaneMesh")
+surface_material_override/0 = SubResource("MaxMat")
+
+[node name="Car" type="VehicleBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+mass = 800.0
+script = ExtResource("1_car")
+
+[node name="Body" type="MeshInstance3D" parent="Car"]
+mesh = SubResource("BodyMesh")
+surface_material_override/0 = SubResource("BodyMat")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Car"]
+shape = SubResource("BodyShape")
+
+[node name="WheelFL" type="VehicleWheel3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, -0.5, 1.4)
+use_as_traction = true
+use_as_steering = true
+wheel_radius = 0.4
+
+[node name="WheelFR" type="VehicleWheel3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, -0.5, 1.4)
+use_as_traction = true
+use_as_steering = true
+wheel_radius = 0.4
+
+[node name="WheelRL" type="VehicleWheel3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.85, -0.5, -1.4)
+use_as_traction = true
+wheel_radius = 0.4
+
+[node name="WheelRR" type="VehicleWheel3D" parent="Car"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.85, -0.5, -1.4)
+use_as_traction = true
+wheel_radius = 0.4
+
+[node name="ChaseCamera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, -8)
+script = ExtResource("2_cam")
+target_path = NodePath("../Car")

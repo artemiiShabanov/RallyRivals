@@ -4,6 +4,6 @@ Short logs of *why* we made a technical choice. One file per decision: `NNNN-tit
 
 | #    | Title | Status |
 |------|-------|--------|
-| 0001 | _e.g. Vehicle physics approach_ | _TODO_ |
+| [0001](0001-vehicle-physics-model.md) | Vehicle physics model | accepted |
 
 Use [0000-template.md](0000-template.md) to start a new one.
