@@ -32,6 +32,11 @@ tasks:
   - {id: code-track-test-track, title: "Authored Path3D gray-box test track", type: code, group: track, size: small, status: todo, blockers: [code-track-generator]}
   - {id: code-track-checkpoints, title: "Checkpoint gates baked from the spline", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-bake-tool, title: "Bake tool as in-editor @tool button", type: code, group: tools, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: code-track-seasons, title: "Seasonal visual swap (author-picked per race)", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: code-track-props, title: "Prop scatter from marker map", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: code-track-ai-line, title: "Bake AI racing line from the spline", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: code-track-weather-grip, title: "Weather grip modifier (stacks on surface grip)", type: code, group: track, size: small, status: todo, blockers: [code-vehicle-surface-grip]}
+  - {id: code-tools-debug, title: "Debug overlay/tools (perf, physics, state readouts)", type: code, group: tools, size: default, status: todo, blockers: []}
 
   # ---------- code: vehicle ----------
   - {id: code-vehicle-controller, title: "Promote VehicleBody3D controller to scripts/", type: code, group: vehicle, size: big, status: todo, blockers: [design-adr-physics]}
@@ -39,48 +44,110 @@ tasks:
   - {id: code-vehicle-surface-grip, title: "Per-surface grip via SurfaceType", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller, content-surfaces-defs]}
   - {id: code-vehicle-damage, title: "Damage system (visible + performance)", type: code, group: vehicle, size: big, status: todo, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-slipstream, title: "Slipstream (player-only) + FX", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller, code-ai-rival]}
+  - {id: code-vehicle-stats, title: "Drive handling from the 5 stat bars", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
+  - {id: code-vehicle-brand-features, title: "Baked-in brand abilities (nitro etc.)", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
 
   # ---------- code: core / race / ai / ui ----------
   - {id: code-core-camera, title: "Chase camera (promote from prototype)", type: code, group: core, size: default, status: todo, blockers: [code-vehicle-controller]}
   - {id: code-core-scene-flow, title: "Scene/flow manager + pause", type: code, group: core, size: default, status: todo, blockers: []}
   - {id: code-core-save, title: "Save system", type: code, group: core, size: default, status: todo, blockers: [code-core-scene-flow]}
+  - {id: code-core-pooling, title: "Pooling / perf helpers (perf-first rule)", type: code, group: core, size: default, status: todo, blockers: []}
+  - {id: code-core-settings-apply, title: "Apply graphics/audio/control settings", type: code, group: core, size: small, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-race-timing, title: "Lap/stage timing", type: code, group: race, size: default, status: todo, blockers: [code-track-checkpoints]}
   - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: todo, blockers: [code-race-timing]}
   - {id: code-race-types, title: "Race types: sprint + circuit", type: code, group: race, size: big, status: todo, blockers: [code-race-timing]}
-  - {id: code-ai-rival, title: "AI rival driving a baked spline line", type: code, group: ai, size: big, status: todo, blockers: [code-track-generator, code-vehicle-controller]}
+  - {id: code-race-timetrial, title: "Race type: time trial vs clock", type: code, group: race, size: small, status: todo, blockers: [code-race-timing]}
+  - {id: code-race-endurance, title: "Race type: endurance / attrition", type: code, group: race, size: default, status: todo, blockers: [code-race-types]}
+  - {id: code-race-grandprix, title: "Race type: grand prix (qualify + grid + class gate)", type: code, group: race, size: big, status: todo, blockers: [code-race-types, code-meta-classes]}
+  - {id: code-race-contact, title: "Officials penalty vs Wilds ramming rules", type: code, group: race, size: default, status: todo, blockers: [code-race-result]}
+  - {id: code-ai-rival, title: "AI rival driving a baked spline line", type: code, group: ai, size: big, status: todo, blockers: [code-track-ai-line, code-vehicle-controller]}
+  - {id: code-ai-difficulty, title: "Difficulty via opponents + track complexity", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
+  - {id: code-ai-boss, title: "Boss-rival duel behavior", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
   - {id: code-ui-statbars, title: "Five stat bars display widget", type: code, group: ui, size: small, status: todo, blockers: []}
   - {id: code-ui-hud, title: "Basic HUD (speed / position / timer)", type: code, group: ui, size: default, status: todo, blockers: [code-race-timing]}
   - {id: code-ui-menus, title: "Menus + settings + input remap", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-ui-loading, title: "Loading screen (async scene load)", type: code, group: ui, size: small, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-ui-prerace, title: "Pre-race info screen", type: code, group: ui, size: default, status: todo, blockers: [code-ui-statbars]}
+  - {id: code-ui-results, title: "Post-race results + rewards screen", type: code, group: ui, size: default, status: todo, blockers: [code-race-result, code-meta-economy]}
+  - {id: code-ui-career-map, title: "Region map of races + CP/boss progress", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow, code-meta-chapters]}
+  - {id: code-ui-shop, title: "Car shop screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-shop]}
+  - {id: code-ui-garage, title: "Garage / car-select screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-garage]}
+  - {id: code-ui-boss-intro, title: "Animated boss-rival intro screen", type: code, group: ui, size: default, status: todo, blockers: [content-rivals-defs]}
+  - {id: code-ui-pause, title: "Pause menu", type: code, group: ui, size: small, status: todo, blockers: [code-core-scene-flow]}
+
+  # ---------- code: meta (progression / economy) ----------
+  - {id: code-meta-currencies, title: "Money + CP wallets", type: code, group: meta, size: small, status: todo, blockers: []}
+  - {id: code-meta-economy, title: "Banked-best top-up payout economy", type: code, group: meta, size: big, status: todo, blockers: [code-race-result, code-meta-currencies]}
+  - {id: code-meta-classes, title: "Class system S-D + class gating", type: code, group: meta, size: default, status: todo, blockers: [content-cars-roster]}
+  - {id: code-meta-shop, title: "Always-open price-gated car shop", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies, content-cars-roster]}
+  - {id: code-meta-garage, title: "Owned-cars garage + selection", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies]}
+  - {id: code-meta-pinkslip, title: "Beat rival -> win their car (pink-slip)", type: code, group: meta, size: default, status: todo, blockers: [code-meta-garage, code-ai-boss]}
+  - {id: code-meta-achievements, title: "Achievements -> paint skins", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies]}
+  - {id: code-meta-chapters, title: "Chapter CP gate (~70%) + advance on boss win", type: code, group: meta, size: big, status: todo, blockers: [code-meta-economy, code-ai-boss]}
 
   # ---------- content ----------
   - {id: content-surfaces-defs, title: "SurfaceType resources (asphalt/dirt/snow/sand/gravel/ice)", type: content, group: surfaces, size: default, status: todo, blockers: []}
   - {id: content-cars-roster, title: "Define car stat roster (classes S-D)", type: content, group: cars, size: default, status: todo, blockers: []}
+  - {id: content-cars-manufacturers, title: "Define 3-4 manufacturers (identity + brand feature)", type: content, group: cars, size: default, status: todo, blockers: []}
   - {id: content-rivals-defs, title: "Define 4 boss-rivals + taunts", type: content, group: rivals, size: default, status: todo, blockers: []}
+  - {id: content-rivals-campaign, title: "4-chapter structure (class mixes, boss per chapter)", type: content, group: rivals, size: default, status: todo, blockers: [content-rivals-defs]}
   - {id: content-tracks-first, title: "First real track (heightmap/surface/markers images)", type: content, group: tracks, size: default, status: todo, blockers: [code-track-bake-tool]}
 
   # ---------- art ----------
   - {id: art-voxel-car-blockout, title: "Placeholder voxel car block-out", type: art, group: voxel, size: default, status: todo, blockers: []}
   - {id: art-voxel-car-first, title: "First real voxel car model", type: art, group: voxel, size: big, status: todo, blockers: [art-voxel-car-blockout]}
+  - {id: art-voxel-props, title: "Voxel prop set (rocks/signs/barriers)", type: art, group: voxel, size: default, status: todo, blockers: []}
+  - {id: art-voxel-environment, title: "Voxel scenery/buildings set", type: art, group: voxel, size: big, status: todo, blockers: []}
+  - {id: art-voxel-brand-families, title: "Visual family per manufacturer", type: art, group: voxel, size: default, status: todo, blockers: [content-cars-roster]}
   - {id: art-vfx-juice, title: "Screen shake + landing thump", type: art, group: vfx, size: micro, status: todo, blockers: [code-vehicle-controller]}
   - {id: art-vfx-surface-particles, title: "Per-surface particles (dust/snow/spray)", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-surface-grip]}
+  - {id: art-vfx-slipstream, title: "Slipstream speed-lines/wind FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-slipstream]}
+  - {id: art-vfx-damage, title: "Voxel-chipping damage FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-damage]}
+  - {id: art-vfx-weather, title: "Weather visuals (rain/snow/fog)", type: art, group: vfx, size: big, status: todo, blockers: [code-track-generator]}
+  - {id: art-vfx-nitro, title: "Nitro/boost FX", type: art, group: vfx, size: small, status: todo, blockers: [code-vehicle-brand-features]}
   - {id: art-ui-portraits, title: "Boss-rival static pixel portraits", type: art, group: ui-art, size: default, status: todo, blockers: [content-rivals-defs]}
+  - {id: art-ui-hud-gfx, title: "HUD gauges/glow graphics", type: art, group: ui-art, size: default, status: todo, blockers: []}
+  - {id: art-ui-theme, title: "Menu/UI theme + icon set", type: art, group: ui-art, size: big, status: todo, blockers: []}
+  - {id: art-ui-boss-anim, title: "Animated boss talking-head frames", type: art, group: ui-art, size: default, status: todo, blockers: [content-rivals-defs]}
+  - {id: art-ui-paint-skins, title: "Paint-skin set", type: art, group: ui-art, size: default, status: todo, blockers: [art-voxel-car-first]}
   - {id: art-world-terrain-tex, title: "Terrain splat textures", type: art, group: world, size: big, status: todo, blockers: [code-track-generator]}
+  - {id: art-world-skybox, title: "Skybox + seasonal sky sets", type: art, group: world, size: default, status: todo, blockers: []}
+  - {id: art-world-lighting, title: "Time-of-day lighting presets", type: art, group: world, size: default, status: todo, blockers: []}
+  - {id: art-world-regions, title: "Region aesthetic themes", type: art, group: world, size: big, status: todo, blockers: [art-voxel-environment]}
+  - {id: art-shader-surface, title: "Terrain surface/splat-blend shader", type: art, group: shader, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: art-shader-road, title: "Road shader (markings/wetness)", type: art, group: shader, size: default, status: todo, blockers: [code-track-generator]}
 
   # ---------- audio ----------
   - {id: audio-sfx-engine, title: "Engine loop wired to throttle (CC0)", type: audio, group: sfx, size: default, status: todo, blockers: [code-vehicle-controller]}
   - {id: audio-sfx-surface, title: "Per-surface tire SFX (CC0)", type: audio, group: sfx, size: default, status: todo, blockers: [code-vehicle-surface-grip]}
   - {id: audio-sfx-impact, title: "Impact/damage SFX", type: audio, group: sfx, size: small, status: todo, blockers: [code-vehicle-damage]}
+  - {id: audio-sfx-slipstream, title: "Slipstream whoosh/rush cue", type: audio, group: sfx, size: small, status: todo, blockers: [code-vehicle-slipstream]}
+  - {id: audio-sfx-nitro, title: "Nitro/boost sound", type: audio, group: sfx, size: micro, status: todo, blockers: [code-vehicle-brand-features]}
+  - {id: audio-sfx-ui, title: "UI clicks/confirms", type: audio, group: sfx, size: small, status: todo, blockers: []}
+  - {id: audio-sfx-ambient, title: "Ambient/crowd bed (festival)", type: audio, group: sfx, size: default, status: todo, blockers: []}
   - {id: audio-music-direction, title: "Music direction + sourcing plan", type: audio, group: music, size: big, status: todo, blockers: []}
+  - {id: audio-music-menu, title: "Menu/career music track", type: audio, group: music, size: default, status: todo, blockers: [audio-music-direction]}
+  - {id: audio-music-race, title: "Race music track", type: audio, group: music, size: default, status: todo, blockers: [audio-music-direction]}
+  - {id: audio-music-boss, title: "Boss-race music track", type: audio, group: music, size: default, status: todo, blockers: [audio-music-direction]}
 
   # ---------- balance ----------
   - {id: balance-handling-feel, title: "Tune car feel constants (buttery pass)", type: balance, group: handling, size: default, status: todo, blockers: [code-vehicle-grip]}
+  - {id: balance-handling-classes, title: "Differentiate feel across classes/brands", type: balance, group: handling, size: default, status: todo, blockers: [content-cars-roster, code-vehicle-stats]}
   - {id: balance-economy-tables, title: "Payout/price tables (banked-best economy)", type: balance, group: economy, size: default, status: todo, blockers: []}
+  - {id: balance-difficulty-ai, title: "AI pace/aggression curve", type: balance, group: difficulty, size: default, status: todo, blockers: [code-ai-difficulty]}
+  - {id: balance-difficulty-pacing, title: "Chapter CP-gate % + progression pacing", type: balance, group: difficulty, size: default, status: todo, blockers: [code-meta-chapters]}
+  - {id: balance-surfaces-grip, title: "Tune grip values per surface + weather modifiers", type: balance, group: surfaces, size: default, status: todo, blockers: [content-surfaces-defs, code-track-weather-grip]}
 
   # ---------- design ----------
+  - {id: design-adr-voxel-pipeline, title: "ADR: voxel art pipeline (export/runtime, FX, coherence)", type: design, group: adr, size: default, status: todo, blockers: []}
   - {id: design-spec-vehicle, title: "Spec: vehicle controller feel-criteria", type: design, group: spec, size: small, status: todo, blockers: []}
+  - {id: design-spec-economy, title: "Spec: banked-best reward economy", type: design, group: spec, size: small, status: todo, blockers: []}
   - {id: design-playtest-firstdrive, title: "Fun verdict: first drive (feel/flow)", type: design, group: playtest, size: default, status: todo, blockers: [code-vehicle-controller, code-track-test-track, code-core-camera]}
+  - {id: design-playtest-race, title: "Fun verdict: full race (tense + fair)", type: design, group: playtest, size: default, status: todo, blockers: [code-race-result, code-ai-rival]}
+  - {id: design-playtest-slice, title: "Fun verdict: vertical slice (one polished race)", type: design, group: playtest, size: default, status: todo, blockers: [code-ui-results, audio-sfx-engine, art-voxel-car-first]}
+  - {id: design-playtest-loop, title: "Fun verdict: campaign loop (want-next-win)", type: design, group: playtest, size: default, status: todo, blockers: [code-meta-chapters, code-ui-career-map]}
 
   # ---------- setup ----------
   - {id: setup-build-export, title: "Export presets + exclude prototypes/* from release", type: setup, group: build, size: default, status: todo, blockers: []}
+  - {id: setup-build-platforms, title: "Per-OS export configs (mac/win/linux)", type: setup, group: build, size: small, status: todo, blockers: [setup-build-export]}
+  - {id: setup-build-launch, title: "Launch checklist + store packaging", type: setup, group: build, size: default, status: todo, blockers: [setup-build-export]}
