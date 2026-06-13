@@ -153,4 +153,4 @@ See [PILLARS.md](PILLARS.md). In short:
 - **Cut:** upgrade-card system (contradicted "no upgrades"; nitro survives as a brand feature).
 - **v1 scoping (Open):** number of chapters (= regions, 1:1), rivals/tiers, total cars,
   tracks, and how many get full seasonal dressing. Trim to a shippable vertical slice first
-  (see [ROADMAP.md](ROADMAP.md)).
+  (work tracked in `tasks.yaml` / `STATUS.md`).
