@@ -40,7 +40,7 @@ tasks:
 
   # ---------- code: vehicle ----------
   - {id: code-vehicle-controller, title: "Promote VehicleBody3D controller to scripts/", type: code, group: vehicle, size: big, status: done, blockers: [design-adr-physics]}
-  - {id: code-vehicle-grip, title: "Front/rear grip + handbrake drift layer", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
+  - {id: code-vehicle-grip, title: "Front/rear grip + handbrake drift layer", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-surface-grip, title: "Per-surface grip via SurfaceType", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller, content-surfaces-defs]}
   - {id: code-vehicle-damage, title: "Damage system (visible + performance)", type: code, group: vehicle, size: big, status: todo, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-slipstream, title: "Slipstream (player-only) + FX", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller, code-ai-rival]}

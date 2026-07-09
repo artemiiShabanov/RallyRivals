@@ -22,7 +22,9 @@ extends VehicleBody3D
 @export var steer_speed := 4.0          ## how fast steering eases toward the target (lower = softer)
 
 @export_group("Grip")
-@export var base_grip := 10.5           ## uniform wheel friction_slip; placeholder, retuned by balance-handling-feel
+@export var base_grip := 10.5           ## front-wheel friction_slip baseline; retuned by balance-handling-feel
+@export var rear_grip_ratio := 0.7      ## rear grip vs front (<1 = tail slides = drift-prone, not plow)
+@export var handbrake_rear_ratio := 0.2 ## rear grip while handbraking (instant drift)
 
 var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
@@ -32,7 +34,6 @@ func _ready() -> void:
 	for child in get_children():
 		if child is VehicleWheel3D:
 			_wheels.append(child)
-			child.wheel_friction_slip = base_grip
 
 func _physics_process(delta: float) -> void:
 	var throttle := Input.get_action_strength("accelerate")
@@ -47,15 +48,24 @@ func _physics_process(delta: float) -> void:
 		engine_force = max_engine_force * (throttle - reverse)
 		brake = 0.0
 
-	# Handbrake = plain hard brake for the base; the drift version is code-vehicle-grip.
-	if Input.is_action_pressed("handbrake"):
-		brake = max_brake
+	# Grip layer: front stays grippy, rear grips less (drift), and much less on handbrake.
+	_apply_grip(Input.is_action_pressed("handbrake"))
 
 	# Ease steering toward the target so input isn't twitchy.
 	steering = move_toward(steering, max_steer * steer_input, steer_speed * delta)
 
 	if Input.is_action_just_pressed("reset_car"):
 		reset()
+
+## Per-wheel grip. Front wheels keep base_grip (point the nose); rear wheels grip less so the
+## tail rotates, and much less while handbraking (instant drift). base_grip is the seam that
+## code-vehicle-surface-grip (per-wheel surface) and code-vehicle-stats (grip stat) refine later.
+func _apply_grip(handbraking: bool) -> void:
+	for w in _wheels:
+		var g := base_grip
+		if not w.use_as_steering:  # rear wheels
+			g *= handbrake_rear_ratio if handbraking else rear_grip_ratio
+		w.wheel_friction_slip = g
 
 ## Speed along the car's forward (+Z) axis in m/s. Negative when reversing.
 func get_forward_speed() -> float:
