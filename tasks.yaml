@@ -141,7 +141,7 @@ tasks:
   # ---------- design ----------
   - {id: design-adr-voxel-pipeline, title: "ADR: voxel art pipeline (export/runtime, FX, coherence)", type: design, group: adr, size: default, status: todo, blockers: []}
   - {id: design-spec-vehicle, title: "Spec: vehicle controller feel-criteria", type: design, group: spec, size: small, status: todo, blockers: []}
-  - {id: design-spec-economy, title: "Spec: banked-best reward economy", type: design, group: spec, size: small, status: todo, blockers: []}
+  - {id: design-spec-economy, title: "Spec: banked-best reward economy", type: design, group: spec, size: small, status: done, blockers: []}
   - {id: design-playtest-firstdrive, title: "Fun verdict: first drive (feel/flow)", type: design, group: playtest, size: default, status: todo, blockers: [code-vehicle-controller, code-track-test-track, code-core-camera]}
   - {id: design-playtest-race, title: "Fun verdict: full race (tense + fair)", type: design, group: playtest, size: default, status: todo, blockers: [code-race-result, code-ai-rival]}
   - {id: design-playtest-slice, title: "Fun verdict: vertical slice (one polished race)", type: design, group: playtest, size: default, status: todo, blockers: [code-ui-results, audio-sfx-engine, art-voxel-car-first]}
