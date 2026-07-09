@@ -25,6 +25,9 @@ extends VehicleBody3D
 @export var base_grip := 10.5           ## front-wheel friction_slip baseline; retuned by balance-handling-feel
 @export var rear_grip_ratio := 0.7      ## rear grip vs front (<1 = tail slides = drift-prone, not plow)
 @export var handbrake_rear_ratio := 0.2 ## rear grip while handbraking (instant drift)
+@export var grip_falloff_start := 8.0   ## speed (m/s) where grip begins dropping
+@export var grip_falloff_range := 12.0  ## m/s over which grip fades toward high_speed_grip
+@export var high_speed_grip := 0.45     ## grip fraction once fully faded (lower = slides more at speed)
 
 var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
@@ -61,11 +64,16 @@ func _physics_process(delta: float) -> void:
 ## tail rotates, and much less while handbraking (instant drift). base_grip is the seam that
 ## code-vehicle-surface-grip (per-wheel surface) and code-vehicle-stats (grip stat) refine later.
 func _apply_grip(handbraking: bool) -> void:
+	# Grip fades with speed so fast corners break traction (arcade slide) while slow corners stay
+	# precise. Applied on top of the front/rear split, so the looser rear lets go first.
+	var speed := linear_velocity.length()
+	var t := clampf((speed - grip_falloff_start) / grip_falloff_range, 0.0, 1.0)
+	var speed_mult := lerpf(1.0, high_speed_grip, t)
 	for w in _wheels:
 		var g := base_grip
 		if not w.use_as_steering:  # rear wheels
 			g *= handbrake_rear_ratio if handbraking else rear_grip_ratio
-		w.wheel_friction_slip = g
+		w.wheel_friction_slip = g * speed_mult
 
 ## Speed along the car's forward (+Z) axis in m/s. Negative when reversing.
 func get_forward_speed() -> float:
