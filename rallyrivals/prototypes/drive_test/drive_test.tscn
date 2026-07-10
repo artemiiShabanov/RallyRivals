@@ -1,8 +1,11 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=18 format=3 uid="uid://cy528ydgpamb0"]
 
 [ext_resource type="PackedScene" path="res://scenes/vehicle/car.tscn" id="1_car"]
-[ext_resource type="Script" path="res://prototypes/physics_vehiclebody/chase_camera.gd" id="2_cam"]
-[ext_resource type="Shader" path="res://prototypes/physics_vehiclebody/grid.gdshader" id="3_grid"]
+[ext_resource type="Script" uid="uid://b7x01ml5uq1kq" path="res://prototypes/physics_vehiclebody/chase_camera.gd" id="2_cam"]
+[ext_resource type="Shader" uid="uid://dkpx5mplr1om8" path="res://prototypes/physics_vehiclebody/grid.gdshader" id="3_grid"]
+[ext_resource type="Resource" path="res://assets/surfaces/asphalt.tres" id="4_asphalt"]
+[ext_resource type="Resource" path="res://assets/surfaces/ice.tres" id="5_ice"]
+[ext_resource type="Resource" path="res://assets/surfaces/dirt.tres" id="6_dirt"]
 
 [sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
 
@@ -23,12 +26,28 @@ size = Vector3(400, 2, 400)
 size = Vector2(400, 400)
 
 [sub_resource type="ShaderMaterial" id="GroundMat"]
+render_priority = 0
 shader = ExtResource("3_grid")
 shader_parameter/base_color = Color(0.3, 0.34, 0.3, 1)
 shader_parameter/line_color = Color(0.12, 0.14, 0.12, 1)
 shader_parameter/major_color = Color(0.06, 0.07, 0.06, 1)
 shader_parameter/cell_size = 4.0
 shader_parameter/major_every = 5.0
+
+[sub_resource type="BoxShape3D" id="LaneShape"]
+size = Vector3(30, 0.4, 200)
+
+[sub_resource type="BoxMesh" id="LaneMesh"]
+size = Vector3(30, 0.4, 200)
+
+[sub_resource type="StandardMaterial3D" id="MatIce"]
+albedo_color = Color(0.78, 0.88, 0.95, 1)
+
+[sub_resource type="StandardMaterial3D" id="MatAsphalt"]
+albedo_color = Color(0.3, 0.3, 0.32, 1)
+
+[sub_resource type="StandardMaterial3D" id="MatDirt"]
+albedo_color = Color(0.45, 0.3, 0.16, 1)
 
 [node name="DriveTest" type="Node3D"]
 
@@ -50,6 +69,39 @@ shape = SubResource("GroundShape")
 [node name="Mesh" type="MeshInstance3D" parent="Ground"]
 mesh = SubResource("GroundMesh")
 surface_material_override/0 = SubResource("GroundMat")
+
+[node name="LaneIce" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30, -0.2, 0)
+metadata/surface = ExtResource("5_ice")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LaneIce"]
+shape = SubResource("LaneShape")
+
+[node name="Mesh" type="MeshInstance3D" parent="LaneIce"]
+mesh = SubResource("LaneMesh")
+surface_material_override/0 = SubResource("MatIce")
+
+[node name="LaneAsphalt" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.2, 0)
+metadata/surface = ExtResource("4_asphalt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LaneAsphalt"]
+shape = SubResource("LaneShape")
+
+[node name="Mesh" type="MeshInstance3D" parent="LaneAsphalt"]
+mesh = SubResource("LaneMesh")
+surface_material_override/0 = SubResource("MatAsphalt")
+
+[node name="LaneDirt" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, -0.2, 0)
+metadata/surface = ExtResource("6_dirt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LaneDirt"]
+shape = SubResource("LaneShape")
+
+[node name="Mesh" type="MeshInstance3D" parent="LaneDirt"]
+mesh = SubResource("LaneMesh")
+surface_material_override/0 = SubResource("MatDirt")
 
 [node name="Car" parent="." instance=ExtResource("1_car")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)

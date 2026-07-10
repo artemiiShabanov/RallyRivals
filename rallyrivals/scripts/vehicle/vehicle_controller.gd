@@ -22,12 +22,18 @@ extends VehicleBody3D
 @export var steer_speed := 4.0          ## how fast steering eases toward the target (lower = softer)
 
 @export_group("Grip")
-@export var base_grip := 10.5           ## front-wheel friction_slip baseline; retuned by balance-handling-feel
-@export var rear_grip_ratio := 0.7      ## rear grip vs front (<1 = tail slides = drift-prone, not plow)
+@export var base_grip := 10.5           ## fallback friction_slip when a wheel touches untagged ground (no SurfaceType)
+@export var front_grip_floor := 5.0     ## front never grips LESS than this — arcade cheat so the nose stays turnable even on ice (drift, not plow)
+@export var rear_grip_ratio := 0.7      ## rear grip vs surface (<1 = tail slides = drift-prone, not plow)
 @export var handbrake_rear_ratio := 0.2 ## rear grip while handbraking (instant drift)
-@export var grip_falloff_start := 8.0   ## speed (m/s) where grip begins dropping
-@export var grip_falloff_range := 12.0  ## m/s over which grip fades toward high_speed_grip
-@export var high_speed_grip := 0.45     ## grip fraction once fully faded (lower = slides more at speed)
+@export var grip_falloff_start := 8.0    ## speed (m/s) where grip begins dropping
+@export var grip_falloff_range := 12.0   ## m/s over which grip fades to the high-speed floor
+@export var front_high_speed_grip := 0.8 ## front grip fraction at speed (stays grippy -> nose turns in)
+@export var rear_high_speed_grip := 0.35 ## rear grip fraction at speed (lets go -> tail slides = oversteer)
+@export var min_rear_grip_ratio := 0.3   ## rear floor as a FRACTION of the wheel's surface grip (relative, so it scales down on ice too)
+
+@export_group("Anti-spin")
+@export var max_yaw_rate := 2.0          ## rad/s — HARD cap on rotation speed; the car slides sideways instead of spinning to 180
 
 var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
@@ -53,6 +59,7 @@ func _physics_process(delta: float) -> void:
 
 	# Grip layer: front stays grippy, rear grips less (drift), and much less on handbrake.
 	_apply_grip(Input.is_action_pressed("handbrake"))
+	_clamp_yaw()
 
 	# Ease steering toward the target so input isn't twitchy.
 	steering = move_toward(steering, max_steer * steer_input, steer_speed * delta)
@@ -60,20 +67,47 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("reset_car"):
 		reset()
 
-## Per-wheel grip. Front wheels keep base_grip (point the nose); rear wheels grip less so the
-## tail rotates, and much less while handbraking (instant drift). base_grip is the seam that
-## code-vehicle-surface-grip (per-wheel surface) and code-vehicle-stats (grip stat) refine later.
+## Per-wheel, SURFACE-RELATIVE grip. Each wheel reads the grip of whatever surface it's touching
+## (SurfaceType on the contact body; base_grip when untagged). The front is kept turnable via a
+## floor so the nose always points in; the rear scales fully with the surface so low-grip surfaces
+## make the tail slide (drift) instead of the whole car plowing. code-vehicle-stats scales grip
+## by the grip stat on top of this later.
 func _apply_grip(handbraking: bool) -> void:
-	# Grip fades with speed so fast corners break traction (arcade slide) while slow corners stay
-	# precise. Applied on top of the front/rear split, so the looser rear lets go first.
+	# Grip fades with speed, but MORE at the rear than the front: the front keeps biting (nose
+	# turns in) while the rear lets go (tail rotates) -> fast corners oversteer/drift instead of
+	# plowing. Slow corners stay grippy.
 	var speed := linear_velocity.length()
 	var t := clampf((speed - grip_falloff_start) / grip_falloff_range, 0.0, 1.0)
-	var speed_mult := lerpf(1.0, high_speed_grip, t)
 	for w in _wheels:
-		var g := base_grip
-		if not w.use_as_steering:  # rear wheels
-			g *= handbrake_rear_ratio if handbraking else rear_grip_ratio
-		w.wheel_friction_slip = g * speed_mult
+		var g := _surface_grip(w)  # grip of the surface under THIS wheel
+		if w.use_as_steering:  # front — floor keeps it turnable on any surface (arcade cheat)
+			var front := maxf(g, front_grip_floor)
+			w.wheel_friction_slip = front * lerpf(1.0, front_high_speed_grip, t)
+		else:  # rear — scales with the surface, so slippery surfaces drift
+			var rear := g * (handbrake_rear_ratio if handbraking else rear_grip_ratio)
+			w.wheel_friction_slip = maxf(rear * lerpf(1.0, rear_high_speed_grip, t), g * min_rear_grip_ratio)
+
+## Grip of the surface a wheel is touching. The contact body carries its SurfaceType as node
+## metadata ("surface"); the track generator / test scene tags each surface body. Airborne or
+## untagged ground falls back to base_grip.
+func _surface_grip(w: VehicleWheel3D) -> float:
+	if w.is_in_contact():
+		var body := w.get_contact_body()
+		if body != null and body.has_meta("surface"):
+			var s: SurfaceType = body.get_meta("surface")
+			if s != null:
+				return s.grip
+	return base_grip
+
+## Hard-cap the yaw rate: the car can never rotate faster than max_yaw_rate, so when the rear
+## breaks loose it slides sideways at a held angle instead of whipping around to 180. Turns below
+## the cap are untouched. (A direct cap beats a counter-torque, which the grippy steered front
+## just overpowers.)
+func _clamp_yaw() -> void:
+	var up := global_transform.basis.y
+	var yaw_rate := angular_velocity.dot(up)
+	if absf(yaw_rate) > max_yaw_rate:
+		angular_velocity -= up * (yaw_rate - signf(yaw_rate) * max_yaw_rate)
 
 ## Speed along the car's forward (+Z) axis in m/s. Negative when reversing.
 func get_forward_speed() -> float:
