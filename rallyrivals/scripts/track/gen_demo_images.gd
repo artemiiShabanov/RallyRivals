@@ -5,9 +5,13 @@ extends SceneTree
 ## right surface. Run: godot --headless --script res://scripts/track/gen_demo_images.gd
 
 const SIZE := 384
-const ROAD_HW_PX := 8
-const SHOULDER_PX := 11
+const ROAD_HW_PX := 8       # flat road half-width (surface COLOUR) in pixels
 const EDGE_PX := 4          # anti-aliased colour edge width (road -> off-road)
+const FLAT_HW_PX := 12      # flat HEIGHT half-width — must cover road colour+edge (ROAD_HW+EDGE) so
+                            # no drivable pixel sits on the shoulder ramp (kills the edge lip / invisible bump)
+const SHOULDER_PX := 28     # wide, soft ramp from flat road to natural terrain (no steep lip)
+const TERRAIN_AMP := 0.12   # off-road undulation amplitude AROUND the local road height (cut-and-fill:
+                            # keeps terrain near the track gentle instead of absolute 0..1 hills)
 
 # Marker palette (must match TrackBaker.M_*).
 const START := Color8(255, 0, 255)
@@ -69,14 +73,16 @@ func _initialize() -> void:
 				if dd < dperp:
 					dperp = dd; param = (float(ia) + tt) / n
 			var frac := fposmod(param, 1.0)
-			var natural: float = noise.get_noise_2d(x, y) * 0.5 + 0.5
 			var road_h: float = 0.42 + 0.12 * sin(TAU * frac * 2.0)
-			# Height: flat road, smooth shoulder to natural terrain.
+			# Off-road terrain undulates AROUND the nearby road height (cut-and-fill), so the
+			# shoulder never has to climb metres to meet it -> no lip, gentle off-road.
+			var natural: float = clampf(road_h + noise.get_noise_2d(x, y) * TERRAIN_AMP, 0.0, 1.0)
+			# Height: flat corridor covers the full drivable width, then a wide soft shoulder.
 			var h: float
-			if dperp <= ROAD_HW_PX:
+			if dperp <= FLAT_HW_PX:
 				h = road_h
-			elif dperp <= ROAD_HW_PX + SHOULDER_PX:
-				var t := (dperp - ROAD_HW_PX) / float(SHOULDER_PX)
+			elif dperp <= FLAT_HW_PX + SHOULDER_PX:
+				var t := (dperp - FLAT_HW_PX) / float(SHOULDER_PX)
 				t = t * t * (3.0 - 2.0 * t)
 				h = lerpf(road_h, natural, t)
 			else:
