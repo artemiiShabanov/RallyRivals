@@ -7,6 +7,7 @@ extends Resource
 
 @export var id := "asphalt"                 ## debug/lookup name
 @export var grip := 10.5                     ## base wheel friction_slip on this surface (asphalt ~10.5, ice ~3)
-@export var color := Color(0.30, 0.30, 0.32) ## placeholder tint for debug/mesh until real textures land
+@export var color := Color(0.30, 0.30, 0.32) ## tint; multiplies `texture`, and is the fallback when texture is null
+@export var texture: Texture2D               ## stub grayscale detail, triplanar-tiled and multiplied by `color`; real splat art replaces it
 
 # Later: @export var particles: PackedScene, @export var tire_sfx: AudioStream, rolling drag, etc.

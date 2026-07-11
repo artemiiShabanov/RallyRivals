@@ -1,9 +1,11 @@
-[gd_resource type="Resource" script_class="SurfaceType" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="SurfaceType" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
+[ext_resource type="Texture2D" path="res://assets/surfaces/tex/sand.png" id="2_i3x4x"]
 
 [resource]
 script = ExtResource("1_st")
 id = "sand"
 grip = 5.0
 color = Color(0.8, 0.7, 0.45, 1)
+texture = ExtResource("2_i3x4x")

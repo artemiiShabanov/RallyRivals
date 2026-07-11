@@ -153,8 +153,12 @@ func _add_ground(root: Node3D) -> Dictionary:
 		ResourceSaver.save(shape, _out_dir.path_join("ground_%s_shape.res" % id))
 		shape.take_over_path(_out_dir.path_join("ground_%s_shape.res" % id))
 		var mat := StandardMaterial3D.new()
-		mat.vertex_color_use_as_albedo = true
+		mat.vertex_color_use_as_albedo = true   # keeps the anti-aliased edge blend
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		if s.texture != null:                   # stub detail, triplanar-tiled x the vertex colour
+			mat.albedo_texture = s.texture
+			mat.uv1_triplanar = true
+			mat.uv1_scale = Vector3(0.2, 0.2, 0.2)   # ~5 m tile
 		var body := StaticBody3D.new(); body.name = "Ground_%s" % id
 		body.set_meta("surface", s)   # <-- shipped grip reads this on wheel contact
 		var mi := MeshInstance3D.new(); mi.name = "Mesh"; mi.mesh = mesh; mi.material_override = mat
