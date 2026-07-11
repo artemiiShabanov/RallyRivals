@@ -15,3 +15,9 @@ export_credentials.cfg
 .mono/
 data_*/
 mono_crash.*.json
+
+# Track bake outputs — regenerable from the authored images via bake_track_cli.gd (ADR-002).
+# The 3 source images (heightmap.exr / surface.png / markers.png) ARE committed.
+baked_track.tscn
+ground_*_mesh.res
+ground_*_shape.res

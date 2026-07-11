@@ -28,7 +28,7 @@ tasks:
   - {id: design-adr-track, title: "ADR-002: track representation", type: design, group: adr, size: huge, status: done, blockers: [design-adr-physics]}
 
   # ---------- code: track ----------
-  - {id: code-track-generator, title: "Promote spline->ground generator to scripts/", type: code, group: track, size: big, status: todo, blockers: [design-adr-track]}
+  - {id: code-track-generator, title: "Image-driven track baker (images -> static scene) to scripts/", type: code, group: track, size: big, status: done, blockers: [design-adr-track]}
   - {id: code-track-test-track, title: "Authored Path3D gray-box test track", type: code, group: track, size: small, status: todo, blockers: [code-track-generator]}
   - {id: code-track-checkpoints, title: "Checkpoint gates baked from the spline", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-bake-tool, title: "Bake tool as in-editor @tool button", type: code, group: tools, size: default, status: todo, blockers: [code-track-generator]}
