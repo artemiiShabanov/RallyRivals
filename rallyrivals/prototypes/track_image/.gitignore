@@ -1,9 +1,0 @@
-# Regenerable bake outputs — recreate with gen_track_images.gd + bake_track.gd.
-heightmap.exr
-surface.png
-markers.png
-*.import
-ground_mesh.res
-ground_shape.res
-baked_track.tscn
-heightmap.png
