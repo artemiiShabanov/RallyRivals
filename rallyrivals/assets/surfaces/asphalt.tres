@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="SurfaceType" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="SurfaceType" load_steps=3 format=3 uid="uid://o3ltwfngmrff"]
 
-[ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
-[ext_resource type="Texture2D" path="res://assets/surfaces/tex/asphalt.png" id="2_ddb5r"]
+[ext_resource type="Script" uid="uid://ca7fr60f4ylw7" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
+[ext_resource type="Texture2D" uid="uid://bhpw0o0nf2cur" path="res://assets/surfaces/tex/asphalt.png" id="2_ddb5r"]
 
 [resource]
 script = ExtResource("1_st")

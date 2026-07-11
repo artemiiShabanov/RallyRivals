@@ -3,8 +3,8 @@ extends Resource
 ## Maps a world XZ position to the SurfaceType painted there, by sampling the track's surface image.
 ## Needed because a track's ground is ONE collision body (HeightMapShape3D) that can't carry a
 ## per-body SurfaceType meta — so grip is position-based. The baker attaches this to the ground body
-## as meta "surface_map"; VehicleController._surface_grip() samples it per wheel. (Simple scenes like
-## the drive_test lanes still use per-body meta "surface".)
+## as meta "surface_map"; VehicleController._surface_grip() samples it per wheel. (Simple single-
+## surface bodies can still use per-body meta "surface" instead.)
 
 @export var surface_image_path := ""            ## res:// path to the surface splat PNG (exact colours)
 @export var surfaces: Array[SurfaceType] = []   ## road palette

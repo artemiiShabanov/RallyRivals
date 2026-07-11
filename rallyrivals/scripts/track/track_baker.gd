@@ -120,7 +120,7 @@ func _is_road(p: Vector2) -> bool:
 # edges to catch on (no "ghost collision" bumps) and it's far cheaper. Visuals stay per-surface
 # (bucketed meshes, for the textures/colours). Grip: the ground body carries a SurfaceMap
 # (meta "surface_map") that the vehicle samples by wheel position — a single collision body can't
-# hold a per-body SurfaceType meta the way the drive_test lanes do.
+# hold a per-body SurfaceType meta the way separate per-surface bodies would.
 func _add_ground(root: Node3D) -> Dictionary:
 	var ground := StaticBody3D.new(); ground.name = "Ground"
 

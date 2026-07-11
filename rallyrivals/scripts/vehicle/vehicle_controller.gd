@@ -88,7 +88,7 @@ func _apply_grip(handbraking: bool) -> void:
 			w.wheel_friction_slip = maxf(rear * lerpf(1.0, rear_high_speed_grip, t), g * min_rear_grip_ratio)
 
 ## Grip of the surface a wheel is touching. Two tagging schemes on the contact body:
-##   - meta "surface" (SurfaceType): a whole body IS one surface (e.g. drive_test lanes).
+##   - meta "surface" (SurfaceType): a whole body IS one surface (a single-surface static body).
 ##   - meta "surface_map" (SurfaceMap): one body, many surfaces — sample by wheel position (baked
 ##     tracks, whose collision is a single HeightMapShape3D). Airborne / untagged -> base_grip.
 func _surface_grip(w: VehicleWheel3D) -> float:
