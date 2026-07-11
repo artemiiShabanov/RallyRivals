@@ -115,12 +115,44 @@ func _is_road(p: Vector2) -> bool:
 		return false
 	return _classify(_sf.get_pixel(x, y)) != off_road_surface
 
-# ---------- ground (per-surface bucketed) ----------
-# One StaticBody3D per SurfaceType. Every triangle is classified by its centroid pixel and emitted
-# into that surface's bucket; buckets share vertex positions, so the ground stays seamless.
+# ---------- ground ----------
+# Collision is ONE HeightMapShape3D — a continuous heightfield, so there are no trimesh internal
+# edges to catch on (no "ghost collision" bumps) and it's far cheaper. Visuals stay per-surface
+# (bucketed meshes, for the textures/colours). Grip: the ground body carries a SurfaceMap
+# (meta "surface_map") that the vehicle samples by wheel position — a single collision body can't
+# hold a per-body SurfaceType meta the way the drive_test lanes do.
 func _add_ground(root: Node3D) -> Dictionary:
-	# bucket id -> {surface, st, tris}
-	var buckets := {}
+	var ground := StaticBody3D.new(); ground.name = "Ground"
+
+	# --- collision: heightfield from the raw pixel heights ---
+	var wsz := _size
+	var data := PackedFloat32Array(); data.resize(wsz * wsz)
+	for z in wsz:
+		for x in wsz:
+			data[z * wsz + x] = _height(x, z)
+	var hs := HeightMapShape3D.new()
+	hs.map_width = wsz; hs.map_depth = wsz; hs.map_data = data
+	ResourceSaver.save(hs, _out_dir.path_join("ground_heightfield.res"))
+	hs.take_over_path(_out_dir.path_join("ground_heightfield.res"))
+	var cs := CollisionShape3D.new(); cs.name = "Col"; cs.shape = hs
+	# Heightfield samples are 1 unit apart, centred on origin; scale to mpp and shift half a cell
+	# so it lines up with the visual mesh's world mapping (pixel px -> world (px - size/2)*mpp).
+	cs.transform = Transform3D(Basis.IDENTITY.scaled(Vector3(mpp, 1.0, mpp)), Vector3(-0.5 * mpp, 0.0, -0.5 * mpp))
+	ground.add_child(cs)
+
+	# --- grip: position -> SurfaceType via the surface image ---
+	var smap := SurfaceMap.new()
+	smap.surface_image_path = src_dir.path_join("surface.png")
+	var typed: Array[SurfaceType] = []
+	for s in surfaces:
+		typed.append(s)
+	smap.surfaces = typed
+	smap.off_road = off_road_surface
+	smap.mpp = mpp
+	ground.set_meta("surface_map", smap)
+
+	# --- visual: per-surface bucketed meshes (no collision) ---
+	var buckets := {}   # id -> {surface, st, tris}
 	var stepf := mesh_res / mpp
 	var cells := int((_size - 1) / stepf)
 	for r in cells:
@@ -133,25 +165,18 @@ func _add_ground(root: Node3D) -> Dictionary:
 			var c01 := _surface_bilinear(fx0, fy1); var c11 := _surface_bilinear(fx1, fy1)
 			var n00 := _normalf(fx0, fy0); var n10 := _normalf(fx1, fy0)
 			var n01 := _normalf(fx0, fy1); var n11 := _normalf(fx1, fy1)
-			# Triangle A (v00, v01, v11), Triangle B (v00, v11, v10). Classify by centroid pixel.
-			_emit(buckets, _bucket_at(fx0, fy1, fx1),  v00, c00, n00, v01, c01, n01, v11, c11, n11)
-			_emit(buckets, _bucket_at(fx0, fy0, fx1),  v00, c00, n00, v11, c11, n11, v10, c10, n10)
+			_emit(buckets, _bucket_at(fx0, fy1, fx1), v00, c00, n00, v01, c01, n01, v11, c11, n11)
+			_emit(buckets, _bucket_at(fx0, fy0, fx1), v00, c00, n00, v11, c11, n11, v10, c10, n10)
 
 	var counts := {}
 	for id in buckets:
 		var b: Dictionary = buckets[id]
 		var s: SurfaceType = b["surface"]
 		var st: SurfaceTool = b["st"]
-		var tris: PackedVector3Array = b["tris"]
 		st.index()
 		var mesh := st.commit()
 		ResourceSaver.save(mesh, _out_dir.path_join("ground_%s_mesh.res" % id))
 		mesh.take_over_path(_out_dir.path_join("ground_%s_mesh.res" % id))
-		var shape := ConcavePolygonShape3D.new()
-		shape.backface_collision = true
-		shape.set_faces(tris)
-		ResourceSaver.save(shape, _out_dir.path_join("ground_%s_shape.res" % id))
-		shape.take_over_path(_out_dir.path_join("ground_%s_shape.res" % id))
 		var mat := StandardMaterial3D.new()
 		mat.vertex_color_use_as_albedo = true   # keeps the anti-aliased edge blend
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
@@ -159,13 +184,11 @@ func _add_ground(root: Node3D) -> Dictionary:
 			mat.albedo_texture = s.texture
 			mat.uv1_triplanar = true
 			mat.uv1_scale = Vector3(0.2, 0.2, 0.2)   # ~5 m tile
-		var body := StaticBody3D.new(); body.name = "Ground_%s" % id
-		body.set_meta("surface", s)   # <-- shipped grip reads this on wheel contact
-		var mi := MeshInstance3D.new(); mi.name = "Mesh"; mi.mesh = mesh; mi.material_override = mat
-		var cs := CollisionShape3D.new(); cs.name = "Col"; cs.shape = shape
-		body.add_child(mi); body.add_child(cs)
-		root.add_child(body)
-		counts[id] = tris.size() / 3
+		var mi := MeshInstance3D.new(); mi.name = "Mesh_%s" % id; mi.mesh = mesh; mi.material_override = mat
+		ground.add_child(mi)
+		counts[id] = (b["tris"] as PackedVector3Array).size() / 3
+
+	root.add_child(ground)
 	return counts
 
 # Classify the triangle whose centroid pixel is the average of its 3 corners' pixel coords.
