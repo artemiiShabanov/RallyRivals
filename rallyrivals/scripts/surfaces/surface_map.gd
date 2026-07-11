@@ -20,6 +20,9 @@ func _ensure() -> void:
 		return
 	_loaded = true
 	# Load the raw PNG (not the imported texture) so palette colours are exact, not VRAM-compressed.
+	# CAVEAT (export): source PNGs aren't shipped in the .pck, so globalize_path fails there and we
+	# fall back to the imported texture, whose compression can shift colours. When we add an export
+	# task, precompute a grip-index grid at bake time instead of sampling the image at runtime.
 	if surface_image_path != "":
 		_img = Image.load_from_file(ProjectSettings.globalize_path(surface_image_path))
 		if _img == null:
@@ -38,23 +41,25 @@ func surface_at(wx: float, wz: float) -> SurfaceType:
 	var py := int(round(wz / mpp + _size * 0.5))
 	if px < 0 or py < 0 or px >= _size or py >= _size:
 		return off_road
-	return _classify(_img.get_pixel(px, py))
+	return classify(_img.get_pixel(px, py), surfaces, off_road)
 
 ## Grip value of the surface at a world XZ.
 func grip_at(wx: float, wz: float) -> float:
 	var s := surface_at(wx, wz)
 	return s.grip if s != null else 0.0
 
-func _classify(col: Color) -> SurfaceType:
+## Nearest SurfaceType to a colour by RGB distance — the palette IS the SurfaceType.color set
+## (single source of truth). `off_road` is just another candidate. Static so the baker classifies
+## exactly the same way it samples here. Returns off_road if nothing is nearer.
+static func classify(col: Color, palette: Array, off_road_surface: SurfaceType) -> SurfaceType:
 	var best := INF
-	var pick: SurfaceType = off_road
-	for s in surfaces:
-		var d := _cd(col, s.color)
+	var pick: SurfaceType = off_road_surface
+	for s in palette:
+		var d := Vector3(col.r - s.color.r, col.g - s.color.g, col.b - s.color.b).length()
 		if d < best:
 			best = d; pick = s
-	if off_road != null and _cd(col, off_road.color) < best:
-		pick = off_road
+	if off_road_surface != null:
+		var d := Vector3(col.r - off_road_surface.color.r, col.g - off_road_surface.color.g, col.b - off_road_surface.color.b).length()
+		if d < best:
+			pick = off_road_surface
 	return pick
-
-func _cd(a: Color, b: Color) -> float:
-	return Vector3(a.r - b.r, a.g - b.g, a.b - b.b).length()

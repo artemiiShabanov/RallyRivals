@@ -1,12 +1,12 @@
 class_name VehicleController
 extends VehicleBody3D
-## Arcade vehicle controller — production base (ADR-001: VehicleBody3D + thin custom layers).
+## Arcade vehicle controller (ADR-001: VehicleBody3D + a thin custom handling layer).
 ##
-## This is the CORE drivable car only: throttle, brake, reverse, eased steering, handbrake,
-## and reset, with a single uniform wheel grip. The feel layers build on top as separate tasks:
-##   - front/rear grip split + handbrake drift  -> code-vehicle-grip
-##   - per-surface grip (SurfaceType)           -> code-vehicle-surface-grip
-##   - stat-driven handling (the 5 stat bars)   -> code-vehicle-stats
+## Handles throttle / brake / reverse, eased steering, handbrake, reset, and the arcade grip model:
+## a front/rear grip split with a front floor (nose stays turnable), speed-sensitive falloff, and a
+## hard yaw-rate cap for anti-spin. Grip is SURFACE-RELATIVE per wheel (see _apply_grip /
+## _surface_grip). Still layered on separately later:
+##   - stat-driven handling (the 5 stat bars)  -> code-vehicle-stats
 ##
 ## Convention: this VehicleBody3D drives toward LOCAL +Z (engine_force > 0 -> +Z). The
 ## steering/front wheels sit at +Z; a chase camera sits behind at -Z.

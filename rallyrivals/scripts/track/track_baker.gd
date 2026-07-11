@@ -2,13 +2,16 @@ class_name TrackBaker
 extends RefCounted
 ## Bakes a static track scene from 3 authored images (ADR-002 image-driven pipeline).
 ## Reads a float heightmap (EXR), a surface/splat map (PNG), and a markers map (PNG); writes a
-## static .tscn with the carved ground (one StaticBody3D PER SURFACE, tagged with its SurfaceType
-## so the shipped VehicleController._surface_grip() reads grip from get_meta("surface")), a rough
-## auto-extracted Path3D (hand-tune it in the editor!), a start marker, and placeholder props.
+## static .tscn with:
+##   - a "Ground" StaticBody3D whose collision is ONE HeightMapShape3D (smooth, cheap), plus one
+##     vertex-coloured MeshInstance3D per surface (visuals only). Grip is position-based: the body
+##     carries a SurfaceMap (meta "surface_map") the vehicle samples per wheel.
+##   - a rough auto-extracted Path3D (hand-tune it in the editor!), a start marker, placeholder props.
 ##
 ## Set the config vars, then call bake(). Runs headless (bake_track_cli.gd) today; the in-editor
-## @tool button is code-track-bake-tool. Scheduled ADR-002 deltas: HeightMapShape3D collision and
-## splat textures (this bakes a trimesh + vertex-colour gray-box).
+## @tool button is code-track-bake-tool. Scheduled ADR-002 deltas: splat textures (this bakes a
+## vertex-colour + stub-texture gray-box). NOTE: the heightfield collision is at IMAGE resolution
+## while the visual mesh samples at mesh_res — they coincide only while mesh_res == mpp (both 1 here).
 
 # --- config (set before bake()) ---
 var src_dir := ""                       ## folder holding heightmap.exr / surface.png / markers.png
@@ -96,24 +99,16 @@ func _surface_bilinear(fx: float, fy: float) -> Color:
 func _cdist(a: Color, b: Color) -> float:
 	return Vector3(a.r - b.r, a.g - b.g, a.b - b.b).length()
 
-# Nearest SurfaceType by colour — the whole palette is the SurfaceType.color set (single source
-# of truth). Off-road is just another entry, so is_road = (classify != off_road_surface).
-func _classify(col: Color) -> SurfaceType:
-	var best := INF
-	var pick: SurfaceType = off_road_surface
-	for s in surfaces:
-		var d := _cdist(col, s.color)
-		if d < best:
-			best = d; pick = s
-	if _cdist(col, off_road_surface.color) < best:
-		pick = off_road_surface
-	return pick
+# Nearest SurfaceType for a fractional pixel, via the shared classifier (same code SurfaceMap uses
+# at runtime, so bake-time buckets and drive-time grip agree exactly).
+func _surface_of(fx: float, fy: float) -> SurfaceType:
+	return SurfaceMap.classify(_surface_colour(int(round(fx)), int(round(fy))), surfaces, off_road_surface)
 
 func _is_road(p: Vector2) -> bool:
 	var x := int(round(p.x)); var y := int(round(p.y))
 	if x < 0 or y < 0 or x >= _size or y >= _size:
 		return false
-	return _classify(_sf.get_pixel(x, y)) != off_road_surface
+	return SurfaceMap.classify(_sf.get_pixel(x, y), surfaces, off_road_surface) != off_road_surface
 
 # ---------- ground ----------
 # Collision is ONE HeightMapShape3D — a continuous heightfield, so there are no trimesh internal
@@ -165,8 +160,9 @@ func _add_ground(root: Node3D) -> Dictionary:
 			var c01 := _surface_bilinear(fx0, fy1); var c11 := _surface_bilinear(fx1, fy1)
 			var n00 := _normalf(fx0, fy0); var n10 := _normalf(fx1, fy0)
 			var n01 := _normalf(fx0, fy1); var n11 := _normalf(fx1, fy1)
-			_emit(buckets, _bucket_at(fx0, fy1, fx1), v00, c00, n00, v01, c01, n01, v11, c11, n11)
-			_emit(buckets, _bucket_at(fx0, fy0, fx1), v00, c00, n00, v11, c11, n11, v10, c10, n10)
+			# Bucket each triangle by the surface at its centroid pixel.
+			_emit(buckets, _surface_of((fx0 + fx0 + fx1) / 3.0, (fy0 + fy1 + fy1) / 3.0), v00, c00, n00, v01, c01, n01, v11, c11, n11)
+			_emit(buckets, _surface_of((fx0 + fx1 + fx1) / 3.0, (fy0 + fy1 + fy0) / 3.0), v00, c00, n00, v11, c11, n11, v10, c10, n10)
 
 	var counts := {}
 	for id in buckets:
@@ -193,30 +189,25 @@ func _add_ground(root: Node3D) -> Dictionary:
 			mat.uv1_scale = Vector3(0.2, 0.2, 0.2)   # ~5 m tile
 		var mi := MeshInstance3D.new(); mi.name = "Mesh_%s" % id; mi.mesh = mesh; mi.material_override = mat
 		ground.add_child(mi)
-		counts[id] = (b["tris"] as PackedVector3Array).size() / 3
+		counts[id] = int(b["tris"])   # triangle count (for the bake log)
 
 	root.add_child(ground)
 	return counts
 
-# Classify the triangle whose centroid pixel is the average of its 3 corners' pixel coords.
-func _bucket_at(fx_a: float, fy_a: float, fx_b: float) -> SurfaceType:
-	# corners passed loosely; sample midpoint of the quad edge span for a stable classification.
-	var mx := (fx_a + fx_b) * 0.5
-	return _classify(_surface_colour(int(round(mx)), int(round(fy_a))))
-
+# Append one triangle to its surface bucket's mesh (collision is the shared heightfield, so we only
+# track a triangle count per bucket, not the geometry).
 func _emit(buckets: Dictionary, s: SurfaceType, a: Vector3, ca: Color, na: Vector3, b: Vector3, cb: Color, nb: Vector3, c: Vector3, cc: Color, nc: Vector3) -> void:
 	var id: String = s.id
 	if not buckets.has(id):
-		var st := SurfaceTool.new()
-		st.begin(Mesh.PRIMITIVE_TRIANGLES)
-		buckets[id] = {"surface": s, "st": st, "tris": PackedVector3Array()}
+		var new_st := SurfaceTool.new()
+		new_st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		buckets[id] = {"surface": s, "st": new_st, "tris": 0}
 	var b0: Dictionary = buckets[id]
 	var st: SurfaceTool = b0["st"]
-	var tris: PackedVector3Array = b0["tris"]
 	st.set_color(ca); st.set_normal(na); st.add_vertex(a)
 	st.set_color(cb); st.set_normal(nb); st.add_vertex(b)
 	st.set_color(cc); st.set_normal(nc); st.add_vertex(c)
-	tris.append_array([a, b, c])
+	b0["tris"] = int(b0["tris"]) + 1
 
 # ---------- spline extraction (ant-march the road centreline) ----------
 func _find_marker(target: Color) -> Vector2:
