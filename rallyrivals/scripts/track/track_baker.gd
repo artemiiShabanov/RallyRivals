@@ -180,8 +180,15 @@ func _add_ground(root: Node3D) -> Dictionary:
 		var mat := StandardMaterial3D.new()
 		mat.vertex_color_use_as_albedo = true   # keeps the anti-aliased edge blend
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		if s.texture != null:                   # stub detail, triplanar-tiled x the vertex colour
-			mat.albedo_texture = s.texture
+		# Stub detail, triplanar-tiled x the vertex colour. Prefer the SurfaceType's texture, but
+		# fall back to the convention path so a dropped .tres field (editor re-import) can't blank it.
+		var tex: Texture2D = s.texture
+		if tex == null:
+			var conv := "res://assets/surfaces/tex/%s.png" % id
+			if ResourceLoader.exists(conv):
+				tex = load(conv)
+		if tex != null:
+			mat.albedo_texture = tex
 			mat.uv1_triplanar = true
 			mat.uv1_scale = Vector3(0.2, 0.2, 0.2)   # ~5 m tile
 		var mi := MeshInstance3D.new(); mi.name = "Mesh_%s" % id; mi.mesh = mesh; mi.material_override = mat
