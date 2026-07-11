@@ -24,7 +24,7 @@ extends VehicleBody3D
 @export_group("Grip")
 @export var base_grip := 10.5           ## fallback friction_slip when a wheel touches untagged ground (no SurfaceType)
 @export var front_grip_floor := 5.0     ## front never grips LESS than this — arcade cheat so the nose stays turnable even on ice (drift, not plow)
-@export var rear_grip_ratio := 0.7      ## rear grip vs surface (<1 = tail slides = drift-prone, not plow)
+@export var rear_grip_ratio := 0.85      ## rear grip vs surface (<1 = tail slides = drift-prone, not plow)
 @export var handbrake_rear_ratio := 0.2 ## rear grip while handbraking (instant drift)
 @export var grip_falloff_start := 8.0    ## speed (m/s) where grip begins dropping
 @export var grip_falloff_range := 12.0   ## m/s over which grip fades to the high-speed floor
@@ -33,7 +33,7 @@ extends VehicleBody3D
 @export var min_rear_grip_ratio := 0.3   ## rear floor as a FRACTION of the wheel's surface grip (relative, so it scales down on ice too)
 
 @export_group("Anti-spin")
-@export var max_yaw_rate := 2.0          ## rad/s — HARD cap on rotation speed; the car slides sideways instead of spinning to 180
+@export var max_yaw_rate := 1.3          ## rad/s — HARD cap on rotation speed; the car slides sideways instead of spinning to 180
 
 var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
