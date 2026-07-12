@@ -1,8 +1,8 @@
 extends SceneTree
-## Writes 3 SAMPLE track images to assets/tracks/demo/ for the baker to consume. Real tracks are
+## Writes 4 SAMPLE track images to assets/tracks/demo/ for the baker to consume. Real tracks are
 ## hand-painted; this just produces a valid demo set. Crucially, road/off-road colours are taken
-## from the actual SurfaceType .tres files, so TrackBaker._classify() maps each pixel back to the
-## right surface. Run: godot --headless --script res://scripts/track/gen_demo_images.gd
+## from the actual SurfaceType .tres files, so bake-time classification maps each pixel back to
+## the right surface. Run: godot --headless --script res://scripts/track/gen_demo_images.gd
 
 const SIZE := 384
 const ROAD_HW_PX := 8       # flat road half-width (surface COLOUR) in pixels
@@ -13,11 +13,14 @@ const SHOULDER_PX := 28     # wide, soft ramp from flat road to natural terrain 
 const TERRAIN_AMP := 0.12   # off-road undulation amplitude AROUND the local road height (cut-and-fill:
                             # keeps terrain near the track gentle instead of absolute 0..1 hills)
 
-# Marker palette (must match TrackBaker.M_*).
+# Marker + race palettes (must match TrackBaker.M_* / R_*).
 const START := Color8(255, 0, 255)
 const STARTDIR := Color8(255, 255, 0)
+const GATE := Color8(0, 255, 0)
 const TREE := Color8(255, 0, 0)
 const ROCK := Color8(0, 0, 255)
+const GATE_HW_PX := 14      # gate dot offset from centreline — just past road colour+edge (8+4),
+                            # so gates span the road plus a forgiving strip of shoulder
 
 var _asphalt: Color
 var _dirt: Color
@@ -36,6 +39,7 @@ func _initialize() -> void:
 	var hm := Image.create(SIZE, SIZE, false, Image.FORMAT_RF)   # 32-bit float height
 	var sf := Image.create(SIZE, SIZE, false, Image.FORMAT_RGB8)
 	var mk := Image.create(SIZE, SIZE, false, Image.FORMAT_RGB8)
+	var rc := Image.create(SIZE, SIZE, false, Image.FORMAT_RGB8)
 	var noise := FastNoiseLite.new()
 	noise.seed = 7
 	noise.frequency = 0.02
@@ -102,10 +106,20 @@ func _initialize() -> void:
 			sf.set_pixel(x, y, scol)
 			mk.set_pixel(x, y, Color(0, 0, 0))
 
-	# Start marker + a direction pixel just ahead of it.
+	# Race layer: start pair astride the road + a direction dot ahead, then 4 gate pairs.
 	var d := (wps[1] - wps[0]).normalized()
-	_setpx(mk, wps[0], START)
-	_setpx(mk, wps[0] + d * 4.0, STARTDIR)
+	var perp := Vector2(-d.y, d.x)
+	_dot(rc, wps[0] + perp * GATE_HW_PX, START)
+	_dot(rc, wps[0] - perp * GATE_HW_PX, START)
+	_dot(rc, wps[0] + d * 5.0, STARTDIR)
+	for f in [0.2, 0.4, 0.6, 0.8]:
+		var i := int(f * n)
+		var gd := (wps[(i + 1) % n] - wps[(i - 1 + n) % n]).normalized()
+		var gp := Vector2(-gd.y, gd.x)
+		_dot(rc, wps[i] + gp * GATE_HW_PX, GATE)
+		_dot(rc, wps[i] - gp * GATE_HW_PX, GATE)
+
+	# Markers layer: world props only.
 	for p in [Vector2(18, 18), Vector2(SIZE - 22, 26), Vector2(28, SIZE - 26), Vector2(SIZE * 0.5, 16)]:
 		_setpx(mk, p, TREE)
 	for p in [Vector2(SIZE - 18, SIZE - 18), Vector2(22, SIZE * 0.5)]:
@@ -114,7 +128,8 @@ func _initialize() -> void:
 	hm.save_exr(dir + "heightmap.exr")
 	sf.save_png(dir + "surface.png")
 	mk.save_png(dir + "markers.png")
-	print("generated 3 demo images at ", SIZE, "x", SIZE, " -> ", dir)
+	rc.save_png(dir + "race.png")
+	print("generated 4 demo images at ", SIZE, "x", SIZE, " -> ", dir)
 	quit()
 
 # Zone by fraction of the lap: asphalt -> dirt -> ice -> asphalt -> dirt.
@@ -131,3 +146,9 @@ func _surface_for(frac: float) -> Color:
 
 func _setpx(img: Image, p: Vector2, col: Color) -> void:
 	img.set_pixel(clampi(int(round(p.x)), 0, SIZE - 1), clampi(int(round(p.y)), 0, SIZE - 1), col)
+
+# 2x2 dot — blob centroids are what the baker reads, so dots don't need pixel precision.
+func _dot(img: Image, p: Vector2, col: Color) -> void:
+	for dy in 2:
+		for dx in 2:
+			img.set_pixel(clampi(int(round(p.x)) + dx, 0, SIZE - 1), clampi(int(round(p.y)) + dy, 0, SIZE - 1), col)

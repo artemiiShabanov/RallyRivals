@@ -1,12 +1,14 @@
 class_name TrackBaker
 extends RefCounted
-## Bakes a static track scene from 3 authored images (ADR-002 image-driven pipeline).
-## Reads a float heightmap (EXR), a surface/splat map (PNG), and a markers map (PNG); writes a
-## static .tscn with:
+## Bakes a static track scene from 4 authored images (ADR-002 image-driven pipeline).
+## Reads a float heightmap (EXR), a surface/splat map (PNG), a markers map (PNG, world props),
+## and a race map (PNG, race data: start line + direction + checkpoint gates); writes a static
+## .tscn with:
 ##   - a "Ground" StaticBody3D whose collision is ONE HeightMapShape3D (smooth, cheap), plus one
 ##     vertex-coloured MeshInstance3D per surface (visuals only). Grip is position-based: the body
 ##     carries a SurfaceMap (meta "surface_map") the vehicle samples per wheel.
-##   - a rough auto-extracted Path3D (hand-tune it in the editor!), a start marker, placeholder props.
+##   - a rough auto-extracted Path3D (hand-tune it in the editor!), ordered "Checkpoints" gates
+##     from the authored dot pairs, a start marker, placeholder props.
 ##
 ## Set the config vars, then call bake(). Runs headless (bake_track_cli.gd) today; the in-editor
 ## @tool button is code-track-bake-tool. Scheduled ADR-002 deltas: splat textures (this bakes a
@@ -14,23 +16,32 @@ extends RefCounted
 ## while the visual mesh samples at mesh_res — they coincide only while mesh_res == mpp (both 1 here).
 
 # --- config (set before bake()) ---
-var src_dir := ""                       ## folder holding heightmap.exr / surface.png / markers.png
+var src_dir := ""                       ## folder holding heightmap.exr / surface.png / markers.png / race.png
 var out_scene := ""                     ## path to write the baked .tscn (its dir also holds the .res)
 var mpp := 1.0                          ## metres per pixel (image precision)
 var max_height := 28.0                  ## heightmap R=1.0 maps to this many metres
 var mesh_res := 1.0                     ## mesh quad size in metres — decoupled from image res
 var surfaces: Array = []                ## Array[SurfaceType] road palette (asphalt, dirt, ice, ...)
 var off_road_surface: SurfaceType = null ## surface for everything off the road (grass/sand)
+var gate_height := 8.0                  ## checkpoint box height (catches airborne cars)
+var gate_depth := 4.0                   ## checkpoint box thickness along travel (no tunnelling at speed)
 
-# Marker colours (semantic pixels in markers.png).
-const M_START := Color(1, 0, 1)
-const M_DIR := Color(1, 1, 0)
+# Race colours (semantic dots in race.png). A dot is any small blob; its centroid is what counts.
+# Pairs of dots straddle the road: start pair = the start/finish line (gate 0), each gate pair =
+# one checkpoint gate, dot spacing = gate width. Cyan (0,1,1) is reserved for a point-to-point
+# FINISH pair (implemented when code-race-types needs sprints).
+const R_START := Color(1, 0, 1)
+const R_DIR := Color(1, 1, 0)
+const R_GATE := Color(0, 1, 0)
+
+# Marker colours (semantic pixels in markers.png — world props only).
 const M_TREE := Color(1, 0, 0)
 const M_ROCK := Color(0, 0, 1)
 
 var _hm: Image
 var _sf: Image
 var _mk: Image
+var _rc: Image
 var _size := 0
 var _out_dir := ""
 
@@ -41,24 +52,30 @@ func bake() -> Error:
 	_hm = Image.load_from_file(ProjectSettings.globalize_path(src_dir.path_join("heightmap.exr")))
 	_sf = Image.load_from_file(ProjectSettings.globalize_path(src_dir.path_join("surface.png")))
 	_mk = Image.load_from_file(ProjectSettings.globalize_path(src_dir.path_join("markers.png")))
-	if _hm == null or _sf == null or _mk == null:
+	_rc = Image.load_from_file(ProjectSettings.globalize_path(src_dir.path_join("race.png")))
+	if _hm == null or _sf == null or _mk == null or _rc == null:
 		push_error("TrackBaker: missing images in " + src_dir); return ERR_FILE_NOT_FOUND
 	_size = _hm.get_width()
 	_out_dir = out_scene.get_base_dir()
+
+	var race := _read_race()
+	if race.is_empty():
+		return ERR_INVALID_DATA
 
 	var root := Node3D.new()
 	root.name = "Track"
 	_add_environment(root)
 	var counts := _add_ground(root)
-	var spline_pts := _extract_spline()
-	_add_path(root, spline_pts)
-	_add_markers(root)
+	var spline_pts := _extract_spline(race["start_mid"], race["dir"])
+	var curve := _add_path(root, spline_pts)
+	var ngates := _add_checkpoints(root, race, curve)
+	_add_markers(root, race["start_mid"])
 
 	_own_all(root, root)
 	var packed := PackedScene.new()
 	packed.pack(root)
 	var err := ResourceSaver.save(packed, out_scene)
-	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " surfaces=", counts, " save_err=", err)
+	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " gates=", ngates, " surfaces=", counts, " save_err=", err)
 	return err
 
 # ---------- world / image helpers ----------
@@ -209,14 +226,79 @@ func _emit(buckets: Dictionary, s: SurfaceType, a: Vector3, ca: Color, na: Vecto
 	st.set_color(cc); st.set_normal(nc); st.add_vertex(c)
 	b0["tris"] = int(b0["tris"]) + 1
 
-# ---------- spline extraction (ant-march the road centreline) ----------
-func _find_marker(target: Color) -> Vector2:
+# ---------- race layer (race.png): start pair + direction dot + gate pairs ----------
+# Centroids of every blob of `target` colour (8-neighbour flood fill, so a hand-painted dot can
+# be 1 px or a small blot — its centre is what counts).
+func _blobs(img: Image, target: Color) -> Array[Vector2]:
+	var seen := {}
+	var out: Array[Vector2] = []
 	for y in _size:
 		for x in _size:
-			if _cdist(_mk.get_pixel(x, y), target) < 0.2:
-				return Vector2(x, y)
-	return Vector2(-1, -1)
+			if seen.has(y * _size + x) or _cdist(img.get_pixel(x, y), target) >= 0.2:
+				continue
+			var stack: Array[Vector2i] = [Vector2i(x, y)]
+			seen[y * _size + x] = true
+			var sum := Vector2.ZERO
+			var count := 0
+			while not stack.is_empty():
+				var p: Vector2i = stack.pop_back()
+				sum += Vector2(p); count += 1
+				for dy in range(-1, 2):
+					for dx in range(-1, 2):
+						var q := Vector2i(p.x + dx, p.y + dy)
+						if q.x < 0 or q.y < 0 or q.x >= _size or q.y >= _size or seen.has(q.y * _size + q.x):
+							continue
+						if _cdist(img.get_pixel(q.x, q.y), target) < 0.2:
+							seen[q.y * _size + q.x] = true
+							stack.append(q)
+			out.append(sum / count)
+	return out
 
+# Greedy nearest-first pairing with a road-crossing check: a valid pair's midpoint must be road,
+# which stops two adjacent gates' same-side dots from pairing with each other. Any dot left
+# unpaired (or an odd count) is a loud bake error naming the pixel. Returns null on error.
+func _pair_dots(dots: Array[Vector2]) -> Variant:
+	if dots.size() % 2 != 0:
+		push_error("TrackBaker: race.png has an odd number of gate dots (%d) — dots pair into gates" % dots.size())
+		return null
+	var cand := []
+	for i in dots.size():
+		for j in range(i + 1, dots.size()):
+			cand.append([dots[i].distance_to(dots[j]), i, j])
+	cand.sort_custom(func(a, b): return a[0] < b[0])
+	var used := {}
+	var pairs := []
+	for c in cand:
+		var i: int = c[1]; var j: int = c[2]
+		if used.has(i) or used.has(j) or not _is_road((dots[i] + dots[j]) * 0.5):
+			continue
+		used[i] = true; used[j] = true
+		pairs.append([dots[i], dots[j]])
+	if used.size() != dots.size():
+		for i in dots.size():
+			if not used.has(i):
+				push_error("TrackBaker: gate dot at pixel (%d, %d) found no partner across the road" % [int(dots[i].x), int(dots[i].y)])
+		return null
+	return pairs
+
+# Reads race.png -> {start_a, start_b, start_mid, dir, gates}; empty Dictionary on authoring errors.
+func _read_race() -> Dictionary:
+	var starts := _blobs(_rc, R_START)
+	var dirs := _blobs(_rc, R_DIR)
+	if starts.size() != 2 or dirs.size() != 1:
+		push_error("TrackBaker: race.png needs exactly 2 start dots (magenta) + 1 direction dot (yellow); found %d + %d" % [starts.size(), dirs.size()])
+		return {}
+	var pairs: Variant = _pair_dots(_blobs(_rc, R_GATE))
+	if pairs == null:
+		return {}
+	var mid := (starts[0] + starts[1]) * 0.5
+	return {
+		"start_a": starts[0], "start_b": starts[1], "start_mid": mid,
+		"dir": (dirs[0] - mid).normalized(),
+		"gates": pairs,
+	}
+
+# ---------- spline extraction (ant-march the road centreline) ----------
 func _recenter(p: Vector2, dir: Vector2) -> Vector2:
 	var perp := Vector2(-dir.y, dir.x)
 	var hi := 0.0; var lo := 0.0
@@ -226,13 +308,8 @@ func _recenter(p: Vector2, dir: Vector2) -> Vector2:
 	while t < 26.0 and _is_road(p - perp * t): lo = t; t += 1.0
 	return p + perp * ((hi - lo) * 0.5)
 
-func _extract_spline() -> PackedVector2Array:
-	var start := _find_marker(M_START)
-	var dirpx := _find_marker(M_DIR)
+func _extract_spline(start: Vector2, dir: Vector2) -> PackedVector2Array:
 	var pts := PackedVector2Array()
-	if start.x < 0:
-		return pts
-	var dir := (dirpx - start).normalized() if dirpx.x >= 0 else Vector2.RIGHT
 	var pos := start
 	var step := 4.0
 	for _i in 800:
@@ -253,7 +330,7 @@ func _extract_spline() -> PackedVector2Array:
 			break
 	return pts
 
-func _add_path(root: Node3D, pts: PackedVector2Array) -> void:
+func _add_path(root: Node3D, pts: PackedVector2Array) -> Curve3D:
 	var path := Path3D.new(); path.name = "TrackPath"
 	var curve := Curve3D.new()
 	var keep := PackedVector2Array()
@@ -269,14 +346,57 @@ func _add_path(root: Node3D, pts: PackedVector2Array) -> void:
 		curve.add_point(wp, -tan, tan)
 	path.curve = curve
 	root.add_child(path)
+	return curve
 
-# ---------- markers: start + placeholder props ----------
-func _add_markers(root: Node3D) -> void:
-	var start := _find_marker(M_START)
-	if start.x >= 0:
-		var m := Marker3D.new(); m.name = "StartFinish"
-		m.position = _world(int(start.x), int(start.y)) + Vector3.UP * 0.5
-		root.add_child(m)
+# ---------- checkpoints: authored gate pairs -> ordered Area3D gates ----------
+# Order is NOT authored: the start pair is gate 0 and the rest sort by arc-length along the
+# extracted spline (the track's direction defines the sequence). Caveat: where two track sections
+# run closer together than the road is wide, a midpoint can project onto the wrong section —
+# rare, visible in the baked scene, fixed by nudging a dot or hand-moving the baked gate.
+func _add_checkpoints(root: Node3D, race: Dictionary, curve: Curve3D) -> int:
+	var cps := TrackCheckpoints.new()
+	cps.name = "Checkpoints"
+	root.add_child(cps)
+	var length := curve.get_baked_length()
+	var start_off := curve.get_closest_offset(_pair_mid_world(race["start_a"], race["start_b"]))
+	var entries := []   # [offset from start line, dot a, dot b]
+	for pr in race["gates"]:
+		var off: float = curve.get_closest_offset(_pair_mid_world(pr[0], pr[1]))
+		entries.append([fposmod(off - start_off, length), pr[0], pr[1]])
+	entries.sort_custom(func(a, b): return a[0] < b[0])
+	entries.push_front([0.0, race["start_a"], race["start_b"]])
+	for i in entries.size():
+		cps.add_child(_gate(i, entries[i][1], entries[i][2]))
+	return entries.size()
+
+func _pair_mid_world(a: Vector2, b: Vector2) -> Vector3:
+	var m := (a + b) * 0.5
+	return _worldf(m.x, m.y)
+
+func _gate(idx: int, a: Vector2, b: Vector2) -> CheckpointGate:
+	var g := CheckpointGate.new()
+	g.name = "Gate%d" % idx
+	g.index = idx
+	var wa := _worldf(a.x, a.y); var wb := _worldf(b.x, b.y)
+	var lateral := wb - wa; lateral.y = 0.0
+	var width := lateral.length()
+	lateral = lateral.normalized()
+	g.basis = Basis(lateral, Vector3.UP, lateral.cross(Vector3.UP))
+	# Height from the road centre (not the dots — they sit on the shoulders, possibly higher),
+	# sunk 1 m so terrain undulation under a wide gate can't leave a gap.
+	var midw := _pair_mid_world(a, b)
+	g.position = Vector3(midw.x, midw.y + gate_height * 0.5 - 1.0, midw.z)
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(width, gate_height, gate_depth)
+	var cs := CollisionShape3D.new(); cs.name = "Shape"; cs.shape = shape
+	g.add_child(cs)
+	return g
+
+# ---------- markers: start position + placeholder props ----------
+func _add_markers(root: Node3D, start_mid: Vector2) -> void:
+	var m := Marker3D.new(); m.name = "StartFinish"
+	m.position = _worldf(start_mid.x, start_mid.y) + Vector3.UP * 0.5
+	root.add_child(m)
 	var props := Node3D.new(); props.name = "Props"
 	root.add_child(props)
 	for y in _size:
