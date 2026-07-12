@@ -50,7 +50,7 @@ tasks:
   - {id: code-vehicle-airborne, title: "Airborne handling (jumps: air control + landing)", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
 
   # ---------- code: core / race / ai / ui ----------
-  - {id: code-core-camera, title: "Chase camera (promote from prototype)", type: code, group: core, size: default, status: todo, blockers: [code-vehicle-controller]}
+  - {id: code-core-camera, title: "Chase camera (promote from prototype)", type: code, group: core, size: default, status: done, blockers: [code-vehicle-controller]}
   - {id: code-core-scene-flow, title: "Scene/flow manager + pause", type: code, group: core, size: default, status: todo, blockers: []}
   - {id: code-core-save, title: "Save system", type: code, group: core, size: default, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-core-pooling, title: "Pooling / perf helpers (perf-first rule)", type: code, group: core, size: default, status: todo, blockers: []}

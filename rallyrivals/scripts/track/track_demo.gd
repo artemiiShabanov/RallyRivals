@@ -40,8 +40,8 @@ func _ready() -> void:
 	car.transform = Transform3D(Basis(right, Vector3.UP, fwd), spawn)
 	add_child(car)
 
-	var cam := Camera3D.new()
+	var cam := ChaseCamera.new()
 	cam.name = "ChaseCamera"
-	cam.set_script(load("res://prototypes/physics_vehiclebody/chase_camera.gd"))
-	cam.set("target_path", NodePath("../Car"))
+	cam.target_path = NodePath("../Car")
 	add_child(cam)
+	cam.current = true

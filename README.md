@@ -29,6 +29,7 @@ rallyrivals/
 | `handbrake`     | Space         | A / Cross      |
 | `reset_car`     | R             | —              |
 | `pause`         | Esc           | Start          |
+| `look_*`        | Mouse         | Right stick    |
 | `debug_menu`    | \ (debug builds) | —           |
 
 ## Content pipeline (art & audio)
