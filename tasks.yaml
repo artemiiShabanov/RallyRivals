@@ -29,7 +29,7 @@ tasks:
 
   # ---------- code: track ----------
   - {id: code-track-generator, title: "Image-driven track baker (images -> static scene) to scripts/", type: code, group: track, size: big, status: done, blockers: [design-adr-track]}
-  - {id: code-track-test-track, title: "Gray-box test track (authored images + tuned TrackPath)", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: code-track-test-track, title: "Gray-box test track (authored images + tuned TrackPath)", type: code, group: track, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-checkpoints, title: "Checkpoint gates baked from the spline", type: code, group: track, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-bake-tool, title: "Bake tool as in-editor @tool button", type: code, group: tools, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-seasons, title: "Seasonal visual swap (author-picked per race)", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}

@@ -25,6 +25,7 @@ var surfaces: Array = []                ## Array[SurfaceType] road palette (asph
 var off_road_surface: SurfaceType = null ## surface for everything off the road (grass/sand)
 var gate_height := 8.0                  ## checkpoint box height (catches airborne cars)
 var gate_depth := 4.0                   ## checkpoint box thickness along travel (no tunnelling at speed)
+var path_points := 24                   ## TrackPath control points after decimation (more = closer hand-tune fit on long tracks)
 
 # Race colours (semantic dots in race.png). A dot is any small blob; its centroid is what counts.
 # Pairs of dots straddle the road: start pair = the start/finish line (gate 0), each gate pair =
@@ -312,9 +313,17 @@ func _extract_spline(start: Vector2, dir: Vector2) -> PackedVector2Array:
 	var pts := PackedVector2Array()
 	var pos := start
 	var step := 4.0
+	var armed := false   # closure check arms once the march has actually left the start area
 	for _i in 800:
 		pos = _recenter(pos, dir)
 		pts.append(pos)
+		# Fold the recentring pull into the heading: on a sustained curve the centreline drags
+		# each point sideways, and a heading that never absorbs that goes stale, pokes off-road,
+		# and the rotation scan (measured from the stale heading) can pick a U-turn.
+		if pts.size() > 1:
+			var motion := pos - pts[pts.size() - 2]
+			if motion.length() > 0.001:
+				dir = motion.normalized()
 		var nxt := pos + dir * step
 		if not _is_road(nxt):
 			var found := false
@@ -326,15 +335,22 @@ func _extract_spline(start: Vector2, dir: Vector2) -> PackedVector2Array:
 				break
 		dir = (nxt - pos).normalized()
 		pos = nxt
-		if pts.size() > 15 and pos.distance_to(start) < step * 1.8:
-			break
+		# Loop closure: arm after leaving the start area, close on returning near it. The radius
+		# must comfortably beat the march's lateral zigzag or the lap gets doubled.
+		if pos.distance_to(start) > step * 6.0:
+			armed = true
+		elif armed and pos.distance_to(start) < step * 2.5:
+			return pts
+	# Fell out without closing: a corner sharper than the marcher can follow (it may even have
+	# U-turned and retraced). TrackPath and gate ordering are NOT trustworthy — fix the layout.
+	push_warning("TrackBaker: spline march did not close the loop (%d pts, ended %.0f px from start)" % [pts.size(), pos.distance_to(start)])
 	return pts
 
 func _add_path(root: Node3D, pts: PackedVector2Array) -> Curve3D:
 	var path := Path3D.new(); path.name = "TrackPath"
 	var curve := Curve3D.new()
 	var keep := PackedVector2Array()
-	var stride := maxi(1, int(pts.size() / 24.0))
+	var stride := maxi(1, int(float(pts.size()) / path_points))
 	for i in range(0, pts.size(), stride):
 		keep.append(pts[i])
 	var n := keep.size()
