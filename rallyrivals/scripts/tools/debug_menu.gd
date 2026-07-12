@@ -1,0 +1,218 @@
+extends CanvasLayer
+## Debug toolkit (autoloaded as "DebugMenu"; debug builds only — frees itself in release).
+## `\` opens a pause menu: up/down select, right/enter activate, left back, `\`/esc close.
+## Hosts cheat actions (respawn at last checkpoint, reset to spawn), toggleable overlays
+## (performance, vehicle state) and time scale. The game is PAUSED while the menu is open, so
+## the arrow keys don't fight the steering inputs. Extend by adding entries in _menu().
+
+var _open := false
+var _stack: Array = []            # submenu stack (Arrays of item Dictionaries)
+var _titles: PackedStringArray = []
+var _sel := 0
+var _huds := {"perf": false, "vehicle": false}
+
+var _pending := Callable()   # action deferred to the physics step (see _activate)
+
+var _panel: PanelContainer
+var _list: VBoxContainer
+var _title: Label
+var _hud_label: Label
+
+func _ready() -> void:
+	if not OS.is_debug_build():
+		queue_free()
+		return
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	layer = 100
+
+	_hud_label = Label.new()
+	_hud_label.position = Vector2(12, 12)
+	_hud_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	_hud_label.add_theme_constant_override("outline_size", 6)
+	add_child(_hud_label)
+
+	_panel = PanelContainer.new()
+	_panel.position = Vector2(12, 120)
+	var vb := VBoxContainer.new()
+	_title = Label.new()
+	_title.modulate = Color(0.6, 0.8, 1.0)
+	vb.add_child(_title)
+	_list = VBoxContainer.new()
+	vb.add_child(_list)
+	var hint := Label.new()
+	hint.text = "arrows navigate · enter run · \\ close"
+	hint.modulate = Color(1, 1, 1, 0.45)
+	vb.add_child(hint)
+	_panel.add_child(vb)
+	_panel.hide()
+	add_child(_panel)
+
+# The menu tree, rebuilt on open/refresh so labels reflect live state.
+#   sub: Array  -> submenu    hud: String -> overlay toggle    run: Callable -> action (closes menu)
+func _menu() -> Array:
+	return [
+		{"label": "Vehicle", "sub": [
+			{"label": "Return to last checkpoint", "run": _respawn_checkpoint},
+			{"label": "Reset to spawn", "run": _reset_car},
+		]},
+		{"label": "Overlays", "sub": [
+			{"label": "Performance", "hud": "perf"},
+			{"label": "Vehicle state", "hud": "vehicle"},
+		]},
+		{"label": "Time scale (%.2gx)" % Engine.time_scale, "sub": [
+			{"label": "0.25x", "run": func() -> void: Engine.time_scale = 0.25},
+			{"label": "0.5x", "run": func() -> void: Engine.time_scale = 0.5},
+			{"label": "1x", "run": func() -> void: Engine.time_scale = 1.0},
+			{"label": "2x", "run": func() -> void: Engine.time_scale = 2.0},
+		]},
+	]
+
+# ---------- input / navigation ----------
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("debug_menu"):
+		_set_open(not _open)
+	elif not _open:
+		return
+	elif event.is_action_pressed("ui_down", true):
+		_sel = (_sel + 1) % (_stack.back() as Array).size(); _refresh()
+	elif event.is_action_pressed("ui_up", true):
+		_sel = (_sel - 1 + (_stack.back() as Array).size()) % (_stack.back() as Array).size(); _refresh()
+	elif event.is_action_pressed("ui_right") or event.is_action_pressed("ui_accept"):
+		_activate()
+	elif event.is_action_pressed("ui_left"):
+		_back()
+	elif event.is_action_pressed("ui_cancel"):
+		_set_open(false)
+	else:
+		return
+	get_viewport().set_input_as_handled()
+
+func _set_open(v: bool) -> void:
+	_open = v
+	_panel.visible = v
+	get_tree().paused = v
+	if v:
+		_stack = [_menu()]
+		_titles = ["debug"]
+		_sel = 0
+		_refresh()
+
+func _activate() -> void:
+	var it: Dictionary = (_stack.back() as Array)[_sel]
+	if it.has("sub"):
+		_stack.append(it["sub"])
+		_titles.append(it["label"])
+		_sel = 0
+		_refresh()
+	elif it.has("hud"):
+		_huds[it["hud"]] = not _huds[it["hud"]]
+		_refresh()
+	elif it.has("run"):
+		# Deferred to the physics step: space-state queries (the respawn ray) are only legal
+		# there while physics runs on its own thread — and closing first resumes physics.
+		_pending = it["run"]
+		_set_open(false)
+
+func _back() -> void:
+	if _stack.size() > 1:
+		_stack.pop_back()
+		_titles.remove_at(_titles.size() - 1)
+		_sel = 0
+		_refresh()
+	else:
+		_set_open(false)
+
+func _refresh() -> void:
+	_title.text = "/".join(_titles)
+	for c in _list.get_children():
+		c.queue_free()
+	var items: Array = _stack.back()
+	for i in items.size():
+		var it: Dictionary = items[i]
+		var txt: String = it["label"]
+		if it.has("hud"):
+			txt = ("[x] " if _huds[it["hud"]] else "[ ] ") + txt
+		if it.has("sub"):
+			txt += "  >"
+		var l := Label.new()
+		l.text = ("> " if i == _sel else "   ") + txt
+		if i == _sel:
+			l.modulate = Color(1.0, 0.85, 0.3)
+		_list.add_child(l)
+
+# ---------- actions ----------
+func _physics_process(_dt: float) -> void:
+	if _pending.is_valid():
+		var c := _pending
+		_pending = Callable()
+		c.call()
+
+func _car() -> VehicleController:
+	return get_tree().get_first_node_in_group("vehicles") as VehicleController
+
+# Teleport the car onto the last gate it passed (the start line before any pass), facing the next
+# gate, dropped onto the ground by a downward ray. The gate's own progress state is untouched.
+func _respawn_checkpoint() -> void:
+	var car := _car()
+	var cps := get_tree().get_first_node_in_group("track_checkpoints") as TrackCheckpoints
+	if car == null or cps == null:
+		return
+	var last: CheckpointGate = cps.last_gate(car)
+	if last == null:
+		return
+	var fwd := car.global_transform.basis.z
+	var nxt: CheckpointGate = cps.gate_node(cps.next_gate(car))
+	if nxt != null and nxt != last:
+		var d := nxt.global_position - last.global_position
+		d.y = 0.0
+		if d.length() > 0.1:
+			fwd = d.normalized()
+	var pos := last.global_position
+	var hit := car.get_world_3d().direct_space_state.intersect_ray(
+		PhysicsRayQueryParameters3D.create(pos + Vector3.UP * 10.0, pos + Vector3.DOWN * 80.0, 1))
+	if not hit.is_empty():
+		pos = hit["position"]
+	var right := Vector3.UP.cross(fwd).normalized()
+	car.respawn_at(Transform3D(Basis(right, Vector3.UP, fwd), pos + Vector3.UP * 1.5))
+
+func _reset_car() -> void:
+	var car := _car()
+	if car != null:
+		car.reset()
+
+# ---------- overlays ----------
+func _process(_dt: float) -> void:
+	var lines: PackedStringArray = []
+	if _huds["perf"]:
+		lines.append("fps %d  frame %.1f ms  physics %.1f ms" % [
+			Performance.get_monitor(Performance.TIME_FPS),
+			Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0,
+			Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0])
+		lines.append("nodes %d  objects %d  draw calls %d" % [
+			Performance.get_monitor(Performance.OBJECT_NODE_COUNT),
+			Performance.get_monitor(Performance.OBJECT_COUNT),
+			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)])
+	if _huds["vehicle"]:
+		var car := _car()
+		if car != null:
+			lines.append("speed %.1f m/s (%.0f km/h)  yaw %.2f rad/s" % [
+				car.linear_velocity.length(), car.get_forward_speed() * 3.6,
+				car.angular_velocity.dot(car.global_transform.basis.y)])
+			for w in car.get_children():
+				if w is VehicleWheel3D:
+					lines.append("  " + _wheel_line(w))
+	_hud_label.text = "\n".join(lines)
+	_hud_label.visible = not lines.is_empty()
+
+func _wheel_line(w: VehicleWheel3D) -> String:
+	var surf := "air"
+	if w.is_in_contact():
+		surf = "untagged"
+		var body := w.get_contact_body()
+		if body != null:
+			if body.has_meta("surface"):
+				surf = (body.get_meta("surface") as SurfaceType).id
+			elif body.has_meta("surface_map"):
+				var s: SurfaceType = (body.get_meta("surface_map") as SurfaceMap).surface_at(w.global_position.x, w.global_position.z)
+				surf = s.id if s != null else "?"
+	return "%s  grip %.1f  %s" % [w.name, w.wheel_friction_slip, surf]

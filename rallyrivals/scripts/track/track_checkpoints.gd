@@ -16,6 +16,7 @@ var _gates: Array[CheckpointGate] = []
 var _next := {}   # body -> next expected gate index
 
 func _ready() -> void:
+	add_to_group("track_checkpoints")
 	for child in get_children():
 		if child is CheckpointGate:
 			_gates.append(child)
@@ -33,6 +34,16 @@ func next_gate(body: Node3D) -> int:
 ## Forget a body's progress (race restart).
 func reset(body: Node3D) -> void:
 	_next.erase(body)
+
+## Gate node by sequence index (null if out of range).
+func gate_node(index: int) -> CheckpointGate:
+	return _gates[index] if index >= 0 and index < _gates.size() else null
+
+## The gate `body` most recently passed — the start line before any pass (respawn anchor).
+func last_gate(body: Node3D) -> CheckpointGate:
+	if _gates.is_empty():
+		return null
+	return _gates[(next_gate(body) - 1 + _gates.size()) % _gates.size()]
 
 func _on_gate_entered(body: Node3D, gate: CheckpointGate) -> void:
 	if _gates.size() < 2:

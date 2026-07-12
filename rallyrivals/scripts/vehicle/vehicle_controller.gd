@@ -39,6 +39,7 @@ var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
 
 func _ready() -> void:
+	add_to_group("vehicles")
 	_spawn_transform = global_transform
 	for child in get_children():
 		if child is VehicleWheel3D:
@@ -122,6 +123,10 @@ func get_forward_speed() -> float:
 
 ## Respawn at the car's starting transform with zero velocity.
 func reset() -> void:
-	global_transform = _spawn_transform
+	respawn_at(_spawn_transform)
+
+## Teleport with zeroed motion (checkpoint respawn, debug). _spawn_transform is untouched.
+func respawn_at(t: Transform3D) -> void:
+	global_transform = t
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
