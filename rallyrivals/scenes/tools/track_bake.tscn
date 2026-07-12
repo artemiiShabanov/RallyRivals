@@ -1,0 +1,13 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/track/track_bake_config.gd" id="1_hedu0"]
+[ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="2_mdg4p"]
+[ext_resource type="Resource" path="res://assets/surfaces/asphalt.tres" id="3_bondn"]
+[ext_resource type="Resource" path="res://assets/surfaces/dirt.tres" id="4_1uav2"]
+[ext_resource type="Resource" path="res://assets/surfaces/ice.tres" id="5_wobmm"]
+[ext_resource type="Resource" path="res://assets/surfaces/sand.tres" id="6_taro8"]
+
+[node name="TrackBake" type="Node"]
+script = ExtResource("1_hedu0")
+surfaces = Array[ExtResource("2_mdg4p")]([ExtResource("3_bondn"), ExtResource("4_1uav2"), ExtResource("5_wobmm")])
+off_road_surface = ExtResource("6_taro8")
