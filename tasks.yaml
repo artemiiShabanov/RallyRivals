@@ -39,6 +39,17 @@ tasks:
   - {id: code-track-conditions, title: "Apply per-race time-of-day + weather visuals", type: code, group: track, size: default, status: todo, blockers: [code-race-defs]}
   - {id: code-tools-debug, title: "Debug overlay/tools (perf, physics, state readouts)", type: code, group: tools, size: default, status: done, blockers: []}
 
+  # ---------- code: tools — GUI map editor (in-game tool scene; authors the 4 track images) ----------
+  # Key design decision: the heightmap is NOT hand-painted — it derives from the painted road
+  # (flat corridor + shoulders + noise, per gen_demo_images) + height control points. Kills the
+  # invisible-bump class of authoring errors by construction.
+  - {id: code-tools-map-editor-shell, title: "Map editor: canvas shell (zoom/pan, blueprint underlay, layer toggles, save/load)", type: code, group: tools, size: huge, status: todo, blockers: []}
+  - {id: code-tools-map-editor-surface, title: "Map editor: surface paint brush (palette from .tres, sizes, off-road eraser)", type: code, group: tools, size: big, status: todo, blockers: [code-tools-map-editor-shell]}
+  - {id: code-tools-map-editor-race, title: "Map editor: race tools (start/dir/gate pairs + validation)", type: code, group: tools, size: big, status: todo, blockers: [code-tools-map-editor-shell]}
+  - {id: code-tools-map-editor-props, title: "Map editor: prop stamp tool", type: code, group: tools, size: small, status: todo, blockers: [code-tools-map-editor-shell]}
+  - {id: code-tools-map-editor-height, title: "Map editor: auto-heightmap from road + height control points", type: code, group: tools, size: huge, status: todo, blockers: [code-tools-map-editor-surface]}
+  - {id: code-tools-map-editor-export, title: "Map editor: export 4 images + one-click bake", type: code, group: tools, size: default, status: todo, blockers: [code-tools-map-editor-surface, code-tools-map-editor-race]}
+
   # ---------- code: vehicle ----------
   - {id: code-vehicle-controller, title: "Promote VehicleBody3D controller to scripts/", type: code, group: vehicle, size: big, status: done, blockers: [design-adr-physics]}
   - {id: code-vehicle-grip, title: "Front/rear grip + handbrake drift layer", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller]}
