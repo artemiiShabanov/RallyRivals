@@ -149,7 +149,7 @@ tasks:
 
   # ---------- design ----------
   - {id: design-adr-voxel-pipeline, title: "ADR: voxel art pipeline (export/runtime, FX, coherence)", type: design, group: adr, size: default, status: todo, blockers: []}
-  - {id: design-gdd-adr-sync, title: "Sync GDD 4/7 with decided ADR-001/002", type: design, group: gdd, size: small, status: todo, blockers: []}
+  - {id: design-gdd-adr-sync, title: "Sync GDD 4/7 with decided ADR-001/002", type: design, group: gdd, size: small, status: done, blockers: []}
   - {id: design-spec-vehicle, title: "Spec: vehicle controller feel-criteria", type: design, group: spec, size: small, status: todo, blockers: []}
   - {id: design-spec-field-matching, title: "Spec: field-matching rule for open (non-GP) races", type: design, group: spec, size: small, status: todo, blockers: []}
   - {id: design-spec-economy, title: "Spec: banked-best reward economy", type: design, group: spec, size: small, status: done, blockers: []}

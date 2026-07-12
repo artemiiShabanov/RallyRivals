@@ -37,7 +37,9 @@ See [PILLARS.md](PILLARS.md). In short:
   race** — pristine start, no repair economy. Pure in-race pressure.
 - **Airborne:** controller handles jumps (ramps/gaps/crests).
 - **Inputs:** keyboard + gamepad — see [README](../README.md#input-actions).
-- **Open:** physics model (VehicleBody3D vs custom raycast vs kinematic) — **ADR before M1.**
+- **Physics (Decided — ADR-001):** `VehicleBody3D` + a thin custom handling layer: per-wheel
+  surface grip via `wheel_friction_slip` (surface `PhysicsMaterial` is ignored by the wheel
+  solver), front/rear grip split + handbrake rear-grip cut for drift. Godot Physics, not Jolt.
 
 ## 5. Race structure
 - **Types:** time trial (vs clock), circuit (laps), sprint (point-to-point), endurance
@@ -78,17 +80,21 @@ See [PILLARS.md](PILLARS.md). In short:
   - **Open:** rival count if non-boss rivals are added.
 
 ## 7. Tracks & environments
-- **Generation (KEY — ADR before M1):** procedural 3D tracks from light authored data — 2D
-  layout (spline/`Curve3D`) + height (per-point or heightmap) + cosmetic modifiers. Road =
-  spline-extruded ribbon (`CSGPolygon3D` proto → `ArrayMesh` prod) with per-segment
-  width/banking/**surface tags** (material + grip). Terrain from heightmap; jumps = tagged
-  ramp/gap segments; props scattered along spline. **Open:** a *fun, readable* racing line;
-  collision + AI line baked from spline; LOD/perf; procedural vs hand-tuned balance.
+- **Generation (Decided — ADR-002):** tracks = **spline (race) + images (world)**, baked
+  offline into a static scene. Three authored images — float heightmap (terrain), surface
+  splat (road placement + surface/grip), markers (start, props) — feed a bake tool that
+  outputs ground mesh + `HeightMapShape3D` collision, per-surface visuals, props, and a
+  hand-tunable `TrackPath` (`Path3D`, auto-extracted from the road image). The road is
+  carved into the terrain (part of the ground, never a floating ribbon); grip is
+  position-sampled from the splat. The spline owns *order*: laps, checkpoints, AI line.
+  Jumps are painted into the heightmap (ramps/crests). **Open:** a *fun, readable* racing
+  line; LOD/perf; Terrain3D eval; procedural vs hand-tuned balance.
 - **Verticality + jumps:** required.
 - **Surfaces (mixable within one race):** asphalt, dirt, snow, sand, gravel, ice — each with
   **readable** grip effects; makes the grip stat and brand styles situational; reinforces
-  rally identity. Impl: tagged physics-material zones → grip multiplier + per-surface
-  particle/audio. **Decided:** instant grip only — surface sets grip while you're on it,
+  rally identity. Impl (ADR-001): `SurfaceType` resources → per-wheel `wheel_friction_slip`
+  (physics materials don't affect wheels) + per-surface particle/audio. **Decided:** instant
+  grip only — surface sets grip while you're on it,
   **no lingering state** (clean, readable, cheap; fits clarity + performance pillars).
 - **Seasons (visual only):** 4 seasons swap models/FX, no gameplay effect (decoupled from
   grip). **Decided:** **author-picked per race** — coherent aesthetics, and you only build
