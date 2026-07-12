@@ -59,7 +59,7 @@ func _menu() -> Array:
 			{"label": "Performance", "hud": "perf"},
 			{"label": "Vehicle state", "hud": "vehicle"},
 		]},
-		{"label": "Time scale (%.2gx)" % Engine.time_scale, "sub": [
+		{"label": "Time scale (%sx)" % String.num(Engine.time_scale), "sub": [
 			{"label": "0.25x", "run": func() -> void: Engine.time_scale = 0.25},
 			{"label": "0.5x", "run": func() -> void: Engine.time_scale = 0.5},
 			{"label": "1x", "run": func() -> void: Engine.time_scale = 1.0},
