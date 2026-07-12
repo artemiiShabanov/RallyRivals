@@ -390,6 +390,20 @@ func _gate(idx: int, a: Vector2, b: Vector2) -> CheckpointGate:
 	shape.size = Vector3(width, gate_height, gate_depth)
 	var cs := CollisionShape3D.new(); cs.name = "Shape"; cs.shape = shape
 	g.add_child(cs)
+	# Placeholder visuals: a pole at each end (white = start/finish, orange = checkpoint), children
+	# of the gate so hand-moved gates carry them. Real gate props come with code-track-props/art.
+	var pole_h := 4.0
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.92, 0.92, 0.88) if idx == 0 else Color(1.0, 0.45, 0.05)
+	var pm := BoxMesh.new(); pm.size = Vector3(0.4, pole_h, 0.4); pm.material = mat
+	for e in [["PoleA", wa, -width * 0.5], ["PoleB", wb, width * 0.5]]:
+		var mi := MeshInstance3D.new()
+		mi.name = e[0]
+		mi.mesh = pm
+		# Stand on the terrain at this end (dots sit on the shoulders, whose height differs from
+		# the road centre the gate itself is anchored to), sunk 0.4 m against slope.
+		mi.position = Vector3(e[2], (e[1] as Vector3).y + pole_h * 0.5 - 0.4 - g.position.y, 0.0)
+		g.add_child(mi)
 	return g
 
 # ---------- markers: start position + placeholder props ----------
