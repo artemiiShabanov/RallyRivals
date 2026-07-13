@@ -122,11 +122,20 @@ See [PILLARS.md](PILLARS.md). In short:
   class-gated** (bring a car of the event's class — the "serious" event, tied to the
   chapter's class range); **all other types are open** (run what you brought, field matched
   to your car). **Open:** field-matching/scaling rule for open races.
-- **Manufacturers (3–4), implicit identities (Borderlands-style):** each brand leans a
-  racing style + shares a visual family; styles **never stated** — learned through play
-  (e.g. aggressive/engaging, fast-but-brittle, corner-king, TBD). Full coverage: ≥1 car per
-  class S–D per brand (~brands×5 ≈ 20 cars min). Brands may carry a baked-in **feature**
-  (e.g. nitro) as identity — not an upgrade/loadout. **Open:** brand names; feature mapping.
+- **Manufacturers (Decided: 3), implicit identities (Borderlands-style):** each brand leans
+  a racing style + shares a visual family; styles **never stated** — learned through play.
+  Coverage: ≥1 car per class S–D per brand (≥15 cars). **Decided (v1): no brand features** —
+  pure stat/feel personalities; revisit post-v1 (nitro is the canonical candidate).
+  - **Apex Cartel** — corner-king: grip/steering/braking high, modest power. Low crisp
+    wedges, mono paint + one accent stripe. Ch3 boss (A). Starter car = a D-class Apex,
+    the father's old project build.
+  - **Wreckhouse** — straight-line bruiser: top speed + heavy chassis, weak
+    steering/braking. Slab muscle, bumper bars, scuffed plates. The garage-wrecker's own
+    outfit: Ch1 boss (C, junior enforcer) and Ch4 boss (S, the wrecker himself) — the
+    first badge you pink-slip and the last.
+  - **Mayfly Speedworks** — fast-but-brittle: top acceleration, light, damage hurts it
+    more (hooks into the damage system). Cab-forward bodies, big intakes, loud two-tones.
+    Ch2 boss (B).
 
 ## 9. UI / UX
 - **Style:** pixel-art HUD, menus, icons (matches voxel = 3D pixel art).
@@ -156,7 +165,8 @@ See [PILLARS.md](PILLARS.md). In short:
   (particles vs voxel sim); terrain style.
 
 ## 12. Scope / cut list
-- **Cut:** upgrade-card system (contradicted "no upgrades"; nitro survives as a brand feature).
+- **Cut:** upgrade-card system (contradicted "no upgrades"; nitro parked as the post-v1
+  brand-feature candidate — v1 brands are pure stat personalities, §8).
 - **v1 scoping (Open):** number of chapters (= regions, 1:1), rivals/tiers, total cars,
   tracks, and how many get full seasonal dressing. Trim to a shippable vertical slice first
   (work tracked in `tasks.yaml` / `STATUS.md`).
