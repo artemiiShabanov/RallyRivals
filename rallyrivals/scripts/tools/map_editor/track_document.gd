@@ -115,6 +115,14 @@ func refresh_texture(layer: String) -> void:
 				disp.set_pixel(x, y, c)
 	textures[layer] = ImageTexture.create_from_image(disp)
 
+## Fast in-place display refresh after painting. Surface displays its raw image, so the GPU
+## texture updates directly; overlay layers derive a transparent image -> full rebuild.
+func update_texture(layer: String) -> void:
+	if layer == "surface" and textures.has(layer):
+		(textures[layer] as ImageTexture).update(images[layer])
+	else:
+		refresh_texture(layer)
+
 ## Load a reference underlay image (any path on disk). Not part of the export.
 func load_blueprint(path: String) -> bool:
 	var img := Image.load_from_file(path if path.is_absolute_path() else ProjectSettings.globalize_path(path))

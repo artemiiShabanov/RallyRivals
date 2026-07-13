@@ -1,8 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://2jrya1jxrso4"]
 
-[ext_resource type="Script" path="res://scripts/tools/map_editor/map_editor.gd" id="1_ed"]
+[ext_resource type="Script" uid="uid://c52iv2o75y4ds" path="res://scripts/tools/map_editor/map_editor.gd" id="1_ed"]
 
 [node name="MapEditor" type="Control"]
+layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

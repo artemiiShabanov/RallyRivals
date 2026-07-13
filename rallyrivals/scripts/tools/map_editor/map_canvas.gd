@@ -6,14 +6,20 @@ extends Control
 ## (paint/stamps, later tasks) will hook _gui_input through the same pixel_at() mapping.
 
 signal pixel_hovered(px: Vector2i)
+signal stroke(from_px: Vector2i, to_px: Vector2i, erase: bool)
 
 var entries: Array = []   # [{"texture": Texture2D, "opacity": float}] bottom-up
 var image_size := 0       # authored image size in px (0 = no document open)
 var zoom := 1.0
 var pan := Vector2.ZERO   # canvas position of the image's (0,0)
+var brush_radius := 0.0   # image-space px; >0 = a paint tool is active (left paints, right erases)
 
 var _dragging := false
 var _space := false
+var _paint_btn := 0       # mouse button currently stroking (0 = none)
+var _last_px := Vector2i.ZERO
+var _hover := Vector2.ZERO
+var _has_hover := false
 
 func _ready() -> void:
 	clip_contents = true
@@ -30,6 +36,9 @@ func _draw() -> void:
 	draw_rect(r.grow(1.0), Color(0.45, 0.45, 0.55), false, 1.0)
 	for e in entries:
 		draw_texture_rect(e["texture"], r, false, Color(1, 1, 1, e["opacity"]))
+	if brush_radius > 0.0 and _has_hover:
+		draw_arc(_hover, brush_radius * zoom, 0.0, TAU, 48, Color(0, 0, 0, 0.7), 3.0)
+		draw_arc(_hover, brush_radius * zoom, 0.0, TAU, 48, Color(1, 1, 1, 0.9), 1.0)
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
@@ -41,12 +50,27 @@ func _gui_input(event: InputEvent) -> void:
 		elif mb.button_index == MOUSE_BUTTON_MIDDLE or (mb.button_index == MOUSE_BUTTON_LEFT and _space):
 			_dragging = mb.pressed
 			grab_focus()
+		elif brush_radius > 0.0 and mb.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+			# left = paint, right = off-road erase; both stamp immediately on press
+			_paint_btn = mb.button_index if mb.pressed else 0
+			if mb.pressed:
+				_last_px = pixel_at(mb.position)
+				stroke.emit(_last_px, _last_px, mb.button_index == MOUSE_BUTTON_RIGHT)
+				grab_focus()
 	elif event is InputEventMouseMotion:
 		var mm := event as InputEventMouseMotion
 		if _dragging:
 			pan += mm.relative
 			queue_redraw()
-		pixel_hovered.emit(pixel_at(mm.position))
+		var px := pixel_at(mm.position)
+		if _paint_btn != 0 and px != _last_px:
+			stroke.emit(_last_px, px, _paint_btn == MOUSE_BUTTON_RIGHT)
+			_last_px = px
+		_hover = mm.position
+		_has_hover = true
+		if brush_radius > 0.0:
+			queue_redraw()
+		pixel_hovered.emit(px)
 	elif event is InputEventKey and (event as InputEventKey).physical_keycode == KEY_SPACE:
 		_space = (event as InputEventKey).pressed
 
