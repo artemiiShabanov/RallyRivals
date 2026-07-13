@@ -33,7 +33,7 @@ extends VehicleBody3D
 @export var min_rear_grip_ratio := 0.3   ## rear floor as a FRACTION of the wheel's surface grip (relative, so it scales down on ice too)
 
 @export_group("Anti-spin")
-@export var max_yaw_rate := 1.3          ## rad/s — HARD cap on rotation speed; the car slides sideways instead of spinning to 180
+@export var max_yaw_rate := 1.3          ## rad/s — HARD cap on rotation speed; the car slides sideways instead of spinning to 180. Skipped while braking (deliberate rotation)
 
 var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
@@ -59,8 +59,12 @@ func _physics_process(delta: float) -> void:
 		brake = 0.0
 
 	# Grip layer: front stays grippy, rear grips less (drift), and much less on handbrake.
-	_apply_grip(Input.is_action_pressed("handbrake"))
-	_clamp_yaw()
+	var handbraking := Input.is_action_pressed("handbrake")
+	_apply_grip(handbraking)
+	# Anti-spin cap only while NOT braking: braking into a corner (esp. handbrake) is a
+	# deliberate request to rotate — the clamp would fight the drift the player asked for.
+	if not handbraking and brake == 0.0:
+		_clamp_yaw()
 
 	# Ease steering toward the target so input isn't twitchy.
 	steering = move_toward(steering, max_steer * steer_input, steer_speed * delta)
