@@ -4,7 +4,7 @@ extends Node3D
 ## polished M1 track (that's code-track-test-track) — just a place to F6 and feel the surfaces.
 ## Bake first: godot --headless --script res://scripts/track/bake_track_cli.gd
 
-@export var baked_scene_path := "res://assets/tracks/demo/baked_track.tscn"
+@export var baked_scene_path := "res://assets/tracks/track 1/baked_track.tscn"
 @export var car_scene: PackedScene = preload("res://scenes/vehicle/car.tscn")
 
 func _ready() -> void:
