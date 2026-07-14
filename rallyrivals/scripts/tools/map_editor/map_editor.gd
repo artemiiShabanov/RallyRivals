@@ -93,9 +93,13 @@ func _ready() -> void:
 
 func _build_panel() -> Control:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(280, 0)
+	panel.custom_minimum_size = Vector2(292, 0)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	panel.add_child(scroll)
 	var vb := VBoxContainer.new()
-	panel.add_child(vb)
+	vb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(vb)
 
 	var title := Label.new()
 	title.text = "Map Editor"
