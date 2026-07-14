@@ -25,9 +25,14 @@ var _bp_dialog: FileDialog
 var _surfaces: Array[SurfaceType] = []
 var _off_road: SurfaceType          # the "eraser" surface (sand): right-drag paints this
 var _brush_surface: SurfaceType     # null = no paint tool active
-var _brush_group := ButtonGroup.new()
+var _brush_group := ButtonGroup.new()   # shared by swatches AND race tools — one active tool total
 var _brush_slider: HSlider
 var _dirty := false
+
+var _race_mode := ""                # "" | "start" | "gate"
+var _race_pending: Array[Vector2i] = []
+var _race_summary := ""             # last validation result, shown when not mid-placement
+var _race_hint: Label
 
 func _ready() -> void:
 	var split := HBoxContainer.new()
@@ -39,6 +44,7 @@ func _ready() -> void:
 	canvas = MapCanvas.new()
 	canvas.pixel_hovered.connect(_on_pixel_hovered)
 	canvas.stroke.connect(_on_stroke)
+	canvas.clicked.connect(_on_clicked)
 	split.add_child(canvas)
 
 	_open_dialog = FileDialog.new()
@@ -123,6 +129,29 @@ func _build_panel() -> Control:
 	vb.add_child(size_row)
 
 	vb.add_child(HSeparator.new())
+	var race_title := Label.new()
+	race_title.text = "Race tools  (right-click = delete dot)"
+	vb.add_child(race_title)
+	var race_row := HBoxContainer.new()
+	for m in [["start", "Start line"], ["gate", "Add gate"]]:
+		var btn := Button.new()
+		btn.text = m[1]
+		btn.toggle_mode = true
+		btn.button_group = _brush_group
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.toggled.connect(func(on: bool) -> void:
+			if on:
+				_set_race_mode(m[0])
+			elif _race_mode == m[0]:
+				_set_race_mode(""))
+		race_row.add_child(btn)
+	vb.add_child(race_row)
+	_race_hint = Label.new()
+	_race_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_race_hint.modulate = Color(1, 1, 1, 0.7)
+	vb.add_child(_race_hint)
+
+	vb.add_child(HSeparator.new())
 	var layers_title := Label.new()
 	layers_title.text = "Layers (top-down)"
 	vb.add_child(layers_title)
@@ -196,7 +225,11 @@ func _swatch(s: SurfaceType) -> Button:
 	b.add_theme_color_override("font_pressed_color", Color.BLACK if lum > 0.5 else Color.WHITE)
 	b.add_theme_color_override("font_hover_color", Color.BLACK if lum > 0.5 else Color.WHITE)
 	b.toggled.connect(func(on: bool) -> void:
-		_brush_surface = s if on else null
+		# guard against toggle-signal order when switching buttons within the group
+		if on:
+			_brush_surface = s
+		elif _brush_surface == s:
+			_brush_surface = null
 		_update_brush())
 	return b
 
@@ -235,6 +268,146 @@ func _set_dirty(v: bool) -> void:
 	_dirty = v
 	if doc != null:
 		_folder_label.text = doc.dir + (" *" if _dirty else "")
+
+# ---------- race tools ----------
+# Semantic placement onto the race layer (pipeline dot conventions: 2x2 dots, black = empty).
+# Start line = 3 clicks (shoulder, shoulder, direction), replacing any previous start/dir.
+# Gate = 2 clicks. Right-click deletes dots near the cursor. Validation after every edit runs
+# the BAKER'S own blob/pair/midpoint-on-road code, so the editor can't disagree with a bake.
+func _set_race_mode(mode: String) -> void:
+	_race_mode = mode
+	_race_pending.clear()
+	_update_race_hint()
+
+func _update_race_hint() -> void:
+	var prompts := {
+		"start": ["start: click one shoulder of the line", "start: click the other shoulder", "start: click ahead — where the track goes"],
+		"gate": ["gate: click one shoulder", "gate: click the other shoulder"],
+	}
+	_race_hint.text = prompts[_race_mode][_race_pending.size()] if _race_mode != "" else _race_summary
+
+func _on_clicked(px: Vector2i, button: int) -> void:
+	if doc == null or _race_mode == "":
+		return
+	if px.x < 0 or px.y < 0 or px.x >= doc.size or px.y >= doc.size:
+		return
+	if button == MOUSE_BUTTON_RIGHT:
+		_erase_race_near(px)
+		_race_pending.clear()
+		_after_race_edit()
+		return
+	if button != MOUSE_BUTTON_LEFT:
+		return
+	_race_pending.append(px)
+	# clear pending BEFORE placing — placement re-renders the hint, which reads pending's size
+	if _race_mode == "start" and _race_pending.size() == 3:
+		var pts := _race_pending.duplicate()
+		_race_pending.clear()
+		_place_start(pts[0], pts[1], pts[2])
+	elif _race_mode == "gate" and _race_pending.size() == 2:
+		var pts := _race_pending.duplicate()
+		_race_pending.clear()
+		_place_gate(pts[0], pts[1])
+	_update_race_hint()
+
+func _place_start(a: Vector2i, b: Vector2i, toward: Vector2i) -> void:
+	var img: Image = doc.images["race"]
+	_clear_color(img, TrackBaker.R_START)
+	_clear_color(img, TrackBaker.R_DIR)
+	_race_dot(img, a, TrackBaker.R_START)
+	_race_dot(img, b, TrackBaker.R_START)
+	var mid := (Vector2(a) + Vector2(b)) * 0.5
+	var dir := Vector2(toward) - mid
+	dir = dir.normalized() if dir.length() > 0.5 else Vector2.RIGHT
+	_race_dot(img, Vector2i((mid + dir * 6.0).round()), TrackBaker.R_DIR)
+	_after_race_edit()
+
+func _place_gate(a: Vector2i, b: Vector2i) -> void:
+	var img: Image = doc.images["race"]
+	_race_dot(img, a, TrackBaker.R_GATE)
+	_race_dot(img, b, TrackBaker.R_GATE)
+	_after_race_edit()
+
+func _race_dot(img: Image, px: Vector2i, col: Color) -> void:
+	for dy in 2:
+		for dx in 2:
+			img.set_pixel(clampi(px.x + dx, 0, doc.size - 1), clampi(px.y + dy, 0, doc.size - 1), col)
+
+func _erase_race_near(px: Vector2i, r: int = 6) -> void:
+	var img: Image = doc.images["race"]
+	for dy in range(-r, r + 1):
+		for dx in range(-r, r + 1):
+			var x := px.x + dx; var y := px.y + dy
+			if x < 0 or y < 0 or x >= doc.size or y >= doc.size or dx * dx + dy * dy > r * r:
+				continue
+			img.set_pixel(x, y, Color.BLACK)
+
+func _clear_color(img: Image, col: Color) -> void:
+	for y in doc.size:
+		for x in doc.size:
+			var c := img.get_pixel(x, y)
+			if Vector3(c.r - col.r, c.g - col.g, c.b - col.b).length() < 0.2:
+				img.set_pixel(x, y, Color.BLACK)
+
+func _after_race_edit() -> void:
+	doc.refresh_texture("race")
+	_push_canvas()
+	_set_dirty(true)
+	_validate_race()
+
+## Rebuild race overlays + summary via TrackBaker's own reading of the layers.
+func _validate_race() -> void:
+	canvas.overlay_rings = []
+	canvas.overlay_lines = []
+	_race_summary = ""
+	if doc != null:
+		var b := TrackBaker.new()
+		b._rc = doc.images["race"]
+		b._sf = doc.images["surface"]
+		b._size = doc.size
+		var road: Array = []
+		for s in _surfaces:
+			if s != _off_road:
+				road.append(s)
+		b.surfaces = road
+		b.off_road_surface = _off_road
+		var starts := b._blobs(b._rc, TrackBaker.R_START)
+		var dirs := b._blobs(b._rc, TrackBaker.R_DIR)
+		var gates := b._blobs(b._rc, TrackBaker.R_GATE)
+		for p in starts:
+			canvas.overlay_rings.append({"p": p, "col": Color(1.0, 0.4, 1.0)})
+		for p in dirs:
+			canvas.overlay_rings.append({"p": p, "col": Color(1.0, 1.0, 0.3)})
+		var problems: Array[String] = []
+		if starts.is_empty() and dirs.is_empty() and gates.is_empty():
+			_race_summary = "race: empty — place a start line"
+			_update_race_hint()
+			canvas.queue_redraw()
+			return
+		if starts.size() != 2:
+			problems.append("start dots %d (need 2)" % starts.size())
+		else:
+			canvas.overlay_lines.append({"a": starts[0], "b": starts[1], "col": Color(1.0, 0.4, 1.0)})
+			if not b._is_road((starts[0] + starts[1]) * 0.5):
+				problems.append("start midpoint off-road")
+		if dirs.size() != 1:
+			problems.append("direction dots %d (need 1)" % dirs.size())
+		var pairs: Variant = b._pair_dots(gates)
+		if pairs == null:
+			problems.append("gates don't pair (odd dot or midpoint off-road)")
+			for p in gates:
+				canvas.overlay_rings.append({"p": p, "col": Color(1.0, 0.25, 0.2)})
+		else:
+			for pr in pairs:
+				canvas.overlay_lines.append({"a": pr[0], "b": pr[1], "col": Color(0.3, 1.0, 0.4)})
+			for p in gates:
+				canvas.overlay_rings.append({"p": p, "col": Color(0.3, 1.0, 0.4)})
+		if problems.is_empty():
+			_race_summary = "race OK: start + %d gates" % (pairs as Array).size()
+		else:
+			_race_summary = "race INVALID: " + "; ".join(problems)
+	_update_race_hint()
+	canvas.queue_redraw()
 
 # ---------- actions ----------
 func _on_new() -> void:
@@ -292,6 +465,7 @@ func _after_doc_change(status: String) -> void:
 		(_layer_rows[layer]["check"] as CheckBox).set_pressed_no_signal(doc.layer_visible[layer])
 		(_layer_rows[layer]["slider"] as HSlider).set_value_no_signal(doc.layer_opacity[layer])
 	_push_canvas()
+	_validate_race()
 	_set_status(status)
 
 ## Rebuild the canvas draw list from the document. Call after any layer/visibility change.

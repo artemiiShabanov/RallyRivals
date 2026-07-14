@@ -7,12 +7,15 @@ extends Control
 
 signal pixel_hovered(px: Vector2i)
 signal stroke(from_px: Vector2i, to_px: Vector2i, erase: bool)
+signal clicked(px: Vector2i, button: int)
 
 var entries: Array = []   # [{"texture": Texture2D, "opacity": float}] bottom-up
 var image_size := 0       # authored image size in px (0 = no document open)
 var zoom := 1.0
 var pan := Vector2.ZERO   # canvas position of the image's (0,0)
 var brush_radius := 0.0   # image-space px; >0 = a paint tool is active (left paints, right erases)
+var overlay_rings: Array = []   # [{"p": Vector2 image px, "col": Color}] gizmos over the layers
+var overlay_lines: Array = []   # [{"a": Vector2, "b": Vector2, "col": Color}]
 
 var _dragging := false
 var _space := false
@@ -36,6 +39,10 @@ func _draw() -> void:
 	draw_rect(r.grow(1.0), Color(0.45, 0.45, 0.55), false, 1.0)
 	for e in entries:
 		draw_texture_rect(e["texture"], r, false, Color(1, 1, 1, e["opacity"]))
+	for l in overlay_lines:
+		draw_line(pan + ((l["a"] as Vector2) + Vector2(0.5, 0.5)) * zoom, pan + ((l["b"] as Vector2) + Vector2(0.5, 0.5)) * zoom, l["col"], 1.5)
+	for m in overlay_rings:
+		draw_arc(pan + ((m["p"] as Vector2) + Vector2(0.5, 0.5)) * zoom, 7.0, 0.0, TAU, 24, m["col"], 1.5)
 	if brush_radius > 0.0 and _has_hover:
 		draw_arc(_hover, brush_radius * zoom, 0.0, TAU, 48, Color(0, 0, 0, 0.7), 3.0)
 		draw_arc(_hover, brush_radius * zoom, 0.0, TAU, 48, Color(1, 1, 1, 0.9), 1.0)
@@ -50,13 +57,16 @@ func _gui_input(event: InputEvent) -> void:
 		elif mb.button_index == MOUSE_BUTTON_MIDDLE or (mb.button_index == MOUSE_BUTTON_LEFT and _space):
 			_dragging = mb.pressed
 			grab_focus()
-		elif brush_radius > 0.0 and mb.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
-			# left = paint, right = off-road erase; both stamp immediately on press
-			_paint_btn = mb.button_index if mb.pressed else 0
+		elif mb.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 			if mb.pressed:
-				_last_px = pixel_at(mb.position)
-				stroke.emit(_last_px, _last_px, mb.button_index == MOUSE_BUTTON_RIGHT)
+				clicked.emit(pixel_at(mb.position), mb.button_index)
 				grab_focus()
+			if brush_radius > 0.0:
+				# left = paint, right = off-road erase; both stamp immediately on press
+				_paint_btn = mb.button_index if mb.pressed else 0
+				if mb.pressed:
+					_last_px = pixel_at(mb.position)
+					stroke.emit(_last_px, _last_px, mb.button_index == MOUSE_BUTTON_RIGHT)
 	elif event is InputEventMouseMotion:
 		var mm := event as InputEventMouseMotion
 		if _dragging:
