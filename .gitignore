@@ -20,3 +20,7 @@ mono_crash.*.json
 # The 3 source images (heightmap.exr / surface.png / markers.png) ARE committed.
 baked_track.tscn
 ground_*.res
+
+# throwaway probe scripts (headless verification, deleted after use)
+_probe*
+_gen_*
