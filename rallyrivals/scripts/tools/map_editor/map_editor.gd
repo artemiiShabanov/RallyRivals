@@ -255,6 +255,12 @@ func _build_panel() -> Control:
 	vb.add_child(_height_hint)
 
 	vb.add_child(HSeparator.new())
+	var export_btn := Button.new()
+	export_btn.text = "Export & bake track"
+	export_btn.pressed.connect(_export_and_bake)
+	vb.add_child(export_btn)
+
+	vb.add_child(HSeparator.new())
 	var layers_title := Label.new()
 	layers_title.text = "Layers (top-down)"
 	vb.add_child(layers_title)
@@ -775,6 +781,48 @@ func _shortcut_input(event: InputEvent) -> void:
 	else:
 		return
 	get_viewport().set_input_as_handled()
+
+# ---------- export & bake ----------
+## The editor's endpoint: save the 3 painted layers, derive the full-res heightmap.exr, then
+## run the real TrackBaker on the folder — the same pipeline the CLI and bake button use.
+func _export_and_bake() -> void:
+	if doc == null:
+		_set_status("open a track first")
+		return
+	if not _ensure_analysis():
+		_set_status("export blocked: " + _height_hint.text)
+		return
+	_set_status("export: saving layers...")
+	await get_tree().process_frame
+	var err := doc.save()
+	if err != OK:
+		_set_status("export failed while saving (%s)" % error_string(err))
+		return
+	_set_status("export: building full-res heightmap (takes a moment)...")
+	await get_tree().process_frame
+	var anchors := _builder.anchors_from(_analysis, doc.height_points)
+	var hm := _builder.build(doc.size, _analysis, anchors, doc.size)
+	var hm_err := hm.save_exr(ProjectSettings.globalize_path(doc.dir.path_join("heightmap.exr")))
+	if hm_err != OK:
+		_set_status("export failed writing heightmap.exr (%s)" % error_string(hm_err))
+		return
+	_set_status("export: baking...")
+	await get_tree().process_frame
+	var baker := TrackBaker.new()
+	baker.src_dir = doc.dir
+	baker.out_scene = doc.dir.path_join("baked_track.tscn")
+	baker.max_height = _builder.max_height
+	baker.path_points = clampi(int(float(_analysis["total"]) / 45.0), 24, 64)
+	for s in _surfaces:
+		if s != _off_road:
+			baker.surfaces.append(s)
+	baker.off_road_surface = _off_road
+	var bake_err := baker.bake()
+	if bake_err != OK:
+		_set_status("bake failed (%s) — see console errors" % error_string(bake_err))
+		return
+	_set_dirty(false)   # save happened as part of the export
+	_set_status("exported + baked -> %s (drive it via track_demo's baked_scene_path)" % baker.out_scene)
 
 # ---------- sync ----------
 func _after_doc_change(status: String) -> void:
