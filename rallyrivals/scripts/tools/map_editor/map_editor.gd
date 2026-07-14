@@ -162,7 +162,7 @@ func _build_panel() -> Control:
 
 	vb.add_child(HSeparator.new())
 	var race_title := Label.new()
-	race_title.text = "Race tools  (right-click = delete dot)"
+	race_title.text = "Race tools  (right-click = delete gate/line)"
 	vb.add_child(race_title)
 	var race_row := HBoxContainer.new()
 	for m in [["start", "Start line"], ["gate", "Add gate"], ["finish", "Finish line"]]:
@@ -412,7 +412,7 @@ func _on_clicked(px: Vector2i, button: int) -> void:
 		return
 	if button == MOUSE_BUTTON_RIGHT:
 		_push_undo("race")
-		_erase_race_near(px)
+		_delete_race_feature(px)
 		_race_pending.clear()
 		_after_race_edit()
 		return
@@ -468,6 +468,74 @@ func _race_dot(img: Image, px: Vector2i, col: Color) -> void:
 	for dy in 2:
 		for dx in 2:
 			img.set_pixel(clampi(px.x + dx, 0, doc.size - 1), clampi(px.y + dy, 0, doc.size - 1), col)
+
+## Right-click removes the whole nearest race FEATURE: a gate (both dots), the start line
+## (both dots + the direction dot), or the finish pair. Nothing near -> small pixel erase
+## for cleaning up strays.
+func _delete_race_feature(px: Vector2i) -> void:
+	var img: Image = doc.images["race"]
+	var b := TrackBaker.new()
+	b._rc = img
+	b._size = doc.size
+	var groups := {
+		"start": b._blobs(img, TrackBaker.R_START),
+		"dir": b._blobs(img, TrackBaker.R_DIR),
+		"gate": b._blobs(img, TrackBaker.R_GATE),
+		"finish": b._blobs(img, TrackBaker.R_FINISH),
+	}
+	var p := Vector2(px)
+	var best := 12.0
+	var best_kind := ""
+	var best_blob := Vector2.ZERO
+	for kind in groups:
+		for blob in groups[kind]:
+			var d: float = p.distance_to(blob)
+			if d < best:
+				best = d
+				best_kind = kind
+				best_blob = blob
+	match best_kind:
+		"":
+			_erase_race_near(px)
+		"start", "dir":
+			_clear_color(img, TrackBaker.R_START)
+			_clear_color(img, TrackBaker.R_DIR)
+		"finish":
+			_clear_color(img, TrackBaker.R_FINISH)
+		"gate":
+			_erase_race_near(Vector2i(best_blob.round()), 4)
+			var partner := _gate_partner(groups["gate"], best_blob)
+			if partner != Vector2.INF:
+				_erase_race_near(Vector2i(partner.round()), 4)
+
+# The other dot of a gate: its pairing partner when the layer pairs cleanly, else the nearest
+# other gate dot (best effort on an already-broken layer).
+func _gate_partner(gates: Array[Vector2], blob: Vector2) -> Vector2:
+	var b := TrackBaker.new()
+	b._sf = doc.images["surface"]
+	b._size = doc.size
+	var road: Array = []
+	for s in _surfaces:
+		if s != _off_road:
+			road.append(s)
+	b.surfaces = road
+	b.off_road_surface = _off_road
+	if gates.size() % 2 == 0:
+		var pairs: Variant = b._pair_dots(gates)
+		if pairs != null:
+			for pr in pairs:
+				if (pr[0] as Vector2).distance_to(blob) < 1.0:
+					return pr[1]
+				if (pr[1] as Vector2).distance_to(blob) < 1.0:
+					return pr[0]
+	var bestd := 60.0
+	var out := Vector2.INF
+	for g in gates:
+		var d: float = g.distance_to(blob)
+		if d > 1.0 and d < bestd:
+			bestd = d
+			out = g
+	return out
 
 func _erase_race_near(px: Vector2i, r: int = 6) -> void:
 	var img: Image = doc.images["race"]
@@ -591,6 +659,10 @@ func _ensure_analysis() -> bool:
 		var a := _builder.analyze(doc.images["surface"], doc.images["race"], doc.size)
 		if not a["ok"]:
 			_height_hint.text = a["msg"]
+			# draw the failed march in red — it points at the corner/pinch that broke the layout
+			canvas.overlay_polyline = a.get("pts", PackedVector2Array())
+			canvas.overlay_polyline_col = Color(1.0, 0.3, 0.25, 0.85)
+			canvas.queue_redraw()
 			return false
 		_analysis = a
 	_height_hint.text = "lap %.0f m, %d height points" % [_analysis["total"], doc.height_points.size()]
@@ -645,6 +717,7 @@ func _height_refresh() -> void:
 	_profile.selected_frac = -1.0
 	if doc != null and _analysis != null and _height_mode:
 		canvas.overlay_polyline = _analysis["pts"]
+		canvas.overlay_polyline_col = Color(0.5, 0.8, 1.0, 0.45)
 		for i in doc.height_points.size():
 			var hp: Dictionary = doc.height_points[i]
 			var p := Vector2(float(hp["x"]), float(hp["y"]))

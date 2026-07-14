@@ -42,7 +42,8 @@ func analyze(surface_img: Image, race_img: Image, size: int) -> Dictionary:
 	var target: Vector2 = race["start_mid"] if is_loop else race["finish_mid"]
 	if pts.size() < 10 or pts[pts.size() - 1].distance_to(target) > 14.0:
 		var what := "close the loop" if is_loop else "reach the finish line"
-		return {"ok": false, "msg": "road doesn't %s — fix the layout (see console warning)" % what}
+		# ship the partial march so the editor can draw WHERE it wandered
+		return {"ok": false, "msg": "road doesn't %s — the red path shows where the march went" % what, "pts": pts}
 	var cum := PackedFloat32Array()
 	cum.resize(pts.size())
 	var acc := 0.0
