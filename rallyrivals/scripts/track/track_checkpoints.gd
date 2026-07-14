@@ -5,12 +5,16 @@ extends Node3D
 ## missed one is collected. Progress is tracked PER BODY (player and AI rivals alike).
 ##
 ## Policy-free: emits gate_passed / sequence_completed; what a completed sequence means (lap,
-## sprint finish) is the race type's business (code-race-types). Gate 0 is the start/finish line:
-## a body's first expected gate is 1, and re-crossing gate 0 with all others collected completes
-## the sequence — so completion fires exactly at the line, where lap time is measured.
+## sprint finish) is the race type's business (code-race-types). Gate 0 is the start line: a
+## body's first expected gate is 1. On a LOOP, re-crossing gate 0 with all others collected
+## completes the sequence (lap time is measured at the line, and the next lap begins). On a
+## POINT-TO-POINT track (loop = false), the last gate is the finish line — completion fires
+## there, once, and nothing more counts afterwards.
 
 signal gate_passed(body: Node3D, index: int, total: int)
 signal sequence_completed(body: Node3D)
+
+@export var loop := true   ## false = point-to-point (baked from a cyan finish pair)
 
 var _gates: Array[CheckpointGate] = []
 var _next := {}   # body -> next expected gate index
@@ -52,6 +56,11 @@ func _on_gate_entered(body: Node3D, gate: CheckpointGate) -> void:
 	if gate.index != expected:
 		return
 	gate_passed.emit(body, gate.index, _gates.size())
-	if expected == 0:
-		sequence_completed.emit(body)
-	_next[body] = (expected + 1) % _gates.size()
+	if loop:
+		if expected == 0:
+			sequence_completed.emit(body)
+		_next[body] = (expected + 1) % _gates.size()
+	else:
+		if expected == _gates.size() - 1:
+			sequence_completed.emit(body)
+		_next[body] = expected + 1   # past the end = finished; no further gates count

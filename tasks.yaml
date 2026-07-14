@@ -50,6 +50,9 @@ tasks:
   - {id: code-tools-map-editor-height, title: "Map editor: auto-heightmap from road + height control points", type: code, group: tools, size: huge, status: done, blockers: [code-tools-map-editor-surface]}
   - {id: code-tools-map-editor-export, title: "Map editor: export 4 images + one-click bake", type: code, group: tools, size: default, status: done, blockers: [code-tools-map-editor-surface, code-tools-map-editor-race]}
 
+  # ---------- code: track — point-to-point (sprint) support ----------
+  - {id: code-track-point-to-point, title: "Point-to-point tracks (cyan finish pair: open march/curve, finish gate, editor tool)", type: code, group: track, size: big, status: done, blockers: [code-track-checkpoints, code-tools-map-editor-race]}
+
   # ---------- code: vehicle ----------
   - {id: code-vehicle-controller, title: "Promote VehicleBody3D controller to scripts/", type: code, group: vehicle, size: big, status: done, blockers: [design-adr-physics]}
   - {id: code-vehicle-grip, title: "Front/rear grip + handbrake drift layer", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller]}

@@ -165,7 +165,7 @@ func _build_panel() -> Control:
 	race_title.text = "Race tools  (right-click = delete dot)"
 	vb.add_child(race_title)
 	var race_row := HBoxContainer.new()
-	for m in [["start", "Start line"], ["gate", "Add gate"]]:
+	for m in [["start", "Start line"], ["gate", "Add gate"], ["finish", "Finish line"]]:
 		var btn := Button.new()
 		btn.text = m[1]
 		btn.toggle_mode = true
@@ -393,6 +393,7 @@ func _update_race_hint() -> void:
 	var prompts := {
 		"start": ["start: click one shoulder of the line", "start: click the other shoulder", "start: click ahead — where the track goes"],
 		"gate": ["gate: click one shoulder", "gate: click the other shoulder"],
+		"finish": ["finish: click one shoulder (makes the track point-to-point)", "finish: click the other shoulder"],
 	}
 	_race_hint.text = prompts[_race_mode][_race_pending.size()] if _race_mode != "" else _race_summary
 
@@ -429,6 +430,11 @@ func _on_clicked(px: Vector2i, button: int) -> void:
 		_race_pending.clear()
 		_push_undo("race")
 		_place_gate(pts[0], pts[1])
+	elif _race_mode == "finish" and _race_pending.size() == 2:
+		var pts := _race_pending.duplicate()
+		_race_pending.clear()
+		_push_undo("race")
+		_place_finish(pts[0], pts[1])
 	_update_race_hint()
 
 func _place_start(a: Vector2i, b: Vector2i, toward: Vector2i) -> void:
@@ -447,6 +453,15 @@ func _place_gate(a: Vector2i, b: Vector2i) -> void:
 	var img: Image = doc.images["race"]
 	_race_dot(img, a, TrackBaker.R_GATE)
 	_race_dot(img, b, TrackBaker.R_GATE)
+	_after_race_edit()
+
+## A finish pair makes the track point-to-point; placing again replaces the previous one.
+## (Right-click-delete both dots to go back to a loop.)
+func _place_finish(a: Vector2i, b: Vector2i) -> void:
+	var img: Image = doc.images["race"]
+	_clear_color(img, TrackBaker.R_FINISH)
+	_race_dot(img, a, TrackBaker.R_FINISH)
+	_race_dot(img, b, TrackBaker.R_FINISH)
 	_after_race_edit()
 
 func _race_dot(img: Image, px: Vector2i, col: Color) -> void:
@@ -637,6 +652,7 @@ func _height_refresh() -> void:
 			_height_rings.append({"p": p, "col": col if i != _hp_selected else Color.WHITE})
 			_height_labels.append({"p": p, "text": "%.1f m" % float(hp["h"]), "col": col.lightened(0.3)})
 		_profile.anchors = _builder.anchors_from(_analysis, doc.height_points)
+		_profile.loop = _analysis.get("loop", true)
 		if _hp_selected >= 0 and _hp_selected < doc.height_points.size():
 			var sel: Dictionary = doc.height_points[_hp_selected]
 			_profile.selected_frac = _builder.frac_of(_analysis, Vector2(float(sel["x"]), float(sel["y"])))
@@ -686,12 +702,15 @@ func _validate_race() -> void:
 		var starts := b._blobs(b._rc, TrackBaker.R_START)
 		var dirs := b._blobs(b._rc, TrackBaker.R_DIR)
 		var gates := b._blobs(b._rc, TrackBaker.R_GATE)
+		var finishes := b._blobs(b._rc, TrackBaker.R_FINISH)
 		for p in starts:
 			_race_rings.append({"p": p, "col": Color(1.0, 0.4, 1.0)})
 		for p in dirs:
 			_race_rings.append({"p": p, "col": Color(1.0, 1.0, 0.3)})
+		for p in finishes:
+			_race_rings.append({"p": p, "col": Color(0.3, 0.9, 1.0)})
 		var problems: Array[String] = []
-		if starts.is_empty() and dirs.is_empty() and gates.is_empty():
+		if starts.is_empty() and dirs.is_empty() and gates.is_empty() and finishes.is_empty():
 			_race_summary = "race: empty — place a start line"
 			_update_race_hint()
 			_refresh_overlays()
@@ -704,6 +723,12 @@ func _validate_race() -> void:
 				problems.append("start midpoint off-road")
 		if dirs.size() != 1:
 			problems.append("direction dots %d (need 1)" % dirs.size())
+		if finishes.size() == 2:
+			_race_lines.append({"a": finishes[0], "b": finishes[1], "col": Color(0.3, 0.9, 1.0)})
+			if not b._is_road((finishes[0] + finishes[1]) * 0.5):
+				problems.append("finish midpoint off-road")
+		elif not finishes.is_empty():
+			problems.append("finish dots %d (need 2 or none)" % finishes.size())
 		var pairs: Variant = b._pair_dots(gates)
 		if pairs == null:
 			problems.append("gates don't pair (odd dot or midpoint off-road)")
@@ -715,7 +740,8 @@ func _validate_race() -> void:
 			for p in gates:
 				_race_rings.append({"p": p, "col": Color(0.3, 1.0, 0.4)})
 		if problems.is_empty():
-			_race_summary = "race OK: start + %d gates" % (pairs as Array).size()
+			var kind := " (point-to-point)" if finishes.size() == 2 else ""
+			_race_summary = "race OK%s: start + %d gates%s" % [kind, (pairs as Array).size(), " + finish" if finishes.size() == 2 else ""]
 		else:
 			_race_summary = "race INVALID: " + "; ".join(problems)
 	_update_race_hint()
@@ -873,6 +899,7 @@ class ProfileStrip:
 	extends Control
 	var anchors: Array = []        # [{frac, h 0..1}] sorted, from HeightmapBuilder.anchors_from
 	var selected_frac := -1.0
+	var loop := true               # open tracks clamp the profile at the ends
 
 	func _init() -> void:
 		custom_minimum_size = Vector2(0, 56)
@@ -885,7 +912,7 @@ class ProfileStrip:
 		var steps := 96
 		for i in steps + 1:
 			var f := float(i) / steps
-			var h := HeightmapBuilder.profile_h(anchors, f)
+			var h := HeightmapBuilder.profile_h(anchors, f, loop)
 			pts.append(Vector2(f * size.x, size.y - 4.0 - h * (size.y - 8.0)))
 		draw_polyline(pts, Color(0.55, 0.8, 1.0), 1.5)
 		for a in anchors:

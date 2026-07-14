@@ -31,22 +31,26 @@ func _baker(surface_img: Image, race_img: Image, size: int) -> TrackBaker:
 	b.off_road_surface = off_road_surface
 	return b
 
-## Extract + measure the centreline. -> {ok, msg, pts, cum, total}
+## Extract + measure the centreline. -> {ok, msg, pts, cum, total, loop}
 func analyze(surface_img: Image, race_img: Image, size: int) -> Dictionary:
 	var b := _baker(surface_img, race_img, size)
 	var race := b._read_race()
 	if race.is_empty():
 		return {"ok": false, "msg": "height needs a valid race layer (start line + direction)"}
-	var pts := b._extract_spline(race["start_mid"], race["dir"])
-	if pts.size() < 10 or pts[pts.size() - 1].distance_to(race["start_mid"]) > 14.0:
-		return {"ok": false, "msg": "road loop doesn't close — fix the layout (see console warning)"}
+	var is_loop: bool = not race.has("finish_mid")
+	var pts := b._extract_spline(race["start_mid"], race["dir"], Vector2.INF if is_loop else race["finish_mid"])
+	var target: Vector2 = race["start_mid"] if is_loop else race["finish_mid"]
+	if pts.size() < 10 or pts[pts.size() - 1].distance_to(target) > 14.0:
+		var what := "close the loop" if is_loop else "reach the finish line"
+		return {"ok": false, "msg": "road doesn't %s — fix the layout (see console warning)" % what}
 	var cum := PackedFloat32Array()
 	cum.resize(pts.size())
 	var acc := 0.0
 	for i in pts.size():
 		cum[i] = acc
-		acc += pts[i].distance_to(pts[(i + 1) % pts.size()])
-	return {"ok": true, "msg": "", "pts": pts, "cum": cum, "total": acc}
+		if i + 1 < pts.size() or is_loop:   # an open road has no closing segment
+			acc += pts[i].distance_to(pts[(i + 1) % pts.size()])
+	return {"ok": true, "msg": "", "pts": pts, "cum": cum, "total": acc, "loop": is_loop}
 
 ## Nearest centreline point index for an image position.
 func nearest_index(analysis: Dictionary, p: Vector2) -> int:
@@ -76,11 +80,17 @@ func anchors_from(analysis: Dictionary, height_points: Array) -> Array:
 		out.append({"frac": 0.0, "h": DEFAULT_H})
 	return out
 
-## Road height (0..1) at a lap fraction — smoothstep between anchors, wrapping the loop.
-static func profile_h(anchors: Array, frac: float) -> float:
+## Road height (0..1) at a lap fraction — smoothstep between anchors. Loops wrap around the
+## lap; open (point-to-point) roads clamp to the first/last anchor beyond them.
+static func profile_h(anchors: Array, frac: float, is_loop := true) -> float:
 	var n := anchors.size()
 	if n == 1:
 		return anchors[0]["h"]
+	if not is_loop:
+		if frac <= float(anchors[0]["frac"]):
+			return anchors[0]["h"]
+		if frac >= float(anchors[n - 1]["frac"]):
+			return anchors[n - 1]["h"]
 	for i in n:
 		var a: Dictionary = anchors[i]
 		var b: Dictionary = anchors[(i + 1) % n]
@@ -98,6 +108,7 @@ func build(size: int, analysis: Dictionary, anchors: Array, out_size: int) -> Im
 	var pts: PackedVector2Array = analysis["pts"]
 	var cum: PackedFloat32Array = analysis["cum"]
 	var total: float = analysis["total"]
+	var is_loop: bool = analysis.get("loop", true)
 	var n := pts.size()
 	var noise := FastNoiseLite.new()
 	noise.seed = NOISE_SEED
@@ -118,7 +129,11 @@ func build(size: int, analysis: Dictionary, anchors: Array, out_size: int) -> Im
 			var dperp := INF
 			var arc := 0.0
 			for off in [-1, 0]:
-				var ia := (bi + int(off) + n) % n
+				var ia := bi + int(off)
+				if is_loop:
+					ia = (ia + n) % n
+				elif ia < 0 or ia >= n - 1:
+					continue   # open road: no wrapping segment
 				var ib := (ia + 1) % n
 				var a := pts[ia]
 				var ab := pts[ib] - a
@@ -127,7 +142,11 @@ func build(size: int, analysis: Dictionary, anchors: Array, out_size: int) -> Im
 				if dd < dperp:
 					dperp = dd
 					arc = cum[ia] + ab.length() * tt
-			var road_h := profile_h(anchors, fposmod(arc / total, 1.0))
+			if dperp == INF:   # bi == 0 on an open road: fall back to the point itself
+				dperp = p.distance_to(pts[bi])
+				arc = cum[bi]
+			var frac := fposmod(arc / total, 1.0) if is_loop else clampf(arc / total, 0.0, 1.0)
+			var road_h := profile_h(anchors, frac, is_loop)
 			var natural := clampf(road_h + noise.get_noise_2d(p.x, p.y) * TERRAIN_AMP, 0.0, 1.0)
 			var h: float
 			if dperp <= FLAT_HW:

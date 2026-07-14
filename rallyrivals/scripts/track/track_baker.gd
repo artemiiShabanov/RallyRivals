@@ -28,12 +28,13 @@ var gate_depth := 4.0                   ## checkpoint box thickness along travel
 var path_points := 24                   ## TrackPath control points after decimation (more = closer hand-tune fit on long tracks)
 
 # Race colours (semantic dots in race.png). A dot is any small blob; its centroid is what counts.
-# Pairs of dots straddle the road: start pair = the start/finish line (gate 0), each gate pair =
-# one checkpoint gate, dot spacing = gate width. Cyan (0,1,1) is reserved for a point-to-point
-# FINISH pair (implemented when code-race-types needs sprints).
+# Pairs of dots straddle the road: start pair = the start line (gate 0), each gate pair = one
+# checkpoint gate, dot spacing = gate width. A cyan FINISH pair makes the track POINT-TO-POINT:
+# the march runs start -> finish (open road, no loop), and the finish becomes the last gate.
 const R_START := Color(1, 0, 1)
 const R_DIR := Color(1, 1, 0)
 const R_GATE := Color(0, 1, 0)
+const R_FINISH := Color(0, 1, 1)
 
 # Marker colours (semantic pixels in markers.png — world props only).
 const M_TREE := Color(1, 0, 0)
@@ -62,21 +63,27 @@ func bake() -> Error:
 	var race := _read_race()
 	if race.is_empty():
 		return ERR_INVALID_DATA
+	var is_loop: bool = not race.has("finish_mid")
 
 	var root := Node3D.new()
 	root.name = "Track"
 	_add_environment(root)
 	var counts := _add_ground(root)
-	var spline_pts := _extract_spline(race["start_mid"], race["dir"])
-	var curve := _add_path(root, spline_pts)
-	var ngates := _add_checkpoints(root, race, curve)
+	var spline_pts := _extract_spline(race["start_mid"], race["dir"], Vector2.INF if is_loop else race["finish_mid"])
+	var curve := _add_path(root, spline_pts, is_loop)
+	var ngates := _add_checkpoints(root, race, curve, is_loop)
 	_add_markers(root, race["start_mid"])
+	if not is_loop:
+		var fm := Marker3D.new()
+		fm.name = "FinishLine"
+		fm.position = _worldf(race["finish_mid"].x, race["finish_mid"].y) + Vector3.UP * 0.5
+		root.add_child(fm)
 
 	_own_all(root, root)
 	var packed := PackedScene.new()
 	packed.pack(root)
 	var err := ResourceSaver.save(packed, out_scene)
-	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " gates=", ngates, " surfaces=", counts, " save_err=", err)
+	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " gates=", ngates, " loop=", is_loop, " surfaces=", counts, " save_err=", err)
 	return err
 
 # ---------- world / image helpers ----------
@@ -293,11 +300,20 @@ func _read_race() -> Dictionary:
 	if pairs == null:
 		return {}
 	var mid := (starts[0] + starts[1]) * 0.5
-	return {
+	var out := {
 		"start_a": starts[0], "start_b": starts[1], "start_mid": mid,
 		"dir": (dirs[0] - mid).normalized(),
 		"gates": pairs,
 	}
+	var finishes := _blobs(_rc, R_FINISH)
+	if finishes.size() == 2:   # point-to-point track
+		out["finish_a"] = finishes[0]
+		out["finish_b"] = finishes[1]
+		out["finish_mid"] = (finishes[0] + finishes[1]) * 0.5
+	elif not finishes.is_empty():
+		push_error("TrackBaker: race.png has %d finish dots (need 2 for point-to-point, or none)" % finishes.size())
+		return {}
+	return out
 
 # ---------- spline extraction (ant-march the road centreline) ----------
 func _recenter(p: Vector2, dir: Vector2) -> Vector2:
@@ -309,11 +325,14 @@ func _recenter(p: Vector2, dir: Vector2) -> Vector2:
 	while t < 26.0 and _is_road(p - perp * t): lo = t; t += 1.0
 	return p + perp * ((hi - lo) * 0.5)
 
-func _extract_spline(start: Vector2, dir: Vector2) -> PackedVector2Array:
+# Marches from the start line along the road. Loop tracks (finish == INF) terminate on
+# returning to the start; point-to-point tracks terminate on reaching the finish line.
+func _extract_spline(start: Vector2, dir: Vector2, finish := Vector2.INF) -> PackedVector2Array:
+	var target := start if finish == Vector2.INF else finish
 	var pts := PackedVector2Array()
 	var pos := start
 	var step := 4.0
-	var armed := false   # closure check arms once the march has actually left the start area
+	var armed := false   # termination check arms once the march has actually left the start area
 	for _i in 800:
 		pos = _recenter(pos, dir)
 		pts.append(pos)
@@ -335,29 +354,37 @@ func _extract_spline(start: Vector2, dir: Vector2) -> PackedVector2Array:
 				break
 		dir = (nxt - pos).normalized()
 		pos = nxt
-		# Loop closure: arm after leaving the start area, close on returning near it. The radius
-		# must comfortably beat the march's lateral zigzag or the lap gets doubled.
-		if pos.distance_to(start) > step * 6.0:
-			armed = true
-		elif armed and pos.distance_to(start) < step * 2.5:
+		# Arm after leaving the start area, terminate on reaching the target (start again for a
+		# loop, the finish line for point-to-point). The radius must comfortably beat the march's
+		# lateral zigzag or a lap gets doubled / a finish gets overshot.
+		if not armed:
+			armed = pos.distance_to(start) > step * 6.0
+		elif pos.distance_to(target) < step * 2.5:
+			if finish != Vector2.INF:
+				pts.append(finish)   # run the path right up to the finish line
 			return pts
-	# Fell out without closing: a corner sharper than the marcher can follow (it may even have
-	# U-turned and retraced). TrackPath and gate ordering are NOT trustworthy — fix the layout.
-	push_warning("TrackBaker: spline march did not close the loop (%d pts, ended %.0f px from start)" % [pts.size(), pos.distance_to(start)])
+	# Fell out without terminating: a corner sharper than the marcher can follow (it may even
+	# have U-turned and retraced). TrackPath and gate ordering are NOT trustworthy — fix the layout.
+	var what := "close the loop" if finish == Vector2.INF else "reach the finish line"
+	push_warning("TrackBaker: spline march did not %s (%d pts, ended %.0f px away)" % [what, pts.size(), pos.distance_to(target)])
 	return pts
 
-func _add_path(root: Node3D, pts: PackedVector2Array) -> Curve3D:
+func _add_path(root: Node3D, pts: PackedVector2Array, is_loop := true) -> Curve3D:
 	var path := Path3D.new(); path.name = "TrackPath"
 	var curve := Curve3D.new()
 	var keep := PackedVector2Array()
 	var stride := maxi(1, int(float(pts.size()) / path_points))
 	for i in range(0, pts.size(), stride):
 		keep.append(pts[i])
+	if not is_loop and keep[keep.size() - 1] != pts[pts.size() - 1]:
+		keep.append(pts[pts.size() - 1])   # an open road must keep its end point
 	var n := keep.size()
 	for i in n:
 		var p := keep[i]
 		var wp := Vector3((p.x - _size * 0.5) * mpp, _height(int(p.x), int(p.y)) + 0.5, (p.y - _size * 0.5) * mpp)
-		var pa := keep[(i - 1 + n) % n]; var pb := keep[(i + 1) % n]
+		var ia := (i - 1 + n) % n if is_loop else maxi(i - 1, 0)
+		var ib := (i + 1) % n if is_loop else mini(i + 1, n - 1)
+		var pa := keep[ia]; var pb := keep[ib]
 		var tan := Vector3((pb.x - pa.x) * mpp, 0, (pb.y - pa.y) * mpp) * 0.18
 		curve.add_point(wp, -tan, tan)
 	path.curve = curve
@@ -369,18 +396,21 @@ func _add_path(root: Node3D, pts: PackedVector2Array) -> Curve3D:
 # extracted spline (the track's direction defines the sequence). Caveat: where two track sections
 # run closer together than the road is wide, a midpoint can project onto the wrong section —
 # rare, visible in the baked scene, fixed by nudging a dot or hand-moving the baked gate.
-func _add_checkpoints(root: Node3D, race: Dictionary, curve: Curve3D) -> int:
+func _add_checkpoints(root: Node3D, race: Dictionary, curve: Curve3D, is_loop := true) -> int:
 	var cps := TrackCheckpoints.new()
 	cps.name = "Checkpoints"
+	cps.loop = is_loop
 	root.add_child(cps)
 	var length := curve.get_baked_length()
 	var start_off := curve.get_closest_offset(_pair_mid_world(race["start_a"], race["start_b"]))
 	var entries := []   # [offset from start line, dot a, dot b]
 	for pr in race["gates"]:
 		var off: float = curve.get_closest_offset(_pair_mid_world(pr[0], pr[1]))
-		entries.append([fposmod(off - start_off, length), pr[0], pr[1]])
+		entries.append([fposmod(off - start_off, length) if is_loop else off, pr[0], pr[1]])
 	entries.sort_custom(func(a, b): return a[0] < b[0])
 	entries.push_front([0.0, race["start_a"], race["start_b"]])
+	if not is_loop:
+		entries.append([INF, race["finish_a"], race["finish_b"]])   # finish = the last gate
 	for i in entries.size():
 		cps.add_child(_gate(i, entries[i][1], entries[i][2]))
 	return entries.size()
