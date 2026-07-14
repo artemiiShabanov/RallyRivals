@@ -17,8 +17,9 @@ var images := {}                 # layer -> Image (authoring data, saved to PNG)
 var textures := {}               # layer -> ImageTexture (display; black-empty layers shown transparent)
 var blueprint_path := ""         # reference underlay (absolute or res:// path; never exported)
 var blueprint_texture: Texture2D
-var layer_visible := {"blueprint": true, "surface": true, "markers": true, "race": true}
-var layer_opacity := {"blueprint": 0.5, "surface": 1.0, "markers": 1.0, "race": 1.0}
+var height_points: Array = []    # [{"x": float, "y": float, "h": float metres}] — road height anchors
+var layer_visible := {"blueprint": true, "terrain": true, "surface": true, "markers": true, "race": true}
+var layer_opacity := {"blueprint": 0.5, "terrain": 0.7, "surface": 1.0, "markers": 1.0, "race": 1.0}
 
 static func _off_road_color() -> Color:
 	return (load("res://assets/surfaces/sand.tres") as SurfaceType).color
@@ -72,11 +73,17 @@ func save() -> Error:
 		var err: Error = (images[layer] as Image).save_png(ProjectSettings.globalize_path(dir.path_join(layer + ".png")))
 		if err != OK:
 			return err
+	var vis := {}
+	var opa := {}
+	for layer in LAYERS + ["terrain"]:
+		vis[layer] = layer_visible[layer]
+		opa[layer] = layer_opacity[layer]
 	var meta := {
 		"size": size,
 		"blueprint": {"path": blueprint_path, "opacity": layer_opacity["blueprint"], "visible": layer_visible["blueprint"]},
-		"layer_visible": {"surface": layer_visible["surface"], "markers": layer_visible["markers"], "race": layer_visible["race"]},
-		"layer_opacity": {"surface": layer_opacity["surface"], "markers": layer_opacity["markers"], "race": layer_opacity["race"]},
+		"layer_visible": vis,
+		"layer_opacity": opa,
+		"height_points": height_points,
 	}
 	var f := FileAccess.open(ProjectSettings.globalize_path(dir.path_join(META_FILE)), FileAccess.WRITE)
 	if f == null:
@@ -96,9 +103,10 @@ func _load_meta() -> void:
 	blueprint_path = bp.get("path", "")
 	layer_opacity["blueprint"] = float(bp.get("opacity", 0.5))
 	layer_visible["blueprint"] = bool(bp.get("visible", true))
-	for layer in LAYERS:
-		layer_visible[layer] = bool((data.get("layer_visible", {}) as Dictionary).get(layer, true))
-		layer_opacity[layer] = float((data.get("layer_opacity", {}) as Dictionary).get(layer, 1.0))
+	for layer in LAYERS + ["terrain"]:
+		layer_visible[layer] = bool((data.get("layer_visible", {}) as Dictionary).get(layer, layer_visible[layer]))
+		layer_opacity[layer] = float((data.get("layer_opacity", {}) as Dictionary).get(layer, layer_opacity[layer]))
+	height_points = data.get("height_points", [])
 
 ## Rebuild a layer's display texture. Call after any edit to images[layer] (paint tools do).
 ## markers/race use black-as-empty, shown transparent so layers below stay visible.

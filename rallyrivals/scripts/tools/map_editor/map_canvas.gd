@@ -6,6 +6,7 @@ extends Control
 ## (paint/stamps, later tasks) will hook _gui_input through the same pixel_at() mapping.
 
 signal pixel_hovered(px: Vector2i)
+signal stroke_begun
 signal stroke(from_px: Vector2i, to_px: Vector2i, erase: bool)
 signal clicked(px: Vector2i, button: int)
 
@@ -16,6 +17,9 @@ var pan := Vector2.ZERO   # canvas position of the image's (0,0)
 var brush_radius := 0.0   # image-space px; >0 = a paint tool is active (left paints, right erases)
 var overlay_rings: Array = []   # [{"p": Vector2 image px, "col": Color}] gizmos over the layers
 var overlay_lines: Array = []   # [{"a": Vector2, "b": Vector2, "col": Color}]
+var overlay_labels: Array = []  # [{"p": Vector2 image px, "text": String, "col": Color}]
+var overlay_polyline := PackedVector2Array()   # image px; e.g. the extracted centreline
+var overlay_polyline_col := Color(0.5, 0.8, 1.0, 0.45)
 
 var _dragging := false
 var _space := false
@@ -39,10 +43,20 @@ func _draw() -> void:
 	draw_rect(r.grow(1.0), Color(0.45, 0.45, 0.55), false, 1.0)
 	for e in entries:
 		draw_texture_rect(e["texture"], r, false, Color(1, 1, 1, e["opacity"]))
+	if overlay_polyline.size() >= 2:
+		var spts := PackedVector2Array()
+		spts.resize(overlay_polyline.size())
+		for i in overlay_polyline.size():
+			spts[i] = pan + (overlay_polyline[i] + Vector2(0.5, 0.5)) * zoom
+		draw_polyline(spts, overlay_polyline_col, 1.0)
 	for l in overlay_lines:
 		draw_line(pan + ((l["a"] as Vector2) + Vector2(0.5, 0.5)) * zoom, pan + ((l["b"] as Vector2) + Vector2(0.5, 0.5)) * zoom, l["col"], 1.5)
 	for m in overlay_rings:
 		draw_arc(pan + ((m["p"] as Vector2) + Vector2(0.5, 0.5)) * zoom, 7.0, 0.0, TAU, 24, m["col"], 1.5)
+	var font := get_theme_default_font()
+	for lb in overlay_labels:
+		var sp: Vector2 = pan + ((lb["p"] as Vector2) + Vector2(0.5, 0.5)) * zoom + Vector2(9, -9)
+		draw_string(font, sp, lb["text"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, lb["col"])
 	if brush_radius > 0.0 and _has_hover:
 		draw_arc(_hover, brush_radius * zoom, 0.0, TAU, 48, Color(0, 0, 0, 0.7), 3.0)
 		draw_arc(_hover, brush_radius * zoom, 0.0, TAU, 48, Color(1, 1, 1, 0.9), 1.0)
@@ -65,6 +79,7 @@ func _gui_input(event: InputEvent) -> void:
 				# left = paint, right = off-road erase; both stamp immediately on press
 				_paint_btn = mb.button_index if mb.pressed else 0
 				if mb.pressed:
+					stroke_begun.emit()   # one undo step per drag
 					_last_px = pixel_at(mb.position)
 					stroke.emit(_last_px, _last_px, mb.button_index == MOUSE_BUTTON_RIGHT)
 	elif event is InputEventMouseMotion:

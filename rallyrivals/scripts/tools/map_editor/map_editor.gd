@@ -1,13 +1,15 @@
 extends Control
-## RallyRivals map editor — shell (code-tools-map-editor-shell). F6 scenes/tools/map_editor.tscn.
-## Scope here: open/create a track folder, zoom/pan canvas (wheel + middle-drag), blueprint
-## underlay with opacity, per-layer visibility/opacity, save (button or Ctrl+S). The editing
-## tools (surface brush, race dots, prop stamps, auto-heightmap, export+bake) are the follow-up
-## map-editor tasks and plug into this shell. Dev tool — not part of release builds.
+## RallyRivals map editor. F6 scenes/tools/map_editor.tscn. Dev tool — not in release builds.
+## Open/create a track folder, then: surface brush (palette from the .tres set), race tools
+## (start line, gates, live baker-backed validation), prop stamps, height control points
+## (heightmap is DERIVED from the painted road — never painted), terrain preview, blueprint
+## underlay, layer visibility/opacity, zoom/pan (wheel, gestures, middle-drag), save (Ctrl+S),
+## snapshot undo/redo (Cmd/Ctrl+Z, Shift+Cmd+Z / Ctrl+Y). Export + bake is the remaining task.
 
 const TRACKS_ROOT := "res://assets/tracks"
-const LAYER_ORDER := ["blueprint", "surface", "markers", "race"]
-const LAYER_TITLES := {"blueprint": "Blueprint", "surface": "Surface", "markers": "Props", "race": "Race"}
+const LAYER_ORDER := ["blueprint", "terrain", "surface", "markers", "race"]
+const LAYER_TITLES := {"blueprint": "Blueprint", "terrain": "Terrain", "surface": "Surface", "markers": "Props", "race": "Race"}
+const UNDO_CAP := 30
 
 const SURFACES_DIR := "res://assets/surfaces"
 
@@ -39,6 +41,20 @@ var _prop_mode := ""                # "" | "tree" | "rock"
 var _prop_rings: Array = []
 var _prop_count: Label
 
+var _undo: Array = []               # snapshots: {"kind": layer name or "hpoints", "data": ...}
+var _redo: Array = []
+
+var _height_mode := false
+var _hp_selected := -1
+var _height_rings: Array = []
+var _height_labels: Array = []
+var _analysis: Variant = null       # cached HeightmapBuilder.analyze(); null = stale
+var _builder: HeightmapBuilder
+var _height_slider: HSlider
+var _height_hint: Label
+var _profile: ProfileStrip
+var _terrain_tex: ImageTexture
+
 func _ready() -> void:
 	var split := HBoxContainer.new()
 	split.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -48,9 +64,16 @@ func _ready() -> void:
 	split.add_child(_build_panel())
 	canvas = MapCanvas.new()
 	canvas.pixel_hovered.connect(_on_pixel_hovered)
+	canvas.stroke_begun.connect(func() -> void: _push_undo("surface"))
 	canvas.stroke.connect(_on_stroke)
 	canvas.clicked.connect(_on_clicked)
 	split.add_child(canvas)
+
+	_builder = HeightmapBuilder.new()
+	for s in _surfaces:
+		if s != _off_road:
+			_builder.surfaces.append(s)
+	_builder.off_road_surface = _off_road
 
 	_open_dialog = FileDialog.new()
 	_open_dialog.file_mode = FileDialog.FILE_MODE_OPEN_DIR
@@ -179,6 +202,55 @@ func _build_panel() -> Control:
 	vb.add_child(_prop_count)
 
 	vb.add_child(HSeparator.new())
+	var height_title := Label.new()
+	height_title.text = "Height  (click road: add/select · right-click: delete)"
+	vb.add_child(height_title)
+	var height_row := HBoxContainer.new()
+	var hbtn := Button.new()
+	hbtn.text = "Height points"
+	hbtn.toggle_mode = true
+	hbtn.button_group = _brush_group
+	hbtn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hbtn.toggled.connect(func(on: bool) -> void:
+		_height_mode = on
+		_hp_selected = -1
+		if on:
+			_ensure_analysis()
+		_height_refresh())
+	height_row.add_child(hbtn)
+	var pbtn := Button.new()
+	pbtn.text = "Preview terrain"
+	pbtn.pressed.connect(_preview_terrain)
+	height_row.add_child(pbtn)
+	vb.add_child(height_row)
+	var hs_row := HBoxContainer.new()
+	var hs_label := Label.new()
+	hs_label.text = "8 m"
+	hs_label.custom_minimum_size = Vector2(44, 0)
+	_height_slider = HSlider.new()
+	_height_slider.min_value = 0.0; _height_slider.max_value = 28.0; _height_slider.step = 0.5
+	_height_slider.value = 8.0
+	_height_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_height_slider.drag_started.connect(func() -> void:
+		if _hp_selected >= 0:
+			_push_undo("hpoints"))
+	_height_slider.value_changed.connect(func(v: float) -> void:
+		hs_label.text = "%.1f m" % v
+		if _hp_selected >= 0 and doc != null and _hp_selected < doc.height_points.size():
+			doc.height_points[_hp_selected]["h"] = v
+			_set_dirty(true)
+			_height_refresh())
+	hs_row.add_child(hs_label)
+	hs_row.add_child(_height_slider)
+	vb.add_child(hs_row)
+	_profile = ProfileStrip.new()
+	vb.add_child(_profile)
+	_height_hint = Label.new()
+	_height_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_height_hint.modulate = Color(1, 1, 1, 0.7)
+	vb.add_child(_height_hint)
+
+	vb.add_child(HSeparator.new())
 	var layers_title := Label.new()
 	layers_title.text = "Layers (top-down)"
 	vb.add_child(layers_title)
@@ -267,6 +339,7 @@ func _update_brush() -> void:
 func _on_stroke(from_px: Vector2i, to_px: Vector2i, erase: bool) -> void:
 	if doc == null or _brush_surface == null:
 		return
+	_analysis = null   # road may change shape under the brush
 	var col := _off_road.color if erase else _brush_surface.color
 	var img: Image = doc.images["surface"]
 	var r := int(_brush_slider.value)
@@ -318,12 +391,16 @@ func _on_clicked(px: Vector2i, button: int) -> void:
 		return
 	if px.x < 0 or px.y < 0 or px.x >= doc.size or px.y >= doc.size:
 		return
+	if _height_mode:
+		_height_click(px, button)
+		return
 	if _prop_mode != "" and _race_mode == "":
 		_prop_click(px, button)
 		return
 	if _race_mode == "":
 		return
 	if button == MOUSE_BUTTON_RIGHT:
+		_push_undo("race")
 		_erase_race_near(px)
 		_race_pending.clear()
 		_after_race_edit()
@@ -335,10 +412,12 @@ func _on_clicked(px: Vector2i, button: int) -> void:
 	if _race_mode == "start" and _race_pending.size() == 3:
 		var pts := _race_pending.duplicate()
 		_race_pending.clear()
+		_push_undo("race")
 		_place_start(pts[0], pts[1], pts[2])
 	elif _race_mode == "gate" and _race_pending.size() == 2:
 		var pts := _race_pending.duplicate()
 		_race_pending.clear()
+		_push_undo("race")
 		_place_gate(pts[0], pts[1])
 	_update_race_hint()
 
@@ -381,11 +460,62 @@ func _clear_color(img: Image, col: Color) -> void:
 			if Vector3(c.r - col.r, c.g - col.g, c.b - col.b).length() < 0.2:
 				img.set_pixel(x, y, Color.BLACK)
 
+# ---------- undo / redo ----------
+# Snapshot-based: each operation snapshots the ONE thing it touches before mutating (a whole
+# brush drag = one step via stroke_begun). Restore swaps current state with the snapshot.
+func _push_undo(kind: String) -> void:
+	if doc == null:
+		return
+	_undo.append(_capture(kind))
+	if _undo.size() > UNDO_CAP:
+		_undo.pop_front()
+	_redo.clear()
+
+func _capture(kind: String) -> Dictionary:
+	if kind == "hpoints":
+		return {"kind": kind, "data": doc.height_points.duplicate(true)}
+	return {"kind": kind, "data": (doc.images[kind] as Image).duplicate()}
+
+func _restore(snap: Dictionary) -> Dictionary:
+	var current := _capture(snap["kind"])
+	if snap["kind"] == "hpoints":
+		doc.height_points = snap["data"]
+	else:
+		doc.images[snap["kind"]] = snap["data"]
+		doc.refresh_texture(snap["kind"])
+	_after_restore(snap["kind"])
+	return current
+
+func _undo_op() -> void:
+	if doc == null or _undo.is_empty():
+		return
+	_redo.append(_restore(_undo.pop_back()))
+	_set_status("undo (%d left)" % _undo.size())
+
+func _redo_op() -> void:
+	if doc == null or _redo.is_empty():
+		return
+	_undo.append(_restore(_redo.pop_back()))
+	_set_status("redo")
+
+func _after_restore(kind: String) -> void:
+	if kind == "surface" or kind == "race":
+		_analysis = null   # centreline may have changed
+	_hp_selected = -1
+	_race_pending.clear()
+	_push_canvas()
+	_scan_props()
+	_validate_race()   # also refreshes composed overlays
+	_height_refresh()
+	_set_dirty(true)
+
 # ---------- prop stamps ----------
 # Markers layer convention (TrackBaker._add_markers): ONE pixel = ONE prop, scanned per-pixel —
 # no blob merging like race dots. So stamps write single pixels.
 func _prop_click(px: Vector2i, button: int) -> void:
 	var img: Image = doc.images["markers"]
+	if button in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
+		_push_undo("markers")
 	if button == MOUSE_BUTTON_LEFT:
 		img.set_pixel(px.x, px.y, TrackBaker.M_TREE if _prop_mode == "tree" else TrackBaker.M_ROCK)
 	elif button == MOUSE_BUTTON_RIGHT:
@@ -421,11 +551,107 @@ func _scan_props() -> void:
 	_prop_count.text = "%d trees, %d rocks" % [trees, rocks]
 
 func _refresh_overlays() -> void:
-	canvas.overlay_rings = _race_rings + _prop_rings
+	canvas.overlay_rings = _race_rings + _prop_rings + _height_rings
 	canvas.overlay_lines = _race_lines
+	canvas.overlay_labels = _height_labels
 	canvas.queue_redraw()
 
+# ---------- height tool ----------
+# Height is never painted: control points pin the road's elevation at lap positions and
+# HeightmapBuilder derives everything else (flat corridor, shoulders, cut-and-fill terrain).
+func _ensure_analysis() -> bool:
+	if doc == null:
+		return false
+	if _analysis == null:
+		var a := _builder.analyze(doc.images["surface"], doc.images["race"], doc.size)
+		if not a["ok"]:
+			_height_hint.text = a["msg"]
+			return false
+		_analysis = a
+	_height_hint.text = "lap %.0f m, %d height points" % [_analysis["total"], doc.height_points.size()]
+	return true
+
+func _height_click(px: Vector2i, button: int) -> void:
+	if not _ensure_analysis():
+		return
+	var idx := _hp_near(px)
+	if button == MOUSE_BUTTON_RIGHT:
+		if idx >= 0:
+			_push_undo("hpoints")
+			doc.height_points.remove_at(idx)
+			_hp_selected = -1
+			_set_dirty(true)
+			_height_refresh()
+		return
+	if button != MOUSE_BUTTON_LEFT:
+		return
+	if idx >= 0:
+		_hp_selected = idx
+		_height_slider.set_value_no_signal(float(doc.height_points[idx]["h"]))
+		_height_refresh()
+		return
+	# new point, snapped onto the centreline (must be near the road)
+	var pts: PackedVector2Array = _analysis["pts"]
+	var snapped: Vector2 = pts[_builder.nearest_index(_analysis, Vector2(px))]
+	if snapped.distance_to(Vector2(px)) > 30.0:
+		_height_hint.text = "click on (or near) the road to add a height point"
+		return
+	_push_undo("hpoints")
+	doc.height_points.append({"x": snapped.x, "y": snapped.y, "h": _height_slider.value})
+	_hp_selected = doc.height_points.size() - 1
+	_set_dirty(true)
+	_height_refresh()
+
+func _hp_near(px: Vector2i) -> int:
+	if doc == null:
+		return -1
+	for i in doc.height_points.size():
+		var hp: Dictionary = doc.height_points[i]
+		if Vector2(px).distance_to(Vector2(float(hp["x"]), float(hp["y"]))) < 9.0:
+			return i
+	return -1
+
+## Rebuild the height overlays (centreline, points, labels) + the profile strip.
+func _height_refresh() -> void:
+	_height_rings = []
+	_height_labels = []
+	canvas.overlay_polyline = PackedVector2Array()
+	_profile.anchors = []
+	_profile.selected_frac = -1.0
+	if doc != null and _analysis != null and _height_mode:
+		canvas.overlay_polyline = _analysis["pts"]
+		for i in doc.height_points.size():
+			var hp: Dictionary = doc.height_points[i]
+			var p := Vector2(float(hp["x"]), float(hp["y"]))
+			var col := Color(0.25, 0.55, 1.0).lerp(Color(1.0, 0.45, 0.15), clampf(float(hp["h"]) / _builder.max_height, 0.0, 1.0))
+			_height_rings.append({"p": p, "col": col if i != _hp_selected else Color.WHITE})
+			_height_labels.append({"p": p, "text": "%.1f m" % float(hp["h"]), "col": col.lightened(0.3)})
+		_profile.anchors = _builder.anchors_from(_analysis, doc.height_points)
+		if _hp_selected >= 0 and _hp_selected < doc.height_points.size():
+			var sel: Dictionary = doc.height_points[_hp_selected]
+			_profile.selected_frac = _builder.frac_of(_analysis, Vector2(float(sel["x"]), float(sel["y"])))
+		_ensure_analysis()   # refresh the hint line (lap length + point count)
+	_profile.queue_redraw()
+	_refresh_overlays()
+
+func _preview_terrain() -> void:
+	if not _ensure_analysis():
+		_set_status("terrain preview needs a closed road + valid race layer")
+		return
+	var anchors := _builder.anchors_from(_analysis, doc.height_points)
+	var img := _builder.build(doc.size, _analysis, anchors, maxi(64, doc.size / 4))
+	# grayscale for display (FORMAT_RF would render red)
+	var disp := Image.create(img.get_width(), img.get_height(), false, Image.FORMAT_L8)
+	for y in img.get_height():
+		for x in img.get_width():
+			var v := img.get_pixel(x, y).r
+			disp.set_pixel(x, y, Color(v, v, v))
+	_terrain_tex = ImageTexture.create_from_image(disp)
+	_push_canvas()
+	_set_status("terrain preview built (quarter res) — full res happens at export")
+
 func _after_race_edit() -> void:
+	_analysis = null   # start line / direction may have moved
 	doc.refresh_texture("race")
 	_push_canvas()
 	_set_dirty(true)
@@ -529,14 +755,32 @@ func _load_blueprint(path: String) -> void:
 	_push_canvas()
 
 func _shortcut_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.is_pressed() and (event as InputEventKey).keycode == KEY_S \
-			and (event as InputEventKey).is_command_or_control_pressed():
+	if event is not InputEventKey or not event.is_pressed():
+		return
+	var k := event as InputEventKey
+	if k.is_command_or_control_pressed() and k.keycode == KEY_S:
 		_on_save()
-		get_viewport().set_input_as_handled()
+	elif k.is_command_or_control_pressed() and k.keycode == KEY_Z:
+		# Cmd+Z / Shift+Cmd+Z on mac (Ctrl on the others)
+		if k.shift_pressed:
+			_redo_op()
+		else:
+			_undo_op()
+	elif k.is_command_or_control_pressed() and k.keycode == KEY_Y:
+		_redo_op()   # windows-style redo
+	else:
+		return
+	get_viewport().set_input_as_handled()
 
 # ---------- sync ----------
 func _after_doc_change(status: String) -> void:
 	_set_dirty(false)
+	_undo.clear()
+	_redo.clear()
+	_analysis = null
+	_terrain_tex = null
+	_hp_selected = -1
+	_height_refresh()
 	for layer in LAYER_ORDER:
 		(_layer_rows[layer]["check"] as CheckBox).set_pressed_no_signal(doc.layer_visible[layer])
 		(_layer_rows[layer]["slider"] as HSlider).set_value_no_signal(doc.layer_opacity[layer])
@@ -553,7 +797,11 @@ func _push_canvas() -> void:
 		for layer in LAYER_ORDER:
 			if not doc.layer_visible[layer]:
 				continue
-			var tex: Texture2D = doc.blueprint_texture if layer == "blueprint" else doc.textures.get(layer)
+			var tex: Texture2D
+			match layer:
+				"blueprint": tex = doc.blueprint_texture
+				"terrain": tex = _terrain_tex
+				_: tex = doc.textures.get(layer)
 			if tex != null:
 				entries.append({"texture": tex, "opacity": doc.layer_opacity[layer]})
 	canvas.entries = entries
@@ -567,3 +815,28 @@ func _on_pixel_hovered(px: Vector2i) -> void:
 
 func _set_status(text: String) -> void:
 	_status.text = text
+
+## Small road-elevation graph (height vs lap distance) with the authored anchors marked.
+class ProfileStrip:
+	extends Control
+	var anchors: Array = []        # [{frac, h 0..1}] sorted, from HeightmapBuilder.anchors_from
+	var selected_frac := -1.0
+
+	func _init() -> void:
+		custom_minimum_size = Vector2(0, 56)
+
+	func _draw() -> void:
+		draw_rect(Rect2(Vector2.ZERO, size), Color(0.1, 0.1, 0.13))
+		if anchors.is_empty():
+			return
+		var pts := PackedVector2Array()
+		var steps := 96
+		for i in steps + 1:
+			var f := float(i) / steps
+			var h := HeightmapBuilder.profile_h(anchors, f)
+			pts.append(Vector2(f * size.x, size.y - 4.0 - h * (size.y - 8.0)))
+		draw_polyline(pts, Color(0.55, 0.8, 1.0), 1.5)
+		for a in anchors:
+			var p := Vector2(float(a["frac"]) * size.x, size.y - 4.0 - float(a["h"]) * (size.y - 8.0))
+			var sel: bool = selected_frac >= 0.0 and absf(float(a["frac"]) - selected_frac) < 0.005
+			draw_circle(p, 4.0 if sel else 3.0, Color.WHITE if sel else Color(1.0, 0.6, 0.2))
