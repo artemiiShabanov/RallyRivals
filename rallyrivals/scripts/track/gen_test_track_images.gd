@@ -169,10 +169,11 @@ func _initialize() -> void:
 		_dot(rc, gp + gperp * GATE_HW_PX, GATE)
 		_dot(rc, gp - gperp * GATE_HW_PX, GATE)
 
+	# Markers are SINGLE pixels: the baker spawns one prop per matching pixel (no blob merge).
 	for p in TREES:
-		_dot(mk, p, TREE)
+		mk.set_pixel(int(p.x), int(p.y), TREE)
 	for p in ROCKS:
-		_dot(mk, p, ROCK)
+		mk.set_pixel(int(p.x), int(p.y), ROCK)
 
 	hm.save_exr(dir + "heightmap.exr")
 	sf.save_png(dir + "surface.png")

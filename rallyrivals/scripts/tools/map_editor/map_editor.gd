@@ -33,6 +33,11 @@ var _race_mode := ""                # "" | "start" | "gate"
 var _race_pending: Array[Vector2i] = []
 var _race_summary := ""             # last validation result, shown when not mid-placement
 var _race_hint: Label
+var _race_rings: Array = []         # overlay pieces, composed in _refresh_overlays
+var _race_lines: Array = []
+var _prop_mode := ""                # "" | "tree" | "rock"
+var _prop_rings: Array = []
+var _prop_count: Label
 
 func _ready() -> void:
 	var split := HBoxContainer.new()
@@ -150,6 +155,28 @@ func _build_panel() -> Control:
 	_race_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_race_hint.modulate = Color(1, 1, 1, 0.7)
 	vb.add_child(_race_hint)
+
+	vb.add_child(HSeparator.new())
+	var props_title := Label.new()
+	props_title.text = "Props  (1 px = 1 prop; right-click = delete)"
+	vb.add_child(props_title)
+	var props_row := HBoxContainer.new()
+	for m in [["tree", "Tree"], ["rock", "Rock"]]:
+		var btn := Button.new()
+		btn.text = m[1]
+		btn.toggle_mode = true
+		btn.button_group = _brush_group
+		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.toggled.connect(func(on: bool) -> void:
+			if on:
+				_prop_mode = m[0]
+			elif _prop_mode == m[0]:
+				_prop_mode = "")
+		props_row.add_child(btn)
+	vb.add_child(props_row)
+	_prop_count = Label.new()
+	_prop_count.modulate = Color(1, 1, 1, 0.7)
+	vb.add_child(_prop_count)
 
 	vb.add_child(HSeparator.new())
 	var layers_title := Label.new()
@@ -287,9 +314,14 @@ func _update_race_hint() -> void:
 	_race_hint.text = prompts[_race_mode][_race_pending.size()] if _race_mode != "" else _race_summary
 
 func _on_clicked(px: Vector2i, button: int) -> void:
-	if doc == null or _race_mode == "":
+	if doc == null:
 		return
 	if px.x < 0 or px.y < 0 or px.x >= doc.size or px.y >= doc.size:
+		return
+	if _prop_mode != "" and _race_mode == "":
+		_prop_click(px, button)
+		return
+	if _race_mode == "":
 		return
 	if button == MOUSE_BUTTON_RIGHT:
 		_erase_race_near(px)
@@ -349,6 +381,50 @@ func _clear_color(img: Image, col: Color) -> void:
 			if Vector3(c.r - col.r, c.g - col.g, c.b - col.b).length() < 0.2:
 				img.set_pixel(x, y, Color.BLACK)
 
+# ---------- prop stamps ----------
+# Markers layer convention (TrackBaker._add_markers): ONE pixel = ONE prop, scanned per-pixel —
+# no blob merging like race dots. So stamps write single pixels.
+func _prop_click(px: Vector2i, button: int) -> void:
+	var img: Image = doc.images["markers"]
+	if button == MOUSE_BUTTON_LEFT:
+		img.set_pixel(px.x, px.y, TrackBaker.M_TREE if _prop_mode == "tree" else TrackBaker.M_ROCK)
+	elif button == MOUSE_BUTTON_RIGHT:
+		var r := 3
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				var x := px.x + dx; var y := px.y + dy
+				if x >= 0 and y >= 0 and x < doc.size and y < doc.size and dx * dx + dy * dy <= r * r:
+					img.set_pixel(x, y, Color.BLACK)
+	else:
+		return
+	doc.refresh_texture("markers")
+	_push_canvas()
+	_set_dirty(true)
+	_scan_props()
+	_refresh_overlays()
+
+func _scan_props() -> void:
+	_prop_rings = []
+	var trees := 0
+	var rocks := 0
+	if doc != null:
+		var img: Image = doc.images["markers"]
+		for y in doc.size:
+			for x in doc.size:
+				var c := img.get_pixel(x, y)
+				if Vector3(c.r - 1.0, c.g, c.b).length() < 0.2:
+					trees += 1
+					_prop_rings.append({"p": Vector2(x, y), "col": Color(0.25, 0.8, 0.3)})
+				elif Vector3(c.r, c.g, c.b - 1.0).length() < 0.2:
+					rocks += 1
+					_prop_rings.append({"p": Vector2(x, y), "col": Color(0.7, 0.7, 0.78)})
+	_prop_count.text = "%d trees, %d rocks" % [trees, rocks]
+
+func _refresh_overlays() -> void:
+	canvas.overlay_rings = _race_rings + _prop_rings
+	canvas.overlay_lines = _race_lines
+	canvas.queue_redraw()
+
 func _after_race_edit() -> void:
 	doc.refresh_texture("race")
 	_push_canvas()
@@ -357,8 +433,8 @@ func _after_race_edit() -> void:
 
 ## Rebuild race overlays + summary via TrackBaker's own reading of the layers.
 func _validate_race() -> void:
-	canvas.overlay_rings = []
-	canvas.overlay_lines = []
+	_race_rings = []
+	_race_lines = []
 	_race_summary = ""
 	if doc != null:
 		var b := TrackBaker.new()
@@ -375,19 +451,19 @@ func _validate_race() -> void:
 		var dirs := b._blobs(b._rc, TrackBaker.R_DIR)
 		var gates := b._blobs(b._rc, TrackBaker.R_GATE)
 		for p in starts:
-			canvas.overlay_rings.append({"p": p, "col": Color(1.0, 0.4, 1.0)})
+			_race_rings.append({"p": p, "col": Color(1.0, 0.4, 1.0)})
 		for p in dirs:
-			canvas.overlay_rings.append({"p": p, "col": Color(1.0, 1.0, 0.3)})
+			_race_rings.append({"p": p, "col": Color(1.0, 1.0, 0.3)})
 		var problems: Array[String] = []
 		if starts.is_empty() and dirs.is_empty() and gates.is_empty():
 			_race_summary = "race: empty — place a start line"
 			_update_race_hint()
-			canvas.queue_redraw()
+			_refresh_overlays()
 			return
 		if starts.size() != 2:
 			problems.append("start dots %d (need 2)" % starts.size())
 		else:
-			canvas.overlay_lines.append({"a": starts[0], "b": starts[1], "col": Color(1.0, 0.4, 1.0)})
+			_race_lines.append({"a": starts[0], "b": starts[1], "col": Color(1.0, 0.4, 1.0)})
 			if not b._is_road((starts[0] + starts[1]) * 0.5):
 				problems.append("start midpoint off-road")
 		if dirs.size() != 1:
@@ -396,18 +472,18 @@ func _validate_race() -> void:
 		if pairs == null:
 			problems.append("gates don't pair (odd dot or midpoint off-road)")
 			for p in gates:
-				canvas.overlay_rings.append({"p": p, "col": Color(1.0, 0.25, 0.2)})
+				_race_rings.append({"p": p, "col": Color(1.0, 0.25, 0.2)})
 		else:
 			for pr in pairs:
-				canvas.overlay_lines.append({"a": pr[0], "b": pr[1], "col": Color(0.3, 1.0, 0.4)})
+				_race_lines.append({"a": pr[0], "b": pr[1], "col": Color(0.3, 1.0, 0.4)})
 			for p in gates:
-				canvas.overlay_rings.append({"p": p, "col": Color(0.3, 1.0, 0.4)})
+				_race_rings.append({"p": p, "col": Color(0.3, 1.0, 0.4)})
 		if problems.is_empty():
 			_race_summary = "race OK: start + %d gates" % (pairs as Array).size()
 		else:
 			_race_summary = "race INVALID: " + "; ".join(problems)
 	_update_race_hint()
-	canvas.queue_redraw()
+	_refresh_overlays()
 
 # ---------- actions ----------
 func _on_new() -> void:
@@ -465,6 +541,7 @@ func _after_doc_change(status: String) -> void:
 		(_layer_rows[layer]["check"] as CheckBox).set_pressed_no_signal(doc.layer_visible[layer])
 		(_layer_rows[layer]["slider"] as HSlider).set_value_no_signal(doc.layer_opacity[layer])
 	_push_canvas()
+	_scan_props()
 	_validate_race()
 	_set_status(status)
 
