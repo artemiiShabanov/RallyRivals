@@ -79,7 +79,7 @@ func _build_panel() -> Control:
 	vb.add_child(name_row)
 
 	var file_row := HBoxContainer.new()
-	for b in [["New", _on_new], ["Open", func() -> void: _open_dialog.popup_centered_ratio(0.7)], ["Save", _on_save]]:
+	for b in [["New", _on_new], ["Open", func() -> void: _open_dialog.popup_centered_ratio(0.7)], ["Save", _on_save], ["Fit", func() -> void: canvas.fit()]]:
 		var btn := Button.new()
 		btn.text = b[0]
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL

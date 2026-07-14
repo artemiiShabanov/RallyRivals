@@ -1,0 +1,18 @@
+{
+	"blueprint": {
+		"opacity": 0.5,
+		"path": "",
+		"visible": true
+	},
+	"layer_opacity": {
+		"markers": 1.0,
+		"race": 1.0,
+		"surface": 1.0
+	},
+	"layer_visible": {
+		"markers": true,
+		"race": true,
+		"surface": true
+	},
+	"size": 512
+}

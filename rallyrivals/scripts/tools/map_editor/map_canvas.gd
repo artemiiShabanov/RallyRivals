@@ -71,6 +71,18 @@ func _gui_input(event: InputEvent) -> void:
 		if brush_radius > 0.0:
 			queue_redraw()
 		pixel_hovered.emit(px)
+	elif event is InputEventMagnifyGesture:
+		# macOS trackpad pinch (trackpads don't send wheel events)
+		var mg := event as InputEventMagnifyGesture
+		zoom_at(mg.factor, mg.position)
+	elif event is InputEventPanGesture:
+		# two-finger scroll: pan; with Cmd/Ctrl held: zoom
+		var pg := event as InputEventPanGesture
+		if pg.ctrl_pressed or pg.meta_pressed:
+			zoom_at(1.0 - pg.delta.y * 0.05, pg.position)
+		else:
+			pan -= pg.delta * 8.0
+			queue_redraw()
 	elif event is InputEventKey and (event as InputEventKey).physical_keycode == KEY_SPACE:
 		_space = (event as InputEventKey).pressed
 
