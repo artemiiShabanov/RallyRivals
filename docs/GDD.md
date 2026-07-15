@@ -156,13 +156,15 @@ See [PILLARS.md](PILLARS.md). In short:
 - **Open:** music direction; engine sound (sampled vs synthesized); sourcing plan.
 
 ## 11. Art direction
-- **Voxel models + FX, polygon roads (ADR — whole pipeline):** cars/props/environment voxel;
-  road stays polygon (smooth — voxel roads ruin feel). Voxel authoring (MagicaVoxel, free)
-  makes the ~20-car roster + brand families solo-achievable.
+- **Voxel models + FX, polygon roads (Decided — ADR-003):** cars/props/environment voxel;
+  road stays polygon (smooth — voxel roads ruin feel). MagicaVoxel authoring (1 voxel =
+  0.1 m), manual `.obj` export, source + artifact both committed. Damage = pre-authored
+  voxel damage-state swaps + cube-particle bursts; **all particles are voxel cubes** (never
+  billboards). Makes the ~15-car roster + brand families solo-achievable.
 - **Pixel art** for 2D/UI/characters (§9).
-- ⚠️ **Seam coherence:** voxel objects vs polygon road/terrain — match terrain to voxel or
-  lean into voxel-on-low-poly contrast. **Open:** MagicaVoxel→mesh vs runtime voxels; FX
-  (particles vs voxel sim); terrain style.
+- **Seam coherence (Decided — ADR-003):** voxel-on-low-poly contrast — terrain/road keep
+  smooth geometry but render flat-shaded with solid splat colours; ONE master palette shared
+  by voxel models and terrain ties the world together.
 
 ## 12. Scope / cut list
 - **Cut:** upgrade-card system (contradicted "no upgrades"; nitro parked as the post-v1
