@@ -70,7 +70,7 @@ tasks:
   - {id: code-core-pooling, title: "Pooling / perf helpers (perf-first rule)", type: code, group: core, size: default, status: todo, blockers: []}
   - {id: code-core-settings-apply, title: "Apply graphics/audio/control settings", type: code, group: core, size: small, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-race-defs, title: "RaceDef resource (track, type, culture, conditions, reward pools)", type: code, group: race, size: default, status: todo, blockers: []}
-  - {id: code-race-timing, title: "Lap/stage timing", type: code, group: race, size: default, status: todo, blockers: [code-track-checkpoints]}
+  - {id: code-race-timing, title: "Lap/stage timing", type: code, group: race, size: default, status: done, blockers: [code-track-checkpoints]}
   - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: todo, blockers: [code-race-timing]}
   - {id: code-race-types, title: "Race types: sprint + circuit", type: code, group: race, size: big, status: todo, blockers: [code-race-timing]}
   - {id: code-race-timetrial, title: "Race type: time trial vs clock", type: code, group: race, size: small, status: todo, blockers: [code-race-timing]}

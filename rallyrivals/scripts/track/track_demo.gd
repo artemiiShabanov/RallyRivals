@@ -15,13 +15,20 @@ func _ready() -> void:
 	var track := ps.instantiate()
 	add_child(track)
 
-	# Checkpoint debug: print passes/laps so a drive can verify gating (cut a corner -> no lap).
+	# Checkpoint + timing debug: gate passes, lap times, stage time (cut a corner -> no lap).
 	var cps := track.get_node_or_null("Checkpoints") as TrackCheckpoints
 	if cps != null:
 		cps.gate_passed.connect(func(body: Node3D, index: int, total: int) -> void:
 			print("checkpoint %d/%d — %s" % [index, total, body.name]))
-		cps.sequence_completed.connect(func(body: Node3D) -> void:
-			print("LAP COMPLETE — %s" % body.name))
+		var timing := RaceTiming.new()
+		timing.name = "RaceTiming"
+		add_child(timing)
+		timing.setup(cps)
+		timing.lap_completed.connect(func(body: Node3D, t: float, n: int, best: bool) -> void:
+			print("LAP %d — %s: %.3f s%s" % [n, body.name, t, "  (best)" if best else ""]))
+		timing.stage_completed.connect(func(body: Node3D, t: float) -> void:
+			print("STAGE FINISH — %s: %.3f s" % [body.name, t]))
+		timing.begin()
 
 	var start := track.get_node_or_null("StartFinish") as Marker3D
 	var path := track.get_node_or_null("TrackPath") as Path3D
