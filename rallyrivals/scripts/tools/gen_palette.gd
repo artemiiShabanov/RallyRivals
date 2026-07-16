@@ -19,18 +19,18 @@ var ramps := [
 	["sand", Color(0.35, 0.27, 0.13), Color(0.96, 0.90, 0.70), {4: Color(0.8, 0.7, 0.45)}],
 	["grass", Color(0.08, 0.18, 0.08), Color(0.62, 0.80, 0.38), {}],
 	["frost", Color(0.35, 0.48, 0.62), Color(0.97, 0.98, 1.0), {4: Color(0.78, 0.88, 0.95), 5: Color(0.92, 0.94, 0.97)}],
-	["apex", Color(0.06, 0.06, 0.09), Color(0.45, 0.47, 0.54), {}],
-	["wreck", Color(0.20, 0.09, 0.05), Color(0.82, 0.48, 0.25), {}],
-	["mayfly", Color(0.04, 0.14, 0.35), Color(0.45, 0.80, 0.98), {}],
-	["violet", Color(0.12, 0.07, 0.20), Color(0.72, 0.55, 0.90), {}],
-	["teal", Color(0.02, 0.17, 0.17), Color(0.55, 0.90, 0.82), {}],
+	["apex", Color(0.08, 0.08, 0.09), Color(0.55, 0.54, 0.50), {}],
+	["wreck", Color(0.20, 0.10, 0.06), Color(0.76, 0.49, 0.31), {}],
+	["mayfly", Color(0.05, 0.14, 0.25), Color(0.62, 0.80, 0.88), {}],
+	["sulphur", Color(0.20, 0.20, 0.07), Color("f5f5b8"), {5: Color("f5f5b8")}],   # identity yellow
+	["carmine", Color(0.14, 0.01, 0.05), Color(0.95, 0.48, 0.52), {3: Color("a10b2b")}],   # identity red
 	["accents", Color.BLACK, Color.WHITE, {
-		0: Color(0.78, 0.11, 0.17),   # apex crimson
-		1: Color(0.95, 0.45, 0.08),   # wreckhouse hazard orange
-		2: Color(0.98, 0.83, 0.14),   # mayfly safety yellow
-		3: Color(0.90, 0.72, 0.30),   # gold (rewards/UI)
-		4: Color(0.45, 0.85, 0.65),   # mint (UI positive)
-		5: Color(0.98, 0.97, 0.95),   # near-white
+		0: Color(0.72, 0.23, 0.16),   # apex vermillion
+		1: Color(0.86, 0.48, 0.20),   # wreckhouse retro orange
+		2: Color(0.85, 0.66, 0.21),   # mayfly mustard
+		3: Color(0.82, 0.68, 0.38),   # gold (rewards/UI)
+		4: Color(0.55, 0.75, 0.60),   # sage (UI positive)
+		5: Color(0.95, 0.92, 0.85),   # cream
 	}],
 ]
 

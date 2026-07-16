@@ -20,12 +20,12 @@ ramp endpoints there and regenerate, the PNGs are artifacts.
 | sand | 18-23 | sand/off-road, dry grass (step 4 PINNED) |
 | grass | 24-29 | vegetation, tree props |
 | frost | 30-35 | snow + ice, sky tints (steps 4=ice, 5=snow PINNED) |
-| apex | 36-41 | Apex Cartel bodies — cold graphite |
-| wreck | 42-47 | Wreckhouse bodies — rust into raw steel |
-| mayfly | 48-53 | Mayfly Speedworks bodies — electric blue |
-| violet | 54-59 | GAME IDENTITY: festival-night key art, menus, Wilds culture branding |
-| teal | 60-65 | GAME IDENTITY: clean/technical UI, Officials culture branding |
-| accents | 66-71 | crimson (Apex), hazard orange (Wreckhouse), safety yellow (Mayfly), gold, mint, near-white |
+| apex | 36-41 | Apex Cartel bodies — smoky warm graphite (retro) |
+| wreck | 42-47 | Wreckhouse bodies — leather rust into burnt steel (retro) |
+| mayfly | 48-53 | Mayfly Speedworks bodies — Gulf-livery powder blue (retro) |
+| sulphur | 54-59 | GAME IDENTITY: key art, menus, UI (step 5 = #f5f5b8, PINNED) |
+| carmine | 60-65 | GAME IDENTITY: key art, logo, highlights (step 3 = #a10b2b, PINNED) |
+| accents | 66-71 | vermillion (Apex), retro orange (Wreckhouse), mustard (Mayfly), gold, sage, cream |
 
 ## Rules
 
