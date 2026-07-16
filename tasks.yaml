@@ -114,7 +114,7 @@ tasks:
   - {id: content-tracks-campaign, title: "Campaign track set (v1 regions x races)", type: content, group: tracks, size: huge, status: todo, blockers: [content-tracks-first, content-rivals-campaign]}
 
   # ---------- art ----------
-  - {id: art-voxel-car-blockout, title: "Placeholder voxel car block-out", type: art, group: voxel, size: default, status: todo, blockers: []}
+  - {id: art-voxel-car-blockout, title: "Placeholder voxel car block-out", type: art, group: voxel, size: default, status: done, blockers: []}
   - {id: art-voxel-car-first, title: "First real voxel car model", type: art, group: voxel, size: big, status: todo, blockers: [art-voxel-car-blockout, art-world-palette]}
   - {id: art-voxel-props, title: "Voxel prop set (rocks/signs/barriers)", type: art, group: voxel, size: default, status: todo, blockers: []}
   - {id: art-voxel-environment, title: "Voxel scenery/buildings set", type: art, group: voxel, size: big, status: todo, blockers: []}
