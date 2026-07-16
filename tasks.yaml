@@ -133,7 +133,7 @@ tasks:
   - {id: art-ui-boss-anim, title: "Animated boss talking-head frames", type: art, group: ui-art, size: default, status: todo, blockers: [content-rivals-defs]}
   - {id: art-ui-paint-skins, title: "Paint-skin set", type: art, group: ui-art, size: default, status: todo, blockers: [art-voxel-car-first]}
   - {id: art-world-terrain-tex, title: "Terrain splat textures", type: art, group: world, size: big, status: todo, blockers: [code-track-generator]}
-  - {id: art-world-palette, title: "Master colour palette (voxel + terrain ramps, ADR-003)", type: art, group: world, size: small, status: todo, blockers: []}
+  - {id: art-world-palette, title: "Master colour palette (voxel + terrain ramps, ADR-003)", type: art, group: world, size: small, status: done, blockers: []}
   - {id: art-world-skybox, title: "Skybox + seasonal sky sets", type: art, group: world, size: default, status: todo, blockers: []}
   - {id: art-world-lighting, title: "Time-of-day lighting presets", type: art, group: world, size: default, status: todo, blockers: []}
   - {id: art-world-regions, title: "Region aesthetic themes", type: art, group: world, size: big, status: todo, blockers: [art-voxel-environment]}
