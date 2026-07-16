@@ -22,6 +22,8 @@ var ramps := [
 	["apex", Color(0.06, 0.06, 0.09), Color(0.45, 0.47, 0.54), {}],
 	["wreck", Color(0.20, 0.09, 0.05), Color(0.82, 0.48, 0.25), {}],
 	["mayfly", Color(0.04, 0.14, 0.35), Color(0.45, 0.80, 0.98), {}],
+	["violet", Color(0.12, 0.07, 0.20), Color(0.72, 0.55, 0.90), {}],
+	["teal", Color(0.02, 0.17, 0.17), Color(0.55, 0.90, 0.82), {}],
 	["accents", Color.BLACK, Color.WHITE, {
 		0: Color(0.78, 0.11, 0.17),   # apex crimson
 		1: Color(0.95, 0.45, 0.08),   # wreckhouse hazard orange
