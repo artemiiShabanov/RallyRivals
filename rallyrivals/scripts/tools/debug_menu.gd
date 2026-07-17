@@ -61,6 +61,7 @@ func _menu() -> Array:
 			{"label": "Performance", "hud": "perf"},
 			{"label": "Vehicle state", "hud": "vehicle"},
 		]},
+		{"label": "Lighting", "sub": _lighting_menu()},
 		{"label": "Time scale (%sx)" % String.num(Engine.time_scale), "sub": [
 			{"label": "0.25x", "run": func() -> void: Engine.time_scale = 0.25},
 			{"label": "0.5x", "run": func() -> void: Engine.time_scale = 0.5},
@@ -193,6 +194,24 @@ func _car_menu() -> Array:
 				if def != null:
 					out.append({"label": "%s  %s  (%s)" % [def.car_class, def.display_name, def.brand], "run": _swap_car.bind(def)})
 	return out
+
+# Time-of-day presets (assets/lighting) applied live to the current scene's env + sun.
+func _lighting_menu() -> Array:
+	var out: Array = []
+	var da := DirAccess.open("res://assets/lighting")
+	if da != null:
+		for f in da.get_files():
+			if f.get_extension() == "tres":
+				var preset := load("res://assets/lighting/".path_join(f)) as LightingPreset
+				if preset != null:
+					out.append({"label": preset.id, "run": _apply_lighting.bind(preset)})
+	return out
+
+func _apply_lighting(preset: LightingPreset) -> void:
+	if preset.apply_in(get_tree().current_scene if get_tree().current_scene != null else get_tree().root):
+		print("debug: lighting -> ", preset.id)
+	else:
+		print("debug: no WorldEnvironment/Sun in this scene")
 
 func _swap_car(def: CarDef) -> void:
 	var c := _car()

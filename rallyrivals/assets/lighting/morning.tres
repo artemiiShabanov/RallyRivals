@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LightingPreset" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/lighting_preset.gd" id="1_nyxjd"]
+
+[resource]
+script = ExtResource("1_nyxjd")
+id = "morning"
+sun_rotation_degrees = Vector3(-22, -70, 0)
+sun_color = Color(0.94902, 0.921569, 0.85098, 1)
+sun_energy = 1.0
+ambient_energy = 0.45
+sky_top = Color(0.45098, 0.560784, 0.694118, 1)
+sky_horizon = Color(0.94902, 0.677843, 0.669804, 1)
+ground_horizon = Color(0.686275, 0.74902, 0.847059, 1)
+ground_bottom = Color(0.101961, 0.101961, 0.129412, 1)

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="LightingPreset" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/lighting_preset.gd" id="1_31x1a"]
+
+[resource]
+script = ExtResource("1_31x1a")
+id = "night"
+sun_rotation_degrees = Vector3(-38, 30, 0)
+sun_color = Color(0.686275, 0.74902, 0.847059, 1)
+sun_energy = 0.4
+ambient_energy = 0.3
+sky_top = Color(0.0509804, 0.141176, 0.25098, 1)
+sky_horizon = Color(0.113725, 0.243137, 0.376471, 1)
+ground_horizon = Color(0.0784314, 0.0784314, 0.0901961, 1)
+ground_bottom = Color(0.0509804, 0.0509804, 0.0627451, 1)
