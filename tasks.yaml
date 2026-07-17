@@ -115,6 +115,7 @@ tasks:
 
   # ---------- art ----------
   - {id: art-voxel-car-blockout, title: "Placeholder voxel car block-out", type: art, group: voxel, size: default, status: done, blockers: []}
+  - {id: art-voxel-stubs, title: "Voxel inventory scaffold: 45 car + 3 wheel stubs with .vox sources", type: art, group: voxel, size: small, status: done, blockers: [art-voxel-car-blockout, art-world-palette]}
   - {id: art-voxel-car-first, title: "First real voxel car model", type: art, group: voxel, size: big, status: todo, blockers: [art-voxel-car-blockout, art-world-palette]}
   - {id: art-voxel-props, title: "Voxel prop set (rocks/signs/barriers)", type: art, group: voxel, size: default, status: todo, blockers: []}
   - {id: art-voxel-environment, title: "Voxel scenery/buildings set", type: art, group: voxel, size: big, status: todo, blockers: []}

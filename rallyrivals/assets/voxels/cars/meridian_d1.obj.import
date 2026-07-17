@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://dov5jvpas0wov"
+path="res://.godot/imported/meridian_d1.obj-63b896166f30569212153e4640d4261d.mesh"
+
+[deps]
+
+files=["res://.godot/imported/meridian_d1.obj-63b896166f30569212153e4640d4261d.mesh"]
+
+source_file="res://assets/voxels/cars/meridian_d1.obj"
+dest_files=["res://.godot/imported/meridian_d1.obj-63b896166f30569212153e4640d4261d.mesh", "res://.godot/imported/meridian_d1.obj-63b896166f30569212153e4640d4261d.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

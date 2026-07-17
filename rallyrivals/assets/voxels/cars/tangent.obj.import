@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b3p6lbysnwrov"
+path="res://.godot/imported/tangent.obj-3e6bdb193e4b63ffdce7ad074558ea56.mesh"
+
+[deps]
+
+files=["res://.godot/imported/tangent.obj-3e6bdb193e4b63ffdce7ad074558ea56.mesh"]
+
+source_file="res://assets/voxels/cars/tangent.obj"
+dest_files=["res://.godot/imported/tangent.obj-3e6bdb193e4b63ffdce7ad074558ea56.mesh", "res://.godot/imported/tangent.obj-3e6bdb193e4b63ffdce7ad074558ea56.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
