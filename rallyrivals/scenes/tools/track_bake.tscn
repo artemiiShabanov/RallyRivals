@@ -1,13 +1,15 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
-[ext_resource type="Script" path="res://scripts/track/track_bake_config.gd" id="1_hedu0"]
-[ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="2_mdg4p"]
-[ext_resource type="Resource" path="res://assets/surfaces/asphalt.tres" id="3_bondn"]
-[ext_resource type="Resource" path="res://assets/surfaces/dirt.tres" id="4_1uav2"]
-[ext_resource type="Resource" path="res://assets/surfaces/ice.tres" id="5_wobmm"]
-[ext_resource type="Resource" path="res://assets/surfaces/sand.tres" id="6_taro8"]
+[ext_resource type="Script" path="res://scripts/track/track_bake_config.gd" id="1_bondn"]
+[ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="2_1uav2"]
+[ext_resource type="Resource" path="res://assets/surfaces/asphalt.tres" id="3_wobmm"]
+[ext_resource type="Resource" path="res://assets/surfaces/dirt.tres" id="4_taro8"]
+[ext_resource type="Resource" path="res://assets/surfaces/gravel.tres" id="5_rpvrh"]
+[ext_resource type="Resource" path="res://assets/surfaces/snow.tres" id="6_yqo45"]
+[ext_resource type="Resource" path="res://assets/surfaces/ice.tres" id="7_8htel"]
+[ext_resource type="Resource" path="res://assets/surfaces/sand.tres" id="8_eidga"]
 
 [node name="TrackBake" type="Node"]
-script = ExtResource("1_hedu0")
-surfaces = Array[ExtResource("2_mdg4p")]([ExtResource("3_bondn"), ExtResource("4_1uav2"), ExtResource("5_wobmm")])
-off_road_surface = ExtResource("6_taro8")
+script = ExtResource("1_bondn")
+surfaces = Array[ExtResource("2_1uav2")]([ExtResource("3_wobmm"), ExtResource("4_taro8"), ExtResource("5_rpvrh"), ExtResource("6_yqo45"), ExtResource("7_8htel")])
+off_road_surface = ExtResource("8_eidga")

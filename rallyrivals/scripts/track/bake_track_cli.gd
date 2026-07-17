@@ -14,6 +14,8 @@ func _initialize() -> void:
 	baker.surfaces = [
 		load("res://assets/surfaces/asphalt.tres"),
 		load("res://assets/surfaces/dirt.tres"),
+		load("res://assets/surfaces/gravel.tres"),
+		load("res://assets/surfaces/snow.tres"),
 		load("res://assets/surfaces/ice.tres"),
 	]
 	baker.off_road_surface = load("res://assets/surfaces/sand.tres")
