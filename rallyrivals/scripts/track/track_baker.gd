@@ -171,21 +171,47 @@ func _add_ground(root: Node3D) -> Dictionary:
 	smap.mpp = mpp
 	ground.set_meta("surface_map", smap)
 
-	# --- terrain shader splat: exact painted RGB + per-surface tint_variation in ALPHA ---
-	var splat := Image.create(_size, _size, false, Image.FORMAT_RGBA8)
+	# --- terrain shader weights: one-hot per classified surface. Bilinear sampling + fragment
+	# argmax renders boundaries as smooth iso-lines (no pixel serration, no blur, no phantom
+	# in-between surfaces). Canonical colours come from the .tres palette via uniforms.
+	var all_surfaces: Array = surfaces.duplicate()
+	all_surfaces.append(off_road_surface)
+	var w0 := Image.create(_size, _size, false, Image.FORMAT_RGBA8)
+	var w1 := Image.create(_size, _size, false, Image.FORMAT_RGBA8)
 	for y in _size:
 		for x in _size:
-			# canonical colour from the CLASSIFIED surface (not the raw pixel): visuals always
-			# match the .tres palette, so re-tinting a surface = edit + rebake, never repaint
-			var sv := SurfaceMap.classify(_surface_colour(x, y), surfaces, off_road_surface)
-			var c := sv.color if sv != null else Color.MAGENTA
-			splat.set_pixel(x, y, Color(c.r, c.g, c.b, sv.tint_variation if sv != null else 0.1))
-	var splat_tex := ImageTexture.create_from_image(splat)
-	ResourceSaver.save(splat_tex, _out_dir.path_join("ground_splat.res"))
-	splat_tex.take_over_path(_out_dir.path_join("ground_splat.res"))
+			var idx := all_surfaces.find(SurfaceMap.classify(_surface_colour(x, y), surfaces, off_road_surface))
+			var a := Color(0, 0, 0, 0)
+			var b := Color(0, 0, 0, 0)
+			match idx:
+				0: a.r = 1.0
+				1: a.g = 1.0
+				2: a.b = 1.0
+				3: a.a = 1.0
+				4: b.r = 1.0
+				5: b.g = 1.0
+			w0.set_pixel(x, y, a)
+			w1.set_pixel(x, y, b)
+	var w0_tex := ImageTexture.create_from_image(w0)
+	ResourceSaver.save(w0_tex, _out_dir.path_join("ground_weights0.res"))
+	w0_tex.take_over_path(_out_dir.path_join("ground_weights0.res"))
+	var w1_tex := ImageTexture.create_from_image(w1)
+	ResourceSaver.save(w1_tex, _out_dir.path_join("ground_weights1.res"))
+	w1_tex.take_over_path(_out_dir.path_join("ground_weights1.res"))
+	var pal := PackedVector3Array()
+	var vars := PackedFloat32Array()
+	for s in all_surfaces:
+		pal.append(Vector3(s.color.r, s.color.g, s.color.b))
+		vars.append(s.tint_variation)
+	while pal.size() < 6:
+		pal.append(Vector3.ZERO)
+		vars.append(0.0)
 	var terrain_mat := ShaderMaterial.new()
 	terrain_mat.shader = load("res://assets/shaders/terrain_surface.gdshader")
-	terrain_mat.set_shader_parameter("splat", splat_tex)
+	terrain_mat.set_shader_parameter("weights0", w0_tex)
+	terrain_mat.set_shader_parameter("weights1", w1_tex)
+	terrain_mat.set_shader_parameter("palette", pal)
+	terrain_mat.set_shader_parameter("variation", vars)
 	terrain_mat.set_shader_parameter("world_size", _size * mpp)
 
 	# --- visual: per-surface bucketed meshes (no collision) ---
