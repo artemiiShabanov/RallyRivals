@@ -62,6 +62,7 @@ func _menu() -> Array:
 			{"label": "Vehicle state", "hud": "vehicle"},
 		]},
 		{"label": "Lighting", "sub": _lighting_menu()},
+		{"label": "Weather", "sub": _weather_menu()},
 		{"label": "Time scale (%sx)" % String.num(Engine.time_scale), "sub": [
 			{"label": "0.25x", "run": func() -> void: Engine.time_scale = 0.25},
 			{"label": "0.5x", "run": func() -> void: Engine.time_scale = 0.5},
@@ -212,6 +213,30 @@ func _apply_lighting(preset: LightingPreset) -> void:
 		print("debug: lighting -> ", preset.id)
 	else:
 		print("debug: no WorldEnvironment/Sun in this scene")
+
+# Weather presets (assets/weather) — find-or-create the scene's WeatherFX and apply.
+func _weather_menu() -> Array:
+	var out: Array = []
+	var da := DirAccess.open("res://assets/weather")
+	if da != null:
+		for f in da.get_files():
+			if f.get_extension() == "tres":
+				var preset := load("res://assets/weather/".path_join(f)) as WeatherPreset
+				if preset != null:
+					out.append({"label": preset.id, "run": _apply_weather.bind(preset)})
+	return out
+
+func _apply_weather(preset: WeatherPreset) -> void:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var fx := scene.get_node_or_null("WeatherFX") as WeatherFX
+	if fx == null:
+		fx = WeatherFX.new()
+		fx.name = "WeatherFX"
+		scene.add_child(fx)
+	fx.apply(preset)
+	print("debug: weather -> ", preset.id)
 
 func _swap_car(def: CarDef) -> void:
 	var c := _car()

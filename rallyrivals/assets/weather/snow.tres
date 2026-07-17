@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="WeatherPreset" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/weather_preset.gd" id="1_6r7qv"]
+
+[resource]
+script = ExtResource("1_6r7qv")
+id = "snow"
+precipitation = "snow"
+amount = 450
+fall_speed = 2.8
+wind = Vector3(0.6, 0, 0.3)
+turbulence = 0.15
+particle_size = Vector3(0.07, 0.07, 0.07)
+particle_color = Color(0.921569, 0.941176, 0.968627, 0.9)
+fog_enabled = true
+fog_density = 0.008
+fog_color = Color(0.686275, 0.74902, 0.847059, 1)
+thunder = false
+grip_multiplier = 0.75

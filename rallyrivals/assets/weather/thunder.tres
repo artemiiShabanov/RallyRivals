@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="WeatherPreset" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/weather_preset.gd" id="1_7l2sr"]
+
+[resource]
+script = ExtResource("1_7l2sr")
+id = "thunder"
+precipitation = "rain"
+amount = 900
+fall_speed = 24.0
+wind = Vector3(4, 0, 1.5)
+turbulence = 0.0
+particle_size = Vector3(0.03, 0.4, 0.03)
+particle_color = Color(0.560784, 0.65098, 0.772549, 0.6)
+fog_enabled = true
+fog_density = 0.012
+fog_color = Color(0.34902, 0.478431, 0.619608, 1)
+thunder = true
+grip_multiplier = 0.8

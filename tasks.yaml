@@ -145,7 +145,7 @@ tasks:
   - {id: art-vfx-surface-particles, title: "Per-surface particles (dust/snow/spray)", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-surface-grip]}
   - {id: art-vfx-slipstream, title: "Slipstream speed-lines/wind FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-slipstream]}
   - {id: art-vfx-damage, title: "Voxel-chipping damage FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-damage]}
-  - {id: art-vfx-weather, title: "Weather visuals (rain/snow/fog)", type: art, group: vfx, size: big, status: todo, blockers: [code-track-generator]}
+  - {id: art-vfx-weather, title: "Weather visuals (rain/snow/fog)", type: art, group: vfx, size: big, status: done, blockers: [code-track-generator]}
   - {id: art-vfx-nitro, title: "Nitro/boost FX", type: art, group: vfx, size: small, status: todo, blockers: [code-vehicle-brand-features]}
   - {id: art-ui-portraits, title: "Boss-rival static pixel portraits", type: art, group: ui-art, size: default, status: todo, blockers: [content-rivals-defs]}
   - {id: art-ui-hud-gfx, title: "HUD gauges/glow graphics", type: art, group: ui-art, size: default, status: todo, blockers: []}
