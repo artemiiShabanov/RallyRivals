@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_nyxjd")
 id = "morning"
+headlights = false
 sun_rotation_degrees = Vector3(-22, -70, 0)
 sun_color = Color(0.94902, 0.921569, 0.85098, 1)
 sun_energy = 1.0

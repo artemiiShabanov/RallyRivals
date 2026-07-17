@@ -61,6 +61,9 @@ var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
 var _base_stiffness := {}                # wheel -> scene-authored suspension baseline (REF_MASS)
 var _base_max_force := {}
+var _headlights_on := false
+var _headlights: Array[Node3D] = []
+var _taillights: Array[OmniLight3D] = []
 
 func _ready() -> void:
 	add_to_group("vehicles")
@@ -70,7 +73,16 @@ func _ready() -> void:
 			_wheels.append(child)
 			_base_stiffness[child] = child.suspension_stiffness
 			_base_max_force[child] = child.suspension_max_force
+	for lamp in ["HeadlightL", "HeadlightR"]:
+		var n := get_node_or_null(lamp) as Node3D
+		if n != null:
+			_headlights.append(n)
+	for lamp in ["TaillightL", "TaillightR"]:
+		var n := get_node_or_null(lamp) as OmniLight3D
+		if n != null:
+			_taillights.append(n)
 	apply_car_def()
+	set_headlights(LightingPreset.current_headlights)
 
 ## Derive handling from the CarDef bars. Safe to call again (live car swap): suspension scales
 ## from the captured scene baselines, never compounds.
@@ -129,6 +141,7 @@ func _physics_process(delta: float) -> void:
 
 	# Grip layer: front stays grippy, rear grips less (drift), and much less on handbrake.
 	var handbraking := Input.is_action_pressed("handbrake")
+	_update_taillights(brake > 0.0 or handbraking)
 	_apply_grip(handbraking)
 	# Anti-spin cap only while NOT braking: braking into a corner (esp. handbrake) is a
 	# deliberate request to rotate — the clamp would fight the drift the player asked for.
@@ -190,6 +203,19 @@ func _clamp_yaw() -> void:
 	var yaw_rate := angular_velocity.dot(up)
 	if absf(yaw_rate) > max_yaw_rate:
 		angular_velocity -= up * (yaw_rate - signf(yaw_rate) * max_yaw_rate)
+
+## Headlight beams (toggled by the LightingPreset in effect — on at night).
+func set_headlights(on: bool) -> void:
+	_headlights_on = on
+	for h in _headlights:
+		h.visible = on
+
+# Taillights: bright on braking (any time of day), dim running glow at night, off otherwise.
+func _update_taillights(braking: bool) -> void:
+	var energy := 3.5 if braking else (1.3 if _headlights_on else 0.0)
+	for t in _taillights:
+		t.light_energy = energy
+		t.visible = energy > 0.0
 
 ## Speed along the car's forward (+Z) axis in m/s. Negative when reversing.
 func get_forward_speed() -> float:

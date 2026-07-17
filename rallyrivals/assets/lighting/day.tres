@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_qo710")
 id = "day"
+headlights = false
 sun_rotation_degrees = Vector3(-50, -40, 0)
 sun_color = Color(0.97451, 0.960784, 0.92549, 1)
 sun_energy = 1.25

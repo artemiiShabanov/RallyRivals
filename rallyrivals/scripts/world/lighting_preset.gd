@@ -7,7 +7,12 @@ extends Resource
 ## skies sit in the same world as the models. Night stays deliberately readable — low
 ## visibility must be fair.
 
+## The preset most recently applied decides whether cars run headlights (late-spawned cars
+## read this in _ready, so they match the scene's time of day).
+static var current_headlights := false
+
 @export var id := ""
+@export var headlights := false          ## cars switch beams on under this preset (night)
 @export var sun_rotation_degrees := Vector3(-50, -40, 0)
 @export var sun_color := Color(1, 1, 1)
 @export var sun_energy := 1.2
@@ -39,4 +44,9 @@ func apply_in(root: Node) -> bool:
 	sky_mat.sky_horizon_color = sky_horizon
 	sky_mat.ground_horizon_color = ground_horizon
 	sky_mat.ground_bottom_color = ground_bottom
+	current_headlights = headlights
+	if root.is_inside_tree():
+		for v in root.get_tree().get_nodes_in_group("vehicles"):
+			if v.has_method("set_headlights"):
+				v.set_headlights(headlights)
 	return true

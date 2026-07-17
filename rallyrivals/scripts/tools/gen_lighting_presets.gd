@@ -22,6 +22,7 @@ func _initialize() -> void:
 			Color("141417"), Color("0d0d10")),
 	]
 	for pr in presets:
+		pr.headlights = pr.id == "night"
 		ResourceSaver.save(pr, dir + pr.id + ".tres")
 	print("lighting presets: ", presets.size())
 	quit()

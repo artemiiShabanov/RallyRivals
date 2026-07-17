@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_6oxxy")
 id = "golden"
+headlights = false
 sun_rotation_degrees = Vector3(-14, -115, 0)
 sun_color = Color(0.854118, 0.586667, 0.207059, 1)
 sun_energy = 1.15
