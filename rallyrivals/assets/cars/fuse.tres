@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_2ayxq"]
+
+[resource]
+script = ExtResource("1_2ayxq")
+id = "fuse"
+display_name = "Fuse"
+brand = "mayfly"
+car_class = "C"
+price = 0
+pink_slip_only = false
+speed = 5
+accel = 6
+steering = 6
+braking = 4
+grip = 5
+mass = 680.0
+damage_sensitivity = 1.25

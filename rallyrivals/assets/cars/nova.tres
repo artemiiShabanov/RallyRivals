@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_4wmg7"]
+
+[resource]
+script = ExtResource("1_4wmg7")
+id = "nova"
+display_name = "Nova"
+brand = "mayfly"
+car_class = "S"
+price = 0
+pink_slip_only = false
+speed = 8
+accel = 9
+steering = 9
+braking = 6
+grip = 6
+mass = 680.0
+damage_sensitivity = 1.25

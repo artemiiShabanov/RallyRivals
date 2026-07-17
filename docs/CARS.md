@@ -40,6 +40,35 @@
 | S | **Juggernaut** | Wreckhouse | 10/8/4/8/8 | **Ch4 BOSS: the garage-wrecker, pink-slip** — owns every straight; steering 4 is the designed weakness — beat him where the road bends |
 | S | **Nova** | Mayfly | 8/9/9/6/6 | lives fast |
 
+## Bars -> handling (code-vehicle-stats)
+
+Each bar lerps between a bar-1 and bar-10 endpoint (one table in `vehicle_controller.gd` —
+`balance-handling-classes` tunes ENDPOINTS, never cars). Bar ~5 == the original hand-tuned
+feel. Forces are mass-compensated, so bars mean the same in every car.
+
+| bar | drives | bar 1 -> 10 |
+|-----|--------|-------------|
+| Speed | top speed (engine tapers as 1-(v/max)^4) | 110 -> 210 km/h |
+| Accel | engine force (at 800 kg ref, mass-scaled) | 1600 -> 3600 N |
+| Steering | lock angle / response / yaw-rate cap | 0.45->0.78 rad · 2.8->6.5 · 1.05->1.65 rad/s |
+| Braking | brake force (mass-scaled) | 24 -> 62 |
+| Grip | multiplier on SURFACE grip (stays situational) | x0.80 -> x1.22 |
+
+The grip-falloff curve spans each car's own envelope (starts at 20% of its top speed, fades
+over 30%).
+
+## Brand physique (hidden traits, not bars)
+
+| brand | mass | damage_sensitivity |
+|-------|------|--------------------|
+| Apex Cartel | 800 kg | 1.0 |
+| Wreckhouse | 950 kg | 0.8 |
+| Mayfly Speedworks | 680 kg | 1.25 |
+
+Mass = contact/momentum identity (suspension + forces auto-scale with it); damage_sensitivity
+multiplies performance-damage effects when code-vehicle-damage lands. CarDef .tres files in
+`assets/cars/` are generated from this doc by `scripts/tools/gen_car_defs.gd`.
+
 ## Rules for future cars
 
 Pick class budget -> apply brand skew to the balanced baseline -> adjust +/-1 swaps that keep

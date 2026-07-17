@@ -59,7 +59,7 @@ tasks:
   - {id: code-vehicle-surface-grip, title: "Per-surface grip via SurfaceType", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller, content-surfaces-defs]}
   - {id: code-vehicle-damage, title: "Damage system (visible + performance)", type: code, group: vehicle, size: big, status: todo, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-slipstream, title: "Slipstream (player-only) + FX", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller, code-ai-rival]}
-  - {id: code-vehicle-stats, title: "Drive handling from the 5 stat bars", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
+  - {id: code-vehicle-stats, title: "Drive handling from the 5 stat bars", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-brand-features, title: "Baked-in brand abilities (nitro etc.)", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-airborne, title: "Airborne handling (jumps: air control + landing)", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
 

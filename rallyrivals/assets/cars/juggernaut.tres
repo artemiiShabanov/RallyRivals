@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_2eepb"]
+
+[resource]
+script = ExtResource("1_2eepb")
+id = "juggernaut"
+display_name = "Juggernaut"
+brand = "wreck"
+car_class = "S"
+price = 0
+pink_slip_only = true
+speed = 10
+accel = 8
+steering = 4
+braking = 8
+grip = 8
+mass = 950.0
+damage_sensitivity = 0.8

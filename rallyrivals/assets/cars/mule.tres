@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_0km5r"]
+
+[resource]
+script = ExtResource("1_0km5r")
+id = "mule"
+display_name = "Mule"
+brand = "wreck"
+car_class = "D"
+price = 0
+pink_slip_only = false
+speed = 5
+accel = 4
+steering = 4
+braking = 3
+grip = 6
+mass = 950.0
+damage_sensitivity = 0.8

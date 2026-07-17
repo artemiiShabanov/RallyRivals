@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://bde5slygli47"]
+[gd_scene load_steps=7 format=3 uid="uid://bde5slygli47"]
 
 [ext_resource type="Script" uid="uid://bicg20hpmlw67" path="res://scripts/vehicle/vehicle_controller.gd" id="1_ctrl"]
 [ext_resource type="ArrayMesh" uid="uid://c4vetfqcwox33" path="res://assets/voxels/cars/blockout.obj" id="2_body"]
+[ext_resource type="Resource" path="res://assets/cars/kerb.tres" id="3_car"]
 
 [sub_resource type="BoxShape3D" id="BodyShape"]
 size = Vector3(2, 1, 4)
@@ -21,6 +22,7 @@ mass = 800.0
 center_of_mass_mode = 1
 center_of_mass = Vector3(0, -0.3, 0)
 script = ExtResource("1_ctrl")
+car = ExtResource("3_car")
 
 [node name="Body" type="MeshInstance3D" parent="."]
 mesh = ExtResource("2_body")

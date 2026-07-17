@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_dgvnx"]
+
+[resource]
+script = ExtResource("1_dgvnx")
+id = "tangent"
+display_name = "Tangent"
+brand = "apex"
+car_class = "C"
+price = 0
+pink_slip_only = false
+speed = 4
+accel = 4
+steering = 6
+braking = 6
+grip = 6
+mass = 800.0
+damage_sensitivity = 1.0

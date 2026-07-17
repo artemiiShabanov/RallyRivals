@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_6bv82"]
+
+[resource]
+script = ExtResource("1_6bv82")
+id = "spark"
+display_name = "Spark"
+brand = "mayfly"
+car_class = "D"
+price = 0
+pink_slip_only = false
+speed = 4
+accel = 5
+steering = 6
+braking = 3
+grip = 4
+mass = 680.0
+damage_sensitivity = 1.25

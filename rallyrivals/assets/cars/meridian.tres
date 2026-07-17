@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_ljrgr"]
+
+[resource]
+script = ExtResource("1_ljrgr")
+id = "meridian"
+display_name = "Meridian"
+brand = "apex"
+car_class = "B"
+price = 0
+pink_slip_only = false
+speed = 5
+accel = 5
+steering = 7
+braking = 7
+grip = 6
+mass = 800.0
+damage_sensitivity = 1.0

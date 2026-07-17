@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_hcg0m"]
+
+[resource]
+script = ExtResource("1_hcg0m")
+id = "comet"
+display_name = "Comet"
+brand = "mayfly"
+car_class = "A"
+price = 0
+pink_slip_only = false
+speed = 7
+accel = 8
+steering = 8
+braking = 5
+grip = 6
+mass = 680.0
+damage_sensitivity = 1.25

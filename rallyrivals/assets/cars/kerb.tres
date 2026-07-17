@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_wuoee"]
+
+[resource]
+script = ExtResource("1_wuoee")
+id = "kerb"
+display_name = "Kerb"
+brand = "apex"
+car_class = "D"
+price = 0
+pink_slip_only = false
+speed = 3
+accel = 3
+steering = 6
+braking = 5
+grip = 5
+mass = 800.0
+damage_sensitivity = 1.0

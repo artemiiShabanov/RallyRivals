@@ -5,8 +5,14 @@ extends VehicleBody3D
 ## Handles throttle / brake / reverse, eased steering, handbrake, reset, and the arcade grip model:
 ## a front/rear grip split with a front floor (nose stays turnable), speed-sensitive falloff, and a
 ## hard yaw-rate cap for anti-spin. Grip is SURFACE-RELATIVE per wheel (see _apply_grip /
-## _surface_grip). Still layered on separately later:
-##   - stat-driven handling (the 5 stat bars)  -> code-vehicle-stats
+## _surface_grip).
+##
+## STATS (code-vehicle-stats): assign a CarDef and apply_car_def() derives the tuning from the
+## five 1-10 bars via the endpoint tables below — balance-handling-classes tunes ENDPOINTS,
+## never individual cars. Bar ~5 == the hand-tuned feel this controller shipped with. Forces are
+## mass-compensated (bars never lie; mass = contact/momentum identity). Speed adds a top-speed
+## cap: engine force tapers as 1-(v/max)^4. With car == null the scene's exported values apply
+## unchanged.
 ##
 ## Convention: this VehicleBody3D drives toward LOCAL +Z (engine_force > 0 -> +Z). The
 ## steering/front wheels sit at +Z; a chase camera sits behind at -Z.
@@ -35,8 +41,26 @@ extends VehicleBody3D
 @export_group("Anti-spin")
 @export var max_yaw_rate := 1.3          ## rad/s — HARD cap on rotation speed; the car slides sideways instead of spinning to 180. Skipped while braking (deliberate rotation)
 
+@export_group("Stats")
+@export var car: CarDef                  ## the roster car this body drives as (null = raw scene tuning)
+
+# Bar-endpoint tables (bar 1 -> bar 10, lerped): the ONLY place stats meet physics numbers.
+const ACCEL_FORCE := [1600.0, 3600.0]    # N at REF_MASS, scaled by mass (same m/s^2 in any car)
+const BRAKE_FORCE := [24.0, 62.0]        # at REF_MASS, mass-scaled
+const STEER_ANGLE := [0.45, 0.78]        # rad at full lock
+const STEER_SPEED := [2.8, 6.5]
+const YAW_RATE := [1.05, 1.65]           # rad/s anti-spin cap — steering cars may rotate faster
+const GRIP_SCALE := [0.80, 1.22]         # multiplies SURFACE grip (stays situational, GDD 7)
+const SPEED_KMH := [110.0, 210.0]        # top speed; engine tapers approaching it
+const REF_MASS := 800.0                  # the mass all force/suspension baselines were tuned at
+
+var grip_scale := 1.0
+var max_speed := INF                     # m/s; INF = uncapped (no CarDef)
+
 var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
+var _base_stiffness := {}                # wheel -> scene-authored suspension baseline (REF_MASS)
+var _base_max_force := {}
 
 func _ready() -> void:
 	add_to_group("vehicles")
@@ -44,6 +68,33 @@ func _ready() -> void:
 	for child in get_children():
 		if child is VehicleWheel3D:
 			_wheels.append(child)
+			_base_stiffness[child] = child.suspension_stiffness
+			_base_max_force[child] = child.suspension_max_force
+	apply_car_def()
+
+## Derive handling from the CarDef bars. Safe to call again (live car swap): suspension scales
+## from the captured scene baselines, never compounds.
+func apply_car_def() -> void:
+	if car == null:
+		return
+	var m := car.mass / REF_MASS
+	mass = car.mass
+	max_engine_force = _bar(car.accel, ACCEL_FORCE) * m
+	max_brake = _bar(car.braking, BRAKE_FORCE) * m
+	max_steer = _bar(car.steering, STEER_ANGLE)
+	steer_speed = _bar(car.steering, STEER_SPEED)
+	max_yaw_rate = _bar(car.steering, YAW_RATE)
+	grip_scale = _bar(car.grip, GRIP_SCALE)
+	max_speed = _bar(car.speed, SPEED_KMH) / 3.6
+	# the grip-vs-speed curve spans THIS car's envelope, not one fixed car's
+	grip_falloff_start = max_speed * 0.2
+	grip_falloff_range = max_speed * 0.3
+	for w in _wheels:
+		w.suspension_stiffness = _base_stiffness[w] * m
+		w.suspension_max_force = _base_max_force[w] * m
+
+func _bar(value: int, endpoints: Array) -> float:
+	return lerpf(endpoints[0], endpoints[1], (clampi(value, 1, 10) - 1) / 9.0)
 
 func _physics_process(delta: float) -> void:
 	var throttle := Input.get_action_strength("accelerate")
@@ -55,7 +106,9 @@ func _physics_process(delta: float) -> void:
 		engine_force = 0.0
 		brake = max_brake * reverse
 	else:
-		engine_force = max_engine_force * (throttle - reverse)
+		# top-speed cap: force tapers to zero approaching max_speed (the last km/h are earned)
+		var headroom := 1.0 - pow(clampf(absf(get_forward_speed()) / max_speed, 0.0, 1.0), 4.0)
+		engine_force = max_engine_force * (throttle - reverse) * headroom
 		brake = 0.0
 
 	# Grip layer: front stays grippy, rear grips less (drift), and much less on handbrake.
@@ -84,9 +137,10 @@ func _apply_grip(handbraking: bool) -> void:
 	var speed := linear_velocity.length()
 	var t := clampf((speed - grip_falloff_start) / grip_falloff_range, 0.0, 1.0)
 	for w in _wheels:
-		var g := _surface_grip(w)  # grip of the surface under THIS wheel
+		# the car's grip stat scales the SURFACE grip — situational, never a replacement
+		var g := _surface_grip(w) * grip_scale
 		if w.use_as_steering:  # front — floor keeps it turnable on any surface (arcade cheat)
-			var front := maxf(g, front_grip_floor)
+			var front := maxf(g, front_grip_floor * grip_scale)
 			w.wheel_friction_slip = front * lerpf(1.0, front_high_speed_grip, t)
 		else:  # rear — scales with the surface, so slippery surfaces drift
 			var rear := g * (handbrake_rear_ratio if handbraking else rear_grip_ratio)

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_5em7y"]
+
+[resource]
+script = ExtResource("1_5em7y")
+id = "crowbar"
+display_name = "Crowbar"
+brand = "wreck"
+car_class = "C"
+price = 0
+pink_slip_only = true
+speed = 8
+accel = 5
+steering = 3
+braking = 4
+grip = 6
+mass = 950.0
+damage_sensitivity = 0.8

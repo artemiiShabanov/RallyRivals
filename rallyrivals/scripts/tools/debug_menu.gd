@@ -50,10 +50,12 @@ func _ready() -> void:
 # The menu tree, rebuilt on open/refresh so labels reflect live state.
 #   sub: Array  -> submenu    hud: String -> overlay toggle    run: Callable -> action (closes menu)
 func _menu() -> Array:
+	var current := _car()
 	return [
 		{"label": "Vehicle", "sub": [
 			{"label": "Return to last checkpoint", "run": _respawn_checkpoint},
 			{"label": "Reset to spawn", "run": _reset_car},
+			{"label": "Car: %s" % (current.car.display_name if current != null and current.car != null else "?"), "sub": _car_menu()},
 		]},
 		{"label": "Overlays", "sub": [
 			{"label": "Performance", "hud": "perf"},
@@ -179,6 +181,25 @@ func _reset_car() -> void:
 	var car := _car()
 	if car != null:
 		car.reset()
+
+# One entry per roster CarDef — pick to hot-swap the drive (A/B feel testing across the roster).
+func _car_menu() -> Array:
+	var out: Array = []
+	var da := DirAccess.open("res://assets/cars")
+	if da != null:
+		for f in da.get_files():
+			if f.get_extension() == "tres":
+				var def := load("res://assets/cars/".path_join(f)) as CarDef
+				if def != null:
+					out.append({"label": "%s  %s  (%s)" % [def.car_class, def.display_name, def.brand], "run": _swap_car.bind(def)})
+	return out
+
+func _swap_car(def: CarDef) -> void:
+	var c := _car()
+	if c != null:
+		c.car = def
+		c.apply_car_def()
+		print("debug: now driving %s (%s %s)" % [def.display_name, def.brand, def.car_class])
 
 # ---------- overlays ----------
 func _process(_dt: float) -> void:
