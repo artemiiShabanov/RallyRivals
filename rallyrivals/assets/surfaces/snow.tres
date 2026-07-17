@@ -9,3 +9,4 @@ id = "snow"
 grip = 4.0
 color = Color(0.92, 0.94, 0.97, 1)
 texture = ExtResource("2_uwqgu")
+tint_variation = 0.06

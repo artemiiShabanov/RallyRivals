@@ -171,6 +171,21 @@ func _add_ground(root: Node3D) -> Dictionary:
 	smap.mpp = mpp
 	ground.set_meta("surface_map", smap)
 
+	# --- terrain shader splat: exact painted RGB + per-surface tint_variation in ALPHA ---
+	var splat := Image.create(_size, _size, false, Image.FORMAT_RGBA8)
+	for y in _size:
+		for x in _size:
+			var c := _surface_colour(x, y)
+			var sv := SurfaceMap.classify(c, surfaces, off_road_surface)
+			splat.set_pixel(x, y, Color(c.r, c.g, c.b, sv.tint_variation if sv != null else 0.1))
+	var splat_tex := ImageTexture.create_from_image(splat)
+	ResourceSaver.save(splat_tex, _out_dir.path_join("ground_splat.res"))
+	splat_tex.take_over_path(_out_dir.path_join("ground_splat.res"))
+	var terrain_mat := ShaderMaterial.new()
+	terrain_mat.shader = load("res://assets/shaders/terrain_surface.gdshader")
+	terrain_mat.set_shader_parameter("splat", splat_tex)
+	terrain_mat.set_shader_parameter("world_size", _size * mpp)
+
 	# --- visual: per-surface bucketed meshes (no collision) ---
 	var buckets := {}   # id -> {surface, st, tris}
 	var stepf := mesh_res / mpp
@@ -197,11 +212,7 @@ func _add_ground(root: Node3D) -> Dictionary:
 		var mesh := st.commit()
 		ResourceSaver.save(mesh, _out_dir.path_join("ground_%s_mesh.res" % id))
 		mesh.take_over_path(_out_dir.path_join("ground_%s_mesh.res" % id))
-		# Terrain splat shader (ADR-003 flat-shaded look): vertex colours carry the surface,
-		# facet normals + tint variation + weather wetness come from the shader.
-		var mat := ShaderMaterial.new()
-		mat.shader = load("res://assets/shaders/terrain_surface.gdshader")
-		var mi := MeshInstance3D.new(); mi.name = "Mesh_%s" % id; mi.mesh = mesh; mi.material_override = mat
+		var mi := MeshInstance3D.new(); mi.name = "Mesh_%s" % id; mi.mesh = mesh; mi.material_override = terrain_mat
 		ground.add_child(mi)
 		counts[id] = int(b["tris"])   # triangle count (for the bake log)
 

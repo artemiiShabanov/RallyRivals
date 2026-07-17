@@ -9,3 +9,4 @@ id = "sand"
 grip = 5.0
 color = Color(0.8, 0.7, 0.45, 1)
 texture = ExtResource("2_i3x4x")
+tint_variation = 0.12
