@@ -9,6 +9,7 @@ path="res://.godot/imported/stiletto_d2.obj-3b1e1236f865fedca4435dfbbdbfafa7.mes
 [deps]
 
 files=["res://.godot/imported/stiletto_d2.obj-3b1e1236f865fedca4435dfbbdbfafa7.mesh"]
+
 source_file="res://assets/voxels/cars/stiletto_d2.obj"
 dest_files=["res://.godot/imported/stiletto_d2.obj-3b1e1236f865fedca4435dfbbdbfafa7.mesh", "res://.godot/imported/stiletto_d2.obj-3b1e1236f865fedca4435dfbbdbfafa7.mesh"]
 

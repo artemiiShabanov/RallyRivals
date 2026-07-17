@@ -9,6 +9,7 @@ path="res://.godot/imported/meridian.obj-7557545da9fd82ce87b90dc9d3c7c4e9.mesh"
 [deps]
 
 files=["res://.godot/imported/meridian.obj-7557545da9fd82ce87b90dc9d3c7c4e9.mesh"]
+
 source_file="res://assets/voxels/cars/meridian.obj"
 dest_files=["res://.godot/imported/meridian.obj-7557545da9fd82ce87b90dc9d3c7c4e9.mesh", "res://.godot/imported/meridian.obj-7557545da9fd82ce87b90dc9d3c7c4e9.mesh"]
 

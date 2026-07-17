@@ -9,6 +9,7 @@ path="res://.godot/imported/nova.obj-a8d6ac585e18d9c36266804e7f1e8be5.mesh"
 [deps]
 
 files=["res://.godot/imported/nova.obj-a8d6ac585e18d9c36266804e7f1e8be5.mesh"]
+
 source_file="res://assets/voxels/cars/nova.obj"
 dest_files=["res://.godot/imported/nova.obj-a8d6ac585e18d9c36266804e7f1e8be5.mesh", "res://.godot/imported/nova.obj-a8d6ac585e18d9c36266804e7f1e8be5.mesh"]
 

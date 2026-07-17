@@ -9,6 +9,7 @@ path="res://.godot/imported/juggernaut_d1.obj-c88a213f1edc01d50f36fc7535069155.m
 [deps]
 
 files=["res://.godot/imported/juggernaut_d1.obj-c88a213f1edc01d50f36fc7535069155.mesh"]
+
 source_file="res://assets/voxels/cars/juggernaut_d1.obj"
 dest_files=["res://.godot/imported/juggernaut_d1.obj-c88a213f1edc01d50f36fc7535069155.mesh", "res://.godot/imported/juggernaut_d1.obj-c88a213f1edc01d50f36fc7535069155.mesh"]
 

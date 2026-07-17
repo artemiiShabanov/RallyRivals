@@ -9,6 +9,7 @@ path="res://.godot/imported/kerb.obj-6878a381717d10cc1041f59c2bcff2c2.mesh"
 [deps]
 
 files=["res://.godot/imported/kerb.obj-6878a381717d10cc1041f59c2bcff2c2.mesh"]
+
 source_file="res://assets/voxels/cars/kerb.obj"
 dest_files=["res://.godot/imported/kerb.obj-6878a381717d10cc1041f59c2bcff2c2.mesh", "res://.godot/imported/kerb.obj-6878a381717d10cc1041f59c2bcff2c2.mesh"]
 

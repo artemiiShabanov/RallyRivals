@@ -9,6 +9,7 @@ path="res://.godot/imported/sledge_d1.obj-be30ce54cb0aa766f125035606ee3c02.mesh"
 [deps]
 
 files=["res://.godot/imported/sledge_d1.obj-be30ce54cb0aa766f125035606ee3c02.mesh"]
+
 source_file="res://assets/voxels/cars/sledge_d1.obj"
 dest_files=["res://.godot/imported/sledge_d1.obj-be30ce54cb0aa766f125035606ee3c02.mesh", "res://.godot/imported/sledge_d1.obj-be30ce54cb0aa766f125035606ee3c02.mesh"]
 

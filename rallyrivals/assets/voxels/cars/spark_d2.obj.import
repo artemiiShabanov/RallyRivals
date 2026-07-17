@@ -9,6 +9,7 @@ path="res://.godot/imported/spark_d2.obj-5aab7566eba534fea729bb32368ee573.mesh"
 [deps]
 
 files=["res://.godot/imported/spark_d2.obj-5aab7566eba534fea729bb32368ee573.mesh"]
+
 source_file="res://assets/voxels/cars/spark_d2.obj"
 dest_files=["res://.godot/imported/spark_d2.obj-5aab7566eba534fea729bb32368ee573.mesh", "res://.godot/imported/spark_d2.obj-5aab7566eba534fea729bb32368ee573.mesh"]
 

@@ -9,6 +9,7 @@ path="res://.godot/imported/verdict_d1.obj-5bfba4c846593d3c4118e142bcd1374b.mesh
 [deps]
 
 files=["res://.godot/imported/verdict_d1.obj-5bfba4c846593d3c4118e142bcd1374b.mesh"]
+
 source_file="res://assets/voxels/cars/verdict_d1.obj"
 dest_files=["res://.godot/imported/verdict_d1.obj-5bfba4c846593d3c4118e142bcd1374b.mesh", "res://.godot/imported/verdict_d1.obj-5bfba4c846593d3c4118e142bcd1374b.mesh"]
 
