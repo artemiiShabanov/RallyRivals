@@ -10,6 +10,8 @@ func _initialize() -> void:
 
 	var clear := WeatherPreset.new()
 	clear.id = "clear"
+	clear.cloud_cover = 0.3
+	clear.cloud_color = Color("f2ebd9")
 	presets.append(clear)
 
 	var rain := WeatherPreset.new()
@@ -18,11 +20,13 @@ func _initialize() -> void:
 	rain.amount = 700
 	rain.fall_speed = 20.0
 	rain.wind = Vector3(2.0, 0.0, 0.0)
-	rain.particle_size = Vector3(0.03, 0.35, 0.03)   # stretched cube = streak
-	rain.particle_color = Color("afbfd8", 0.55)
+	rain.particle_size = Vector3(0.018, 0.22, 0.018)   # stretched cube = streak
+	rain.particle_color = Color("afbfd8", 0.32)
 	rain.fog_enabled = true
 	rain.fog_density = 0.006
 	rain.fog_color = Color("738fb1")
+	rain.cloud_cover = 0.85
+	rain.cloud_color = Color("8fa6c5")
 	rain.grip_multiplier = 0.85
 	presets.append(rain)
 
@@ -38,6 +42,8 @@ func _initialize() -> void:
 	snow.fog_enabled = true
 	snow.fog_density = 0.008
 	snow.fog_color = Color("afbfd8")
+	snow.cloud_cover = 0.85
+	snow.cloud_color = Color("ebf0f7")
 	snow.grip_multiplier = 0.75
 	presets.append(snow)
 
@@ -47,11 +53,13 @@ func _initialize() -> void:
 	thunder.amount = 900
 	thunder.fall_speed = 24.0
 	thunder.wind = Vector3(4.0, 0.0, 1.5)
-	thunder.particle_size = Vector3(0.03, 0.4, 0.03)
-	thunder.particle_color = Color("8fa6c5", 0.6)
+	thunder.particle_size = Vector3(0.018, 0.26, 0.018)
+	thunder.particle_color = Color("8fa6c5", 0.38)
 	thunder.fog_enabled = true
 	thunder.fog_density = 0.012
 	thunder.fog_color = Color("597a9e")
+	thunder.cloud_cover = 1.0
+	thunder.cloud_color = Color("597a9e")
 	thunder.thunder = true
 	thunder.grip_multiplier = 0.8
 	presets.append(thunder)
@@ -62,6 +70,8 @@ func _initialize() -> void:
 	fog.fog_enabled = true
 	fog.fog_density = 0.028   # moderate: corners must still telegraph (GDD fairness)
 	fog.fog_color = Color("b8b8ad")
+	fog.cloud_cover = 0.95
+	fog.cloud_color = Color("b8b8ad")
 	presets.append(fog)
 
 	for pr in presets:

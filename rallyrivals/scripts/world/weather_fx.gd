@@ -17,10 +17,15 @@ var _flash_elapsed := -1.0
 var _next_flash := 0.0
 var _flash_base := 1.0
 
+# One shared cloud panorama for all presets (seamless fractal noise, gradient-thresholded
+# into clumps); per-weather look comes from sky_cover_modulate colour + alpha.
+static var _cloud_tex: NoiseTexture2D
+
 func apply(preset: WeatherPreset) -> void:
 	_preset = preset
 	_find_scene_nodes()
 	_setup_fog()
+	_setup_clouds()
 	_setup_particles()
 	_flash_elapsed = -1.0
 	_next_flash = randf_range(2.0, 5.0)
@@ -45,6 +50,33 @@ func _setup_fog() -> void:
 		_env.fog_light_color = _preset.fog_color
 		_env.fog_density = _preset.fog_density
 		_env.fog_sky_affect = 0.5
+
+func _setup_clouds() -> void:
+	if _env == null or _env.sky == null:
+		return
+	var sky_mat := _env.sky.sky_material as ProceduralSkyMaterial
+	if sky_mat == null:
+		return
+	if _preset.cloud_cover <= 0.0:
+		sky_mat.sky_cover = null
+		return
+	if _cloud_tex == null:
+		var noise := FastNoiseLite.new()
+		noise.seed = 7
+		noise.frequency = 0.012
+		noise.fractal_octaves = 4
+		var grad := Gradient.new()
+		grad.offsets = PackedFloat32Array([0.5, 0.72])
+		grad.colors = PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 1)])
+		var tex := NoiseTexture2D.new()
+		tex.width = 512
+		tex.height = 256
+		tex.seamless = true
+		tex.noise = noise
+		tex.color_ramp = grad
+		_cloud_tex = tex
+	sky_mat.sky_cover = _cloud_tex
+	sky_mat.sky_cover_modulate = Color(_preset.cloud_color.r, _preset.cloud_color.g, _preset.cloud_color.b, _preset.cloud_cover)
 
 func _setup_particles() -> void:
 	if _particles == null:

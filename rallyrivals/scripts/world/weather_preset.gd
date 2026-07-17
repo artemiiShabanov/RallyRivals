@@ -17,5 +17,7 @@ extends Resource
 @export var fog_enabled := false
 @export var fog_density := 0.0
 @export var fog_color := Color(0.69, 0.75, 0.85)
+@export var cloud_cover := 0.0          ## 0..1 sky-cover intensity (0 = cloudless)
+@export var cloud_color := Color(1, 1, 1)
 @export var thunder := false            ## random double-pulse sun flashes
 @export var grip_multiplier := 1.0      ## dormant until code-track-weather-grip
