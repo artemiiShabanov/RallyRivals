@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://bde5slygli47"]
 
 [ext_resource type="Script" uid="uid://bicg20hpmlw67" path="res://scripts/vehicle/vehicle_controller.gd" id="1_ctrl"]
-[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/blockout.obj" id="2_body"]
+[ext_resource type="ArrayMesh" uid="uid://c4vetfqcwox33" path="res://assets/voxels/cars/blockout.obj" id="2_body"]
 
 [sub_resource type="BoxShape3D" id="BodyShape"]
 size = Vector3(2, 1, 4)
@@ -13,7 +13,6 @@ height = 0.3
 
 [sub_resource type="StandardMaterial3D" id="WheelMat"]
 albedo_color = Color(0.06, 0.06, 0.09, 1)
-roughness = 1.0
 
 [node name="Car" type="VehicleBody3D"]
 collision_layer = 2

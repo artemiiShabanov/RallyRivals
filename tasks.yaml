@@ -104,7 +104,7 @@ tasks:
 
   # ---------- content ----------
   - {id: content-surfaces-defs, title: "SurfaceType resources (asphalt/dirt/snow/sand/gravel/ice)", type: content, group: surfaces, size: default, status: done, blockers: []}
-  - {id: content-cars-roster, title: "Define car stat roster (classes S-D)", type: content, group: cars, size: default, status: todo, blockers: []}
+  - {id: content-cars-roster, title: "Define car stat roster (classes S-D)", type: content, group: cars, size: default, status: done, blockers: []}
   - {id: content-cars-manufacturers, title: "Define 3-4 manufacturers (identity + brand feature)", type: content, group: cars, size: default, status: done, blockers: []}
   - {id: content-rivals-defs, title: "Define 4 boss-rivals + taunts", type: content, group: rivals, size: default, status: todo, blockers: []}
   - {id: content-rivals-campaign, title: "4-chapter structure (class mixes, boss per chapter)", type: content, group: rivals, size: default, status: todo, blockers: [content-rivals-defs]}
