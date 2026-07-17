@@ -1,9 +1,13 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_dgvnx"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/tangent.obj" id="1_bqkw5"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/tangent_d1.obj" id="2_q148w"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/tangent_d2.obj" id="3_2dgcl"]
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_d341p"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/wheels/wheel_apex.obj" id="5_j810h"]
 
 [resource]
-script = ExtResource("1_dgvnx")
+script = ExtResource("4_d341p")
 id = "tangent"
 display_name = "Tangent"
 brand = "apex"
@@ -17,3 +21,7 @@ braking = 6
 grip = 6
 mass = 800.0
 damage_sensitivity = 1.0
+model = ExtResource("1_bqkw5")
+model_damaged_1 = ExtResource("2_q148w")
+model_damaged_2 = ExtResource("3_2dgcl")
+wheel_model = ExtResource("5_j810h")

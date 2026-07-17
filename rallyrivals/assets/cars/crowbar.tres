@@ -1,9 +1,13 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_5em7y"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/crowbar.obj" id="1_gkeel"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/crowbar_d1.obj" id="2_lcmwy"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/crowbar_d2.obj" id="3_rkktf"]
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_iurr7"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/wheels/wheel_wreck.obj" id="5_u8650"]
 
 [resource]
-script = ExtResource("1_5em7y")
+script = ExtResource("4_iurr7")
 id = "crowbar"
 display_name = "Crowbar"
 brand = "wreck"
@@ -17,3 +21,7 @@ braking = 4
 grip = 6
 mass = 950.0
 damage_sensitivity = 0.8
+model = ExtResource("1_gkeel")
+model_damaged_1 = ExtResource("2_lcmwy")
+model_damaged_2 = ExtResource("3_rkktf")
+wheel_model = ExtResource("5_u8650")

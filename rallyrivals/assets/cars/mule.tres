@@ -1,9 +1,13 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_0km5r"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/mule.obj" id="1_l28tg"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/mule_d1.obj" id="2_ttpvn"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/mule_d2.obj" id="3_pg5d4"]
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_xmcad"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/wheels/wheel_wreck.obj" id="5_npqk2"]
 
 [resource]
-script = ExtResource("1_0km5r")
+script = ExtResource("4_xmcad")
 id = "mule"
 display_name = "Mule"
 brand = "wreck"
@@ -17,3 +21,7 @@ braking = 3
 grip = 6
 mass = 950.0
 damage_sensitivity = 0.8
+model = ExtResource("1_l28tg")
+model_damaged_1 = ExtResource("2_ttpvn")
+model_damaged_2 = ExtResource("3_pg5d4")
+wheel_model = ExtResource("5_npqk2")

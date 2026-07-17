@@ -1,9 +1,13 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_4wmg7"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/nova.obj" id="1_ctouj"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/nova_d1.obj" id="2_5j5w1"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/nova_d2.obj" id="3_q1xjm"]
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_db6l1"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/wheels/wheel_mayfly.obj" id="5_vayrm"]
 
 [resource]
-script = ExtResource("1_4wmg7")
+script = ExtResource("4_db6l1")
 id = "nova"
 display_name = "Nova"
 brand = "mayfly"
@@ -17,3 +21,7 @@ braking = 6
 grip = 6
 mass = 680.0
 damage_sensitivity = 1.25
+model = ExtResource("1_ctouj")
+model_damaged_1 = ExtResource("2_5j5w1")
+model_damaged_2 = ExtResource("3_q1xjm")
+wheel_model = ExtResource("5_vayrm")

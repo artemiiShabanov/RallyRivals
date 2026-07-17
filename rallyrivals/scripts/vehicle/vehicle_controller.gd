@@ -92,6 +92,22 @@ func apply_car_def() -> void:
 	for w in _wheels:
 		w.suspension_stiffness = _base_stiffness[w] * m
 		w.suspension_max_force = _base_max_force[w] * m
+	_apply_models()
+
+# Swap the body shell + wheel meshes to this CarDef's models (assets/voxels). Wheel objs are
+# authored axle-along-X, so the placeholder cylinder's corrective rotation must be cleared.
+func _apply_models() -> void:
+	if car.model != null:
+		var body := get_node_or_null("Body") as MeshInstance3D
+		if body != null:
+			body.mesh = car.model
+	if car.wheel_model != null:
+		for w in _wheels:
+			var mi := w.get_node_or_null("Mesh") as MeshInstance3D
+			if mi != null:
+				mi.mesh = car.wheel_model
+				mi.transform = Transform3D.IDENTITY
+				mi.set_surface_override_material(0, null)
 
 func _bar(value: int, endpoints: Array) -> float:
 	return lerpf(endpoints[0], endpoints[1], (clampi(value, 1, 10) - 1) / 9.0)

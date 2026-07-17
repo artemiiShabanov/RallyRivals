@@ -1,9 +1,13 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_6bv82"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/spark.obj" id="1_o7rr1"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/spark_d1.obj" id="2_podpd"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/spark_d2.obj" id="3_157l7"]
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_oxis2"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/wheels/wheel_mayfly.obj" id="5_f1cff"]
 
 [resource]
-script = ExtResource("1_6bv82")
+script = ExtResource("4_oxis2")
 id = "spark"
 display_name = "Spark"
 brand = "mayfly"
@@ -17,3 +21,7 @@ braking = 3
 grip = 4
 mass = 680.0
 damage_sensitivity = 1.25
+model = ExtResource("1_o7rr1")
+model_damaged_1 = ExtResource("2_podpd")
+model_damaged_2 = ExtResource("3_157l7")
+wheel_model = ExtResource("5_f1cff")

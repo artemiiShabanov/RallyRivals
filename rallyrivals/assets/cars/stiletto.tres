@@ -1,9 +1,13 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_aoj8d"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/stiletto.obj" id="1_tf1nd"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/stiletto_d1.obj" id="2_j3t6s"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/stiletto_d2.obj" id="3_ypuo8"]
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_kgyy6"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/wheels/wheel_apex.obj" id="5_hpgh0"]
 
 [resource]
-script = ExtResource("1_aoj8d")
+script = ExtResource("4_kgyy6")
 id = "stiletto"
 display_name = "Stiletto"
 brand = "apex"
@@ -17,3 +21,7 @@ braking = 8
 grip = 7
 mass = 800.0
 damage_sensitivity = 1.0
+model = ExtResource("1_tf1nd")
+model_damaged_1 = ExtResource("2_j3t6s")
+model_damaged_2 = ExtResource("3_ypuo8")
+wheel_model = ExtResource("5_hpgh0")

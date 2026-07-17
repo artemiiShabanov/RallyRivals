@@ -1,9 +1,13 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="1_wuoee"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/kerb.obj" id="1_6hiqo"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/kerb_d1.obj" id="2_xlftw"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/kerb_d2.obj" id="3_fok62"]
+[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_i6rnf"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/wheels/wheel_apex.obj" id="5_c442p"]
 
 [resource]
-script = ExtResource("1_wuoee")
+script = ExtResource("4_i6rnf")
 id = "kerb"
 display_name = "Kerb"
 brand = "apex"
@@ -17,3 +21,7 @@ braking = 5
 grip = 5
 mass = 800.0
 damage_sensitivity = 1.0
+model = ExtResource("1_6hiqo")
+model_damaged_1 = ExtResource("2_xlftw")
+model_damaged_2 = ExtResource("3_fok62")
+wheel_model = ExtResource("5_c442p")

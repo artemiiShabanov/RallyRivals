@@ -23,3 +23,9 @@ extends Resource
 @export_group("Physique (hidden traits)")
 @export var mass := 800.0               ## kg — brand identity channel
 @export var damage_sensitivity := 1.0   ## multiplies performance-damage effects
+
+@export_group("Models (assets/voxels)")
+@export var model: Mesh                 ## base shell
+@export var model_damaged_1: Mesh       ## light damage (swapped by code-vehicle-damage)
+@export var model_damaged_2: Mesh       ## heavy damage
+@export var wheel_model: Mesh           ## brand wheel, axle along X (no corrective rotation)

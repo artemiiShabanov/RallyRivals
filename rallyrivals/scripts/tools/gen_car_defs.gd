@@ -47,6 +47,10 @@ func _initialize() -> void:
 		def.grip = row[9]
 		def.mass = BRAND_MASS[row[2]]
 		def.damage_sensitivity = BRAND_DMG[row[2]]
+		def.model = load("res://assets/voxels/cars/%s.obj" % row[0])
+		def.model_damaged_1 = load("res://assets/voxels/cars/%s_d1.obj" % row[0])
+		def.model_damaged_2 = load("res://assets/voxels/cars/%s_d2.obj" % row[0])
+		def.wheel_model = load("res://assets/voxels/wheels/wheel_%s.obj" % row[2])
 		ResourceSaver.save(def, dir + row[0] + ".tres")
 	print("car defs written: ", ROSTER.size())
 	quit()
