@@ -21,6 +21,10 @@ var _flash_base := 1.0
 # into clumps); per-weather look comes from sky_cover_modulate colour + alpha.
 static var _cloud_tex: NoiseTexture2D
 
+## The active weather's grip multiplier (GDD 7: weather grip stacks on surface grip).
+## VehicleController folds this into every wheel's grip product. Resets with the effect.
+static var current_grip_multiplier := 1.0
+
 func apply(preset: WeatherPreset) -> void:
 	_preset = preset
 	_find_scene_nodes()
@@ -29,6 +33,10 @@ func apply(preset: WeatherPreset) -> void:
 	_setup_particles()
 	_flash_elapsed = -1.0
 	_next_flash = randf_range(2.0, 5.0)
+	current_grip_multiplier = preset.grip_multiplier
+
+func _exit_tree() -> void:
+	current_grip_multiplier = 1.0   # weather never leaks into the next scene
 
 func _find_scene_nodes() -> void:
 	var tree := get_tree()

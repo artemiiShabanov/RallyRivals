@@ -35,7 +35,7 @@ tasks:
   - {id: code-track-seasons, title: "Seasonal visual swap (author-picked per race)", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-props, title: "Prop scatter from marker map", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-ai-line, title: "Bake AI racing line from the spline", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
-  - {id: code-track-weather-grip, title: "Weather grip modifier (stacks on surface grip)", type: code, group: track, size: small, status: todo, blockers: [code-vehicle-surface-grip]}
+  - {id: code-track-weather-grip, title: "Weather grip modifier (stacks on surface grip)", type: code, group: track, size: small, status: done, blockers: [code-vehicle-surface-grip]}
   - {id: code-track-conditions, title: "Apply per-race time-of-day + weather visuals", type: code, group: track, size: default, status: done, blockers: [code-race-defs]}
   - {id: code-tools-debug, title: "Debug overlay/tools (perf, physics, state readouts)", type: code, group: tools, size: default, status: done, blockers: []}
 

@@ -165,11 +165,12 @@ func _apply_grip(handbraking: bool) -> void:
 	# plowing. Slow corners stay grippy.
 	var speed := linear_velocity.length()
 	var t := clampf((speed - grip_falloff_start) / grip_falloff_range, 0.0, 1.0)
+	# surface x car grip stat x weather (GDD 7: weather stacks on surface, instant, readable)
+	var wgrip := grip_scale * WeatherFX.current_grip_multiplier
 	for w in _wheels:
-		# the car's grip stat scales the SURFACE grip — situational, never a replacement
-		var g := _surface_grip(w) * grip_scale
+		var g := _surface_grip(w) * wgrip
 		if w.use_as_steering:  # front — floor keeps it turnable on any surface (arcade cheat)
-			var front := maxf(g, front_grip_floor * grip_scale)
+			var front := maxf(g, front_grip_floor * wgrip)
 			w.wheel_friction_slip = front * lerpf(1.0, front_high_speed_grip, t)
 		else:  # rear — scales with the surface, so slippery surfaces drift
 			var rear := g * (handbrake_rear_ratio if handbraking else rear_grip_ratio)
