@@ -25,6 +25,10 @@ static var _cloud_tex: NoiseTexture2D
 ## VehicleController folds this into every wheel's grip product. Resets with the effect.
 static var current_grip_multiplier := 1.0
 
+## Mirror of the rr_wetness shader global (the RenderingServer getter stalls the render
+## thread — never read it back; read this instead, e.g. future wet-tyre audio).
+static var current_wetness := 0.0
+
 func apply(preset: WeatherPreset) -> void:
 	_preset = preset
 	_find_scene_nodes()
@@ -34,9 +38,13 @@ func apply(preset: WeatherPreset) -> void:
 	_flash_elapsed = -1.0
 	_next_flash = randf_range(2.0, 5.0)
 	current_grip_multiplier = preset.grip_multiplier
+	current_wetness = preset.wetness
+	RenderingServer.global_shader_parameter_set("rr_wetness", preset.wetness)
 
 func _exit_tree() -> void:
 	current_grip_multiplier = 1.0   # weather never leaks into the next scene
+	current_wetness = 0.0
+	RenderingServer.global_shader_parameter_set("rr_wetness", 0.0)
 
 func _find_scene_nodes() -> void:
 	var tree := get_tree()

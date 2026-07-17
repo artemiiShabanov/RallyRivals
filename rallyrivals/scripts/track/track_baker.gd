@@ -192,26 +192,15 @@ func _add_ground(root: Node3D) -> Dictionary:
 	var counts := {}
 	for id in buckets:
 		var b: Dictionary = buckets[id]
-		var s: SurfaceType = b["surface"]
 		var st: SurfaceTool = b["st"]
 		st.index()
 		var mesh := st.commit()
 		ResourceSaver.save(mesh, _out_dir.path_join("ground_%s_mesh.res" % id))
 		mesh.take_over_path(_out_dir.path_join("ground_%s_mesh.res" % id))
-		var mat := StandardMaterial3D.new()
-		mat.vertex_color_use_as_albedo = true   # keeps the anti-aliased edge blend
-		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		# Stub detail, triplanar-tiled x the vertex colour. Prefer the SurfaceType's texture, but
-		# fall back to the convention path so a dropped .tres field (editor re-import) can't blank it.
-		var tex: Texture2D = s.texture
-		if tex == null:
-			var conv := "res://assets/surfaces/tex/%s.png" % id
-			if ResourceLoader.exists(conv):
-				tex = load(conv)
-		if tex != null:
-			mat.albedo_texture = tex
-			mat.uv1_triplanar = true
-			mat.uv1_scale = Vector3(0.2, 0.2, 0.2)   # ~5 m tile
+		# Terrain splat shader (ADR-003 flat-shaded look): vertex colours carry the surface,
+		# facet normals + tint variation + weather wetness come from the shader.
+		var mat := ShaderMaterial.new()
+		mat.shader = load("res://assets/shaders/terrain_surface.gdshader")
 		var mi := MeshInstance3D.new(); mi.name = "Mesh_%s" % id; mi.mesh = mesh; mi.material_override = mat
 		ground.add_child(mi)
 		counts[id] = int(b["tris"])   # triangle count (for the bake log)

@@ -28,6 +28,7 @@ func _initialize() -> void:
 	rain.cloud_cover = 0.85
 	rain.cloud_color = Color("8fa6c5")
 	rain.grip_multiplier = 0.85
+	rain.wetness = 0.8
 	presets.append(rain)
 
 	var snow := WeatherPreset.new()
@@ -45,6 +46,7 @@ func _initialize() -> void:
 	snow.cloud_cover = 0.85
 	snow.cloud_color = Color("ebf0f7")
 	snow.grip_multiplier = 0.75
+	snow.wetness = 0.15
 	presets.append(snow)
 
 	var thunder := WeatherPreset.new()
@@ -62,6 +64,7 @@ func _initialize() -> void:
 	thunder.cloud_color = Color("597a9e")
 	thunder.thunder = true
 	thunder.grip_multiplier = 0.8
+	thunder.wetness = 1.0
 	presets.append(thunder)
 
 	var fog := WeatherPreset.new()
@@ -72,6 +75,7 @@ func _initialize() -> void:
 	fog.fog_color = Color("b8b8ad")
 	fog.cloud_cover = 0.95
 	fog.cloud_color = Color("b8b8ad")
+	fog.wetness = 0.25
 	presets.append(fog)
 
 	for pr in presets:

@@ -158,7 +158,7 @@ tasks:
   - {id: art-world-lighting, title: "Time-of-day lighting presets", type: art, group: world, size: default, status: done, blockers: []}
   - {id: art-world-regions, title: "Region aesthetic themes", type: art, group: world, size: big, status: todo, blockers: [art-voxel-environment]}
   - {id: art-world-seasons, title: "Seasonal dressing sets (only seasons a track uses)", type: art, group: world, size: big, status: todo, blockers: [code-track-seasons, art-voxel-environment]}
-  - {id: art-shader-surface, title: "Terrain surface/splat-blend shader", type: art, group: shader, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: art-shader-surface, title: "Terrain surface/splat-blend shader", type: art, group: shader, size: default, status: done, blockers: [code-track-generator]}
   - {id: art-shader-road, title: "Road shader (markings/wetness)", type: art, group: shader, size: default, status: todo, blockers: [code-track-generator]}
 
   # ---------- audio ----------

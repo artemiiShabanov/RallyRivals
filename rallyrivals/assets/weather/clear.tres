@@ -19,3 +19,4 @@ cloud_cover = 0.3
 cloud_color = Color(0.94902, 0.921569, 0.85098, 1)
 thunder = false
 grip_multiplier = 1.0
+wetness = 0.0

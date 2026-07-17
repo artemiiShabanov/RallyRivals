@@ -20,4 +20,5 @@ extends Resource
 @export var cloud_cover := 0.0          ## 0..1 sky-cover intensity (0 = cloudless)
 @export var cloud_color := Color(1, 1, 1)
 @export var thunder := false            ## random double-pulse sun flashes
-@export var grip_multiplier := 1.0      ## dormant until code-track-weather-grip
+@export var grip_multiplier := 1.0      ## folded into wheel grip (surface x car x weather)
+@export var wetness := 0.0              ## 0..1 — darkens/glosses terrain via rr_wetness global
