@@ -117,12 +117,29 @@ tasks:
   - {id: art-voxel-car-blockout, title: "Placeholder voxel car block-out", type: art, group: voxel, size: default, status: done, blockers: []}
   - {id: art-voxel-stubs, title: "Voxel inventory scaffold: 45 car + 3 wheel stubs with .vox sources", type: art, group: voxel, size: small, status: done, blockers: [art-voxel-car-blockout, art-world-palette]}
   - {id: code-vehicle-model-wiring, title: "CarDef model refs: body/wheel meshes swap with the car", type: code, group: vehicle, size: small, status: done, blockers: [code-vehicle-stats, art-voxel-stubs]}
-  - {id: art-voxel-car-first, title: "First real voxel car model", type: art, group: voxel, size: big, status: todo, blockers: [art-voxel-car-blockout, art-world-palette]}
   - {id: art-voxel-props, title: "Voxel prop set (rocks/signs/barriers)", type: art, group: voxel, size: default, status: todo, blockers: []}
   - {id: art-voxel-environment, title: "Voxel scenery/buildings set", type: art, group: voxel, size: big, status: todo, blockers: []}
   - {id: art-voxel-brand-families, title: "Visual family per manufacturer", type: art, group: voxel, size: default, status: todo, blockers: [content-cars-roster]}
-  # umbrella — split into per-car tasks once the roster is defined (GDD 8: ~brands x 5 = 20 cars)
-  - {id: art-voxel-car-roster, title: "Voxel car roster models (S-D x brands)", type: art, group: voxel, size: huge, status: todo, blockers: [art-voxel-car-first, art-voxel-brand-families]}
+  # ---------- art: voxel fleet (sculpt over assets/voxels stubs; base shells only —
+  # damage-variant sculpts get their own tasks once code-vehicle-damage defines the read) ----------
+  - {id: art-voxel-car-kerb, title: "Voxel car: Kerb (Apex D, starter) — MV pipeline validation", type: art, group: voxel, size: default, status: todo, blockers: []}
+  - {id: art-voxel-car-mule, title: "Voxel car: Mule (Wreckhouse D)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-spark, title: "Voxel car: Spark (Mayfly D)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-tangent, title: "Voxel car: Tangent (Apex C)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-crowbar, title: "Voxel car: Crowbar (Wreckhouse C)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-fuse, title: "Voxel car: Fuse (Mayfly C)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-meridian, title: "Voxel car: Meridian (Apex B)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-anvil, title: "Voxel car: Anvil (Wreckhouse B)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-strobe, title: "Voxel car: Strobe (Mayfly B)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-verdict, title: "Voxel car: Verdict (Apex A)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-sledge, title: "Voxel car: Sledge (Wreckhouse A)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-comet, title: "Voxel car: Comet (Mayfly A)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-stiletto, title: "Voxel car: Stiletto (Apex S)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-juggernaut, title: "Voxel car: Juggernaut (Wreckhouse S)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-nova, title: "Voxel car: Nova (Mayfly S)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-wheel-apex, title: "Voxel wheel: Apex Cartel rim", type: art, group: voxel, size: small, status: todo, blockers: [art-voxel-brand-families]}
+  - {id: art-voxel-wheel-wreck, title: "Voxel wheel: Wreckhouse rim", type: art, group: voxel, size: small, status: todo, blockers: [art-voxel-brand-families]}
+  - {id: art-voxel-wheel-mayfly, title: "Voxel wheel: Mayfly Speedworks rim", type: art, group: voxel, size: small, status: todo, blockers: [art-voxel-brand-families]}
   - {id: art-vfx-juice, title: "Screen shake + landing thump", type: art, group: vfx, size: micro, status: todo, blockers: [code-vehicle-controller]}
   - {id: art-vfx-surface-particles, title: "Per-surface particles (dust/snow/spray)", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-surface-grip]}
   - {id: art-vfx-slipstream, title: "Slipstream speed-lines/wind FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-slipstream]}
@@ -133,7 +150,7 @@ tasks:
   - {id: art-ui-hud-gfx, title: "HUD gauges/glow graphics", type: art, group: ui-art, size: default, status: todo, blockers: []}
   - {id: art-ui-theme, title: "Menu/UI theme + icon set", type: art, group: ui-art, size: big, status: todo, blockers: []}
   - {id: art-ui-boss-anim, title: "Animated boss talking-head frames", type: art, group: ui-art, size: default, status: todo, blockers: [content-rivals-defs]}
-  - {id: art-ui-paint-skins, title: "Paint-skin set", type: art, group: ui-art, size: default, status: todo, blockers: [art-voxel-car-first]}
+  - {id: art-ui-paint-skins, title: "Paint-skin set", type: art, group: ui-art, size: default, status: todo, blockers: [art-voxel-car-kerb]}
   - {id: art-world-terrain-tex, title: "Terrain splat textures", type: art, group: world, size: big, status: todo, blockers: [code-track-generator]}
   - {id: art-world-palette, title: "Master colour palette (voxel + terrain ramps, ADR-003)", type: art, group: world, size: small, status: done, blockers: []}
   - {id: art-world-skybox, title: "Skybox + seasonal sky sets", type: art, group: world, size: default, status: todo, blockers: []}
@@ -172,7 +189,7 @@ tasks:
   - {id: design-spec-economy, title: "Spec: banked-best reward economy", type: design, group: spec, size: small, status: done, blockers: []}
   - {id: design-playtest-firstdrive, title: "Fun verdict: first drive (feel/flow)", type: design, group: playtest, size: default, status: done, blockers: [code-vehicle-controller, code-track-test-track, code-core-camera]}
   - {id: design-playtest-race, title: "Fun verdict: full race (tense + fair)", type: design, group: playtest, size: default, status: todo, blockers: [code-race-result, code-ai-rival]}
-  - {id: design-playtest-slice, title: "Fun verdict: vertical slice (one polished race)", type: design, group: playtest, size: default, status: todo, blockers: [code-ui-results, audio-sfx-engine, art-voxel-car-first]}
+  - {id: design-playtest-slice, title: "Fun verdict: vertical slice (one polished race)", type: design, group: playtest, size: default, status: todo, blockers: [code-ui-results, audio-sfx-engine, art-voxel-car-kerb]}
   - {id: design-playtest-loop, title: "Fun verdict: campaign loop (want-next-win)", type: design, group: playtest, size: default, status: todo, blockers: [code-meta-chapters, code-ui-career-map]}
 
   # ---------- setup ----------
