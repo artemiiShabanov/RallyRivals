@@ -175,8 +175,10 @@ func _add_ground(root: Node3D) -> Dictionary:
 	var splat := Image.create(_size, _size, false, Image.FORMAT_RGBA8)
 	for y in _size:
 		for x in _size:
-			var c := _surface_colour(x, y)
-			var sv := SurfaceMap.classify(c, surfaces, off_road_surface)
+			# canonical colour from the CLASSIFIED surface (not the raw pixel): visuals always
+			# match the .tres palette, so re-tinting a surface = edit + rebake, never repaint
+			var sv := SurfaceMap.classify(_surface_colour(x, y), surfaces, off_road_surface)
+			var c := sv.color if sv != null else Color.MAGENTA
 			splat.set_pixel(x, y, Color(c.r, c.g, c.b, sv.tint_variation if sv != null else 0.1))
 	var splat_tex := ImageTexture.create_from_image(splat)
 	ResourceSaver.save(splat_tex, _out_dir.path_join("ground_splat.res"))

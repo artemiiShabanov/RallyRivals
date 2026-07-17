@@ -13,7 +13,7 @@ const CELL := 40
 
 # name, dark endpoint, light endpoint, {step: pinned exact colour}
 var ramps := [
-	["asphalt", Color(0.10, 0.10, 0.13), Color(0.62, 0.62, 0.66), {3: Color(0.3, 0.3, 0.32)}],
+	["asphalt", Color(0.10, 0.10, 0.13), Color(0.62, 0.62, 0.66), {3: Color(0.21, 0.21, 0.23)}],
 	["gravel", Color(0.16, 0.16, 0.15), Color(0.72, 0.72, 0.68), {3: Color(0.45, 0.45, 0.43)}],
 	["dirt", Color(0.18, 0.10, 0.05), Color(0.75, 0.58, 0.38), {3: Color(0.45, 0.3, 0.16)}],
 	["sand", Color(0.35, 0.27, 0.13), Color(0.96, 0.90, 0.70), {4: Color(0.8, 0.7, 0.45)}],

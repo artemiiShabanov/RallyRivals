@@ -7,6 +7,6 @@
 script = ExtResource("1_st")
 id = "asphalt"
 grip = 10.5
-color = Color(0.3, 0.3, 0.32, 1)
+color = Color(0.21, 0.21, 0.23, 1)
 texture = ExtResource("2_ddb5r")
 tint_variation = 0.05
