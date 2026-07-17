@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RaceDef" load_steps=4 format=3]
+
+[ext_resource type="Resource" path="res://assets/lighting/night.tres" id="1_gedua"]
+[ext_resource type="Script" path="res://scripts/race/race_def.gd" id="2_q30d6"]
+[ext_resource type="Resource" path="res://assets/weather/thunder.tres" id="3_cined"]
+
+[resource]
+script = ExtResource("2_q30d6")
+id = "night_thunder"
+display_name = "Test Circuit — Night Storm"
+track_scene = "res://assets/tracks/test/baked_track.tscn"
+race_type = "circuit"
+laps = 3
+culture = "wilds"
+car_class = ""
+lighting = ExtResource("1_gedua")
+weather = ExtResource("3_cined")
+season = "summer"
+money_pool = 0
+cp_pool = 0

@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" uid="uid://dlqocyj8xo13r" path="res://scripts/track/track_demo.gd" id="1_drive"]
+[ext_resource type="Resource" path="res://assets/races/night_thunder.tres" id="2_race"]
+
+[node name="NightStorm" type="Node3D"]
+script = ExtResource("1_drive")
+race = ExtResource("2_race")

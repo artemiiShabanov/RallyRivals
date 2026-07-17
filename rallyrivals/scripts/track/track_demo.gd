@@ -6,14 +6,28 @@ extends Node3D
 
 @export var baked_scene_path := "res://assets/tracks/track 1/baked_track.tscn"
 @export var car_scene: PackedScene = preload("res://scenes/vehicle/car.tscn")
+@export var race: RaceDef                ## optional: overrides the track + applies conditions
 
 func _ready() -> void:
-	var ps := load(baked_scene_path) as PackedScene
+	var scene_path := baked_scene_path
+	if race != null and race.track_scene != "":
+		scene_path = race.track_scene
+	var ps := load(scene_path) as PackedScene
 	if ps == null:
-		push_warning("No baked track at %s — run bake_track_cli.gd first." % baked_scene_path)
+		push_warning("No baked track at %s — run bake_track_cli.gd first." % scene_path)
 		return
 	var track := ps.instantiate()
 	add_child(track)
+
+	# Per-race conditions (code-track-conditions): fixed time-of-day + weather from the RaceDef.
+	if race != null:
+		if race.lighting != null:
+			race.lighting.apply_in(track)
+		if race.weather != null:
+			var fx := WeatherFX.new()
+			fx.name = "WeatherFX"
+			add_child(fx)
+			fx.apply(race.weather)
 
 	# Checkpoint + timing debug: gate passes, lap times, stage time (cut a corner -> no lap).
 	var cps := track.get_node_or_null("Checkpoints") as TrackCheckpoints

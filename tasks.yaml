@@ -36,7 +36,7 @@ tasks:
   - {id: code-track-props, title: "Prop scatter from marker map", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-ai-line, title: "Bake AI racing line from the spline", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-weather-grip, title: "Weather grip modifier (stacks on surface grip)", type: code, group: track, size: small, status: todo, blockers: [code-vehicle-surface-grip]}
-  - {id: code-track-conditions, title: "Apply per-race time-of-day + weather visuals", type: code, group: track, size: default, status: todo, blockers: [code-race-defs]}
+  - {id: code-track-conditions, title: "Apply per-race time-of-day + weather visuals", type: code, group: track, size: default, status: done, blockers: [code-race-defs]}
   - {id: code-tools-debug, title: "Debug overlay/tools (perf, physics, state readouts)", type: code, group: tools, size: default, status: done, blockers: []}
 
   # ---------- code: tools — GUI map editor (in-game tool scene; authors the 4 track images) ----------
@@ -69,7 +69,7 @@ tasks:
   - {id: code-core-save, title: "Save system", type: code, group: core, size: default, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-core-pooling, title: "Pooling / perf helpers (perf-first rule)", type: code, group: core, size: default, status: todo, blockers: []}
   - {id: code-core-settings-apply, title: "Apply graphics/audio/control settings", type: code, group: core, size: small, status: todo, blockers: [code-core-scene-flow]}
-  - {id: code-race-defs, title: "RaceDef resource (track, type, culture, conditions, reward pools)", type: code, group: race, size: default, status: todo, blockers: []}
+  - {id: code-race-defs, title: "RaceDef resource (track, type, culture, conditions, reward pools)", type: code, group: race, size: default, status: done, blockers: []}
   - {id: code-race-timing, title: "Lap/stage timing", type: code, group: race, size: default, status: done, blockers: [code-track-checkpoints]}
   - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: todo, blockers: [code-race-timing]}
   - {id: code-race-types, title: "Race types: sprint + circuit", type: code, group: race, size: big, status: todo, blockers: [code-race-timing]}

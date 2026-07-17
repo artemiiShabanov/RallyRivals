@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RaceDef" load_steps=4 format=3]
+
+[ext_resource type="Resource" path="res://assets/lighting/golden.tres" id="1_exwjh"]
+[ext_resource type="Script" path="res://scripts/race/race_def.gd" id="2_cqhux"]
+[ext_resource type="Resource" path="res://assets/weather/clear.tres" id="3_yu0rf"]
+
+[resource]
+script = ExtResource("2_cqhux")
+id = "test_circuit"
+display_name = "Test Circuit — Golden Hour"
+track_scene = "res://assets/tracks/test/baked_track.tscn"
+race_type = "circuit"
+laps = 3
+culture = "officials"
+car_class = ""
+lighting = ExtResource("1_exwjh")
+weather = ExtResource("3_yu0rf")
+season = "summer"
+money_pool = 0
+cp_pool = 0
