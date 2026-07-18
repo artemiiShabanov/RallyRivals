@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 DebugMenu="*res://scripts/tools/debug_menu.gd"
+Sfx="*res://scripts/audio/sfx.gd"
 
 [display]
 

@@ -162,13 +162,14 @@ tasks:
   - {id: art-shader-road, title: "Road shader (markings/wetness)", type: art, group: shader, size: default, status: todo, blockers: [code-track-generator]}
 
   # ---------- audio ----------
-  - {id: audio-sfx-engine, title: "Engine loop wired to throttle (CC0)", type: audio, group: sfx, size: default, status: todo, blockers: [code-vehicle-controller]}
-  - {id: audio-sfx-surface, title: "Per-surface tire SFX (CC0)", type: audio, group: sfx, size: default, status: todo, blockers: [code-vehicle-surface-grip]}
-  - {id: audio-sfx-impact, title: "Impact/damage SFX", type: audio, group: sfx, size: small, status: todo, blockers: [code-vehicle-damage]}
-  - {id: audio-sfx-slipstream, title: "Slipstream whoosh/rush cue", type: audio, group: sfx, size: small, status: todo, blockers: [code-vehicle-slipstream]}
-  - {id: audio-sfx-nitro, title: "Nitro/boost sound", type: audio, group: sfx, size: micro, status: todo, blockers: [code-vehicle-brand-features]}
-  - {id: audio-sfx-ui, title: "UI clicks/confirms", type: audio, group: sfx, size: small, status: todo, blockers: []}
-  - {id: audio-sfx-ambient, title: "Ambient/crowd bed (festival)", type: audio, group: sfx, size: default, status: todo, blockers: []}
+  - {id: audio-sfx-core, title: "SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds", type: audio, group: sfx, size: default, status: done, blockers: []}
+  - {id: audio-sfx-engine, title: "Engine loop wired to throttle (CC0)", type: audio, group: sfx, size: default, status: todo, blockers: [audio-sfx-core, code-vehicle-controller]}
+  - {id: audio-sfx-surface, title: "Per-surface tire SFX (CC0)", type: audio, group: sfx, size: default, status: todo, blockers: [audio-sfx-core, code-vehicle-surface-grip]}
+  - {id: audio-sfx-impact, title: "Impact/damage SFX", type: audio, group: sfx, size: small, status: todo, blockers: [audio-sfx-core, code-vehicle-damage]}
+  - {id: audio-sfx-slipstream, title: "Slipstream whoosh/rush cue", type: audio, group: sfx, size: small, status: todo, blockers: [audio-sfx-core, code-vehicle-slipstream]}
+  - {id: audio-sfx-nitro, title: "Nitro/boost sound", type: audio, group: sfx, size: micro, status: todo, blockers: [audio-sfx-core, code-vehicle-brand-features]}
+  - {id: audio-sfx-ui, title: "UI clicks/confirms", type: audio, group: sfx, size: small, status: todo, blockers: [audio-sfx-core]}
+  - {id: audio-sfx-ambient, title: "Ambient/crowd bed (festival)", type: audio, group: sfx, size: default, status: todo, blockers: [audio-sfx-core]}
   - {id: audio-music-direction, title: "Music direction + sourcing plan", type: audio, group: music, size: big, status: todo, blockers: []}
   - {id: audio-music-menu, title: "Menu/career music track", type: audio, group: music, size: default, status: todo, blockers: [audio-music-direction]}
   - {id: audio-music-race, title: "Race music track", type: audio, group: music, size: default, status: todo, blockers: [audio-music-direction]}

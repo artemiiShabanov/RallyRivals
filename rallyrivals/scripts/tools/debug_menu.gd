@@ -63,6 +63,7 @@ func _menu() -> Array:
 		]},
 		{"label": "Lighting", "sub": _lighting_menu()},
 		{"label": "Weather", "sub": _weather_menu()},
+		{"label": "Audio", "sub": _audio_menu()},
 		{"label": "Time scale (%sx)" % String.num(Engine.time_scale), "sub": [
 			{"label": "0.25x", "run": func() -> void: Engine.time_scale = 0.25},
 			{"label": "0.5x", "run": func() -> void: Engine.time_scale = 0.5},
@@ -237,6 +238,34 @@ func _apply_weather(preset: WeatherPreset) -> void:
 		scene.add_child(fx)
 	fx.apply(preset)
 	print("debug: weather -> ", preset.id)
+
+# Audition every SfxDef (assets/audio/sfx) at the car + quick per-bus volume set.
+func _audio_menu() -> Array:
+	var out: Array = []
+	var da := DirAccess.open("res://assets/audio/sfx")
+	if da != null:
+		for f in da.get_files():
+			if f.get_extension() == "tres":
+				var def := load("res://assets/audio/sfx/".path_join(f)) as SfxDef
+				if def != null:
+					out.append({"label": "play " + f.get_basename(), "run": _play_sfx.bind(def)})
+	for bus in ["Master", "Music", "SFX", "UI"]:
+		out.append({"label": "%s vol (%d%%)" % [bus, roundi(Sfx.get_bus_volume(bus) * 100.0)], "sub": _bus_menu(bus)})
+	return out
+
+func _bus_menu(bus: String) -> Array:
+	var out: Array = []
+	for pct in [0, 25, 50, 75, 100]:
+		out.append({"label": "%d%%" % pct, "run": func() -> void: Sfx.set_bus_volume(bus, pct / 100.0)})
+	return out
+
+func _play_sfx(def: SfxDef) -> void:
+	var car := _car()
+	if car != null:
+		Sfx.play_at(def, car.global_position)
+	else:
+		Sfx.play(def)
+	print("debug: sfx -> ", def.resource_path.get_file())
 
 func _swap_car(def: CarDef) -> void:
 	var c := _car()

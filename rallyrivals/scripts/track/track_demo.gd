@@ -32,7 +32,9 @@ func _ready() -> void:
 	# Checkpoint + timing debug: gate passes, lap times, stage time (cut a corner -> no lap).
 	var cps := track.get_node_or_null("Checkpoints") as TrackCheckpoints
 	if cps != null:
+		var cp_sfx := load("res://assets/audio/sfx/checkpoint.tres") as SfxDef
 		cps.gate_passed.connect(func(body: Node3D, index: int, total: int) -> void:
+			Sfx.play_at(cp_sfx, body.global_position)
 			print("checkpoint %d/%d — %s" % [index, total, body.name]))
 		var timing := RaceTiming.new()
 		timing.name = "RaceTiming"
