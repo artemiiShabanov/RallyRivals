@@ -10,12 +10,17 @@ without a licensing headache later.
 
 **Two systems, two resource types:**
 
-| | one-shots | loops |
-|---|---|---|
-| resource | `SfxDef` (`scripts/audio/sfx_def.gd`) | `AmbientDef` (`scripts/audio/ambient_def.gd`) |
-| lives in | `assets/audio/sfx/*.tres` | `assets/audio/ambient/*.tres` |
-| played by | `Sfx` autoload — `play(def)` / `play_at(def, pos)` | `AmbientBed` — `set_layer(name, def)` |
-| behaviour | pooled players, random stream pick, pitch jitter | named layers, crossfaded, non-spatial |
+| | one-shots | ambience loops | driven loops |
+|---|---|---|---|
+| resource | `SfxDef` | `AmbientDef` | none — raw stream |
+| lives in | `assets/audio/sfx/` | `assets/audio/ambient/` | `assets/audio/loops/` |
+| played by | `Sfx.play(def)` / `play_at(def, pos)` | `AmbientBed.set_layer(name, def)` | `Sfx.attach_loop(node, stream)` |
+| behaviour | pooled players, random stream pick, pitch jitter | named layers, crossfaded, non-spatial | parented to an emitter, driven live |
+
+**Driven loops deliberately have no `SfxDef`.** A `LOOP_FORWARD` stream played through the
+one-shot pool would hold its player forever and starve the pool. Engine and tyre loops belong to
+systems that drive their pitch and level continuously, and those systems will bring their own
+config resources (RPM ranges, per-surface mapping) when they're built.
 
 `SfxDef` holds *candidate* streams: give it three gravel impacts and each play picks one at
 random with a pitch nudge, so repeated hits never sound machine-stamped.
@@ -29,11 +34,12 @@ Thunder is a `SfxDef` on the preset, fired **0.3–2.6 s after** each lightning 
 light by the distance to the strike.
 
 **Adding a real sound** — no code changes:
-1. Drop the file in `assets/audio/sfx/` or `assets/audio/ambient/`.
+1. Drop the file in the matching folder.
 2. Loops only: select it, Import tab → **Loop** on → Reimport. (Placeholders skip this — they're
    `.res` `AudioStreamWAV` with loop points baked into the resource.)
-3. Point the `.tres` def at it in the inspector. Audition with `\` → Audio.
-4. Log it in `assets/audio/SOURCES.md`.
+3. Point the `.tres` def at it in the inspector — or, for a driven loop, just replace the `.res`.
+4. Audition with `\` → Audio (one-shots, beds, and driven loops are all playable there).
+5. Log it in `assets/audio/SOURCES.md`.
 
 **Formats:** `.ogg` for anything over ~2 s (music, beds, engine loops); `.wav` for short
 one-shots (uncompressed, no decode latency). Avoid `.mp3` — gapless looping is unreliable.
@@ -42,26 +48,31 @@ Aim for peaks around −3 dBFS in the file and set the level in the def, not the
 
 ## 2. Sound manifest
 
-Status: ✅ placeholder in place · ⬜ not sourced yet. Placeholders are synthesized filtered noise
-(`scripts/tools/gen_test_sfx.gd`, `gen_ambient_sfx.gd`) — CC0 by construction, replace freely.
+**All 41 sounds have placeholders** — synthesized filtered noise and harmonic stacks from
+`scripts/tools/gen_placeholder_audio.gd`, CC0 by construction, seeded so regeneration is
+byte-identical. None are production sounds; replace freely. Columns below track what each is
+*for* and which system owns it — **⬜ = still a placeholder, ✅ = real sound sourced.**
 
-### Ambience — `audio-sfx-ambient` ✅ done
+The live sourcing checklist (placeholder / sourced / wired per sound) is kept separately so it can
+be ticked off without editing this doc.
+
+### Ambience — `audio-sfx-ambient` (system done, sounds ⬜)
 | sound | type | used by |
 |---|---|---|
-| `festival_crowd` ✅ | loop | venue bed, all races (GDD: outlaw festival) |
-| `wind_light` ✅ | loop | clear weather |
-| `wind_low` ✅ | loop | fog (still, muffled) |
-| `rain` ✅ | loop | rain |
-| `rain_heavy` ✅ | loop | thunderstorm |
-| `snow_wind` ✅ | loop | snow |
-| `thunder` ×2 ✅ | one-shot | delayed after each lightning flash |
+| `festival_crowd` | bed | venue bed, all races (GDD: outlaw festival) |
+| `wind_light` | bed | clear weather |
+| `wind_low` | bed | fog (still, muffled) |
+| `rain` | bed | rain |
+| `rain_heavy` | bed | thunderstorm |
+| `snow_wind` | bed | snow |
+| `thunder` ×2 | one-shot | delayed 0.3–2.6 s after each lightning flash |
 
 ### Vehicle — `audio-sfx-engine`
 | sound | type | notes |
 |---|---|---|
-| `engine_loop` ⬜ | loop | seamless mid-RPM; pitch-driven from throttle/speed. **Start here** |
-| `engine_low` / `engine_high` ⬜ | loop | optional layers to crossfade — richer than pitching one loop ±2 octaves |
-| `engine_start` / `engine_off` ⬜ | one-shot | race start / results |
+| `engine_mid` | driven loop | the one that matters — pitch-driven from throttle/speed. **Start here** |
+| `engine_low` / `engine_high` | driven loop | RPM layers to crossfade — richer than pitching one loop ±2 octaves |
+| `engine_start` / `engine_off` | one-shot | race start / results |
 
 Three brands (Apex/Wreckhouse/Mayfly) eventually want distinct engine character — one loop each
 is the cheap version; don't source three until the one-loop version feels right.
@@ -69,40 +80,40 @@ is the cheap version; don't source three until the one-loop version feels right.
 ### Tyres — `audio-sfx-surface`
 | sound | type | notes |
 |---|---|---|
-| `roll_asphalt` `roll_gravel` `roll_dirt` `roll_sand` `roll_snow` `roll_ice` ⬜ | loop | one per `SurfaceType` id; volume/pitch from speed, crossfaded on surface change |
-| `skid_asphalt` ⬜ | loop | tyre screech, faded in by slip angle |
-| `skid_loose` ⬜ | loop | gravel/dirt slide — grittier, no screech |
+| `roll_asphalt` `roll_gravel` `roll_dirt` `roll_sand` `roll_snow` `roll_ice` | driven loop | one per `SurfaceType` id; volume/pitch from speed, crossfaded on surface change |
+| `skid_asphalt` | driven loop | tyre screech, faded in by slip angle |
+| `skid_loose` | driven loop | gravel/dirt slide — grittier, no screech |
 
 ### Impacts — `audio-sfx-impact`
 | sound | type | notes |
 |---|---|---|
-| `impact_light` ×2–3 ⬜ | one-shot | scaled by collision impulse |
-| `impact_heavy` ×2–3 ⬜ | one-shot | triggers damage-state swap |
-| `scrape` ⬜ | loop | wall-riding |
-| `debris_cubes` ⬜ | one-shot | ADR-003 cube burst |
+| `impact_light` ×3 | one-shot | scaled by collision impulse |
+| `impact_heavy` ×3 | one-shot | triggers damage-state swap |
+| `scrape` | driven loop | wall-riding |
+| `debris_cubes` ×3 | one-shot | ADR-003 cube burst |
 
 ### Race events
 | sound | type | task |
 |---|---|---|
-| `checkpoint` ✅ | one-shot | wired in `track_demo` |
-| `countdown_beep` ×3 + `countdown_go` ⬜ | one-shot | `code-race-types` |
-| `lap_best` ⬜ | one-shot | `code-race-timing` |
-| `finish_win` / `finish_lose` ⬜ | one-shot | `code-race-result` |
-| `wrong_way` ⬜ | loop/one-shot | `code-track-checkpoints` |
-| `slipstream` ⬜ | loop | `audio-sfx-slipstream` |
-| `nitro_fire` + `nitro_loop` ⬜ | one-shot + loop | `audio-sfx-nitro` |
+| `checkpoint` | one-shot | wired in `track_demo` |
+| `countdown_beep` + `countdown_go` | one-shot | `code-race-types` |
+| `lap_best` | one-shot | `code-race-timing` |
+| `finish_win` / `finish_lose` | one-shot | `code-race-result` |
+| `wrong_way` | one-shot | `code-track-checkpoints` |
+| `slipstream` | driven loop | `audio-sfx-slipstream` |
+| `nitro_fire` + `nitro_loop` | one-shot + driven loop | `audio-sfx-nitro` |
 
 ### UI — `audio-sfx-ui`
-`ui_click` ✅ · `ui_move` ⬜ (menu navigation) · `ui_confirm` ⬜ · `ui_back` ⬜ · `ui_error` ⬜ ·
-`ui_purchase` ⬜ · `ui_unlock` ⬜ (pink-slip win). Kenney's interface pack covers this set in one
-CC0 download — the cheapest whole-task win on this page.
+`ui_click` · `ui_move` (menu navigation) · `ui_confirm` · `ui_back` · `ui_error` · `ui_purchase` ·
+`ui_unlock` (pink-slip win). Kenney's interface pack covers this set in one CC0 download — the
+cheapest whole-task win on this page.
 
 ### Music — `audio-music-*`
-`menu` ⬜ · `race` ⬜ · `boss` ⬜. Direction is its own task (`audio-music-direction`); source only
-after that lands.
+`menu` · `race` · `boss` — **no placeholders on purpose**; `audio-music-direction` writes the brief
+first, and a synthesized stand-in would only anchor the direction badly.
 
-**Roughly 40 sound files + 3 music tracks** for the full game. Ambience and UI are the two cheapest
-groups; engine and tyres are the two that actually sell the driving.
+**41 sound files + 3 music tracks** for the full game. Ambience and UI are the two cheapest groups;
+engine and tyres are the two that actually sell the driving.
 
 ## 3. Where to get sounds for free
 

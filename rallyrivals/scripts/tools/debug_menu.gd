@@ -250,6 +250,7 @@ func _audio_menu() -> Array:
 				if def != null:
 					out.append({"label": "play " + f.get_basename(), "run": _play_sfx.bind(def)})
 	out.append({"label": "Ambience (world bed)", "sub": _ambient_menu()})
+	out.append({"label": "Driven loops (toggle on car)", "sub": _loops_menu()})
 	for bus in ["Master", "Music", "SFX", "UI"]:
 		out.append({"label": "%s vol (%d%%)" % [bus, roundi(Sfx.get_bus_volume(bus) * 100.0)], "sub": _bus_menu(bus)})
 	return out
@@ -272,6 +273,42 @@ func _set_ambient(def: AmbientDef) -> void:
 	if bed != null:
 		bed.set_layer("world", def)
 		print("debug: ambience -> ", def.id if def != null else "off")
+
+# Audition the driven loops (assets/audio/loops) before their systems exist: toggles a looping
+# 3D player on the car so engine/tyre placeholders can be heard while driving. The real wiring
+# (throttle -> pitch, surface -> crossfade) belongs to audio-sfx-engine / audio-sfx-surface.
+func _loops_menu() -> Array:
+	var out: Array = []
+	var da := DirAccess.open("res://assets/audio/loops")
+	if da != null:
+		for f in da.get_files():
+			if f.get_extension() == "res":
+				out.append({"label": f.get_basename(), "run": _toggle_loop.bind(f.get_basename())})
+	out.append({"label": "(stop all)", "run": _toggle_loop.bind("")})
+	return out
+
+func _toggle_loop(id: String) -> void:
+	var car := _car()
+	if car == null:
+		return
+	var node_name := "DebugLoop_" + id
+	for c in car.get_children():
+		if c.name.begins_with("DebugLoop_"):
+			if id == "" or c.name == node_name:
+				c.queue_free()
+				if id != "":
+					print("debug: loop off -> ", id)
+					return
+	if id == "":
+		print("debug: all loops off")
+		return
+	var stream := load("res://assets/audio/loops/%s.res" % id) as AudioStream
+	if stream == null:
+		return
+	var p := Sfx.attach_loop(car, stream)
+	p.name = node_name
+	p.play()
+	print("debug: loop on -> ", id)
 
 func _bus_menu(bus: String) -> Array:
 	var out: Array = []

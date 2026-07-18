@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SfxDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_uxw55"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/ui_error.res" id="2_34i85"]
+
+[resource]
+script = ExtResource("1_uxw55")
+streams = Array[AudioStream]([ExtResource("2_34i85")])
+volume_db = -6.0
+pitch_min = 1.0
+pitch_max = 1.0
+bus = "UI"
+max_distance = 40.0

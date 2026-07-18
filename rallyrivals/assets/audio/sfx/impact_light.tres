@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SfxDef" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_n5t07"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/impact_light_1.res" id="2_hy84r"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/impact_light_2.res" id="3_dqrgl"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/impact_light_3.res" id="4_3l57e"]
+
+[resource]
+script = ExtResource("1_n5t07")
+streams = Array[AudioStream]([ExtResource("2_hy84r"), ExtResource("3_dqrgl"), ExtResource("4_3l57e")])
+volume_db = -5.0
+pitch_min = 0.88
+pitch_max = 1.12
+bus = "SFX"
+max_distance = 40.0

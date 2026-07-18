@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SfxDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_qhxr6"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/finish_lose.res" id="2_4d30o"]
+
+[resource]
+script = ExtResource("1_qhxr6")
+streams = Array[AudioStream]([ExtResource("2_4d30o")])
+volume_db = -5.0
+pitch_min = 0.99
+pitch_max = 1.01
+bus = "SFX"
+max_distance = 40.0

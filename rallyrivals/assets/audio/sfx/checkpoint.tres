@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="SfxDef" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_qptc5"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/checkpoint.wav" id="2_undmv"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/checkpoint.res" id="2_undmv"]
 
 [resource]
 script = ExtResource("1_qptc5")
