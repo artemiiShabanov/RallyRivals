@@ -16,6 +16,8 @@ var _sun: DirectionalLight3D
 var _flash_elapsed := -1.0
 var _next_flash := 0.0
 var _flash_base := 1.0
+var _bed: AmbientBed
+var _boom_in := -1.0          # seconds until the pending thunder crack is heard (see _thunder)
 
 # One shared cloud panorama for all presets (seamless fractal noise, gradient-thresholded
 # into clumps); per-weather look comes from sky_cover_modulate colour + alpha.
@@ -35,7 +37,9 @@ func apply(preset: WeatherPreset) -> void:
 	_setup_fog()
 	_setup_clouds()
 	_setup_particles()
+	_setup_ambience()
 	_flash_elapsed = -1.0
+	_boom_in = -1.0
 	_next_flash = randf_range(2.0, 5.0)
 	current_grip_multiplier = preset.grip_multiplier
 	current_wetness = preset.wetness
@@ -45,6 +49,15 @@ func _exit_tree() -> void:
 	current_grip_multiplier = 1.0   # weather never leaks into the next scene
 	current_wetness = 0.0
 	RenderingServer.global_shader_parameter_set("rr_wetness", 0.0)
+	if is_instance_valid(_bed):
+		_bed.set_layer("weather", null)   # the venue bed keeps playing; only the rain stops
+
+# The weather's own loop (rain hiss, snow wind) rides the bed's "weather" layer, so swapping
+# presets crossfades the sound with the visuals and leaves the track's venue bed alone.
+func _setup_ambience() -> void:
+	_bed = AmbientBed.find_or_create(get_tree())
+	if _bed != null:
+		_bed.set_layer("weather", _preset.ambient)
 
 func _find_scene_nodes() -> void:
 	var tree := get_tree()
@@ -144,13 +157,19 @@ func _process(delta: float) -> void:
 # Randomized double-pulse: bright flash, beat, dimmer echo. Base energy is sampled when each
 # flash starts, so lighting-preset changes between storms stay honest.
 func _thunder(delta: float) -> void:
-	if _preset == null or not _preset.thunder or _sun == null:
+	if _preset == null or not _preset.thunder:
+		return
+	_boom(delta)
+	if _sun == null:
 		return
 	if _flash_elapsed < 0.0:
 		_next_flash -= delta
 		if _next_flash <= 0.0:
 			_flash_elapsed = 0.0
 			_flash_base = _sun.light_energy
+			# Sound lags light by the distance to the strike — a near hit cracks almost with the
+			# flash, a far one rumbles seconds later. Free drama for one randf.
+			_boom_in = randf_range(0.3, 2.6)
 		return
 	_flash_elapsed += delta
 	if _flash_elapsed < 0.08:
@@ -163,3 +182,15 @@ func _thunder(delta: float) -> void:
 		_sun.light_energy = _flash_base
 		_flash_elapsed = -1.0
 		_next_flash = randf_range(4.0, 9.0)
+
+# Fires the delayed crack. Sfx is an autoload, absent in --script probe runs, hence the lookup.
+func _boom(delta: float) -> void:
+	if _boom_in < 0.0:
+		return
+	_boom_in -= delta
+	if _boom_in > 0.0:
+		return
+	_boom_in = -1.0
+	var sfx := get_node_or_null("/root/Sfx")
+	if sfx != null and _preset.thunder_sfx != null:
+		sfx.play(_preset.thunder_sfx)

@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="WeatherPreset" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="WeatherPreset" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/world/weather_preset.gd" id="1_6r7qv"]
+[ext_resource type="Resource" path="res://assets/audio/ambient/snow_wind.tres" id="1_tnlsq"]
+[ext_resource type="Script" path="res://scripts/world/weather_preset.gd" id="2_tnuxp"]
 
 [resource]
-script = ExtResource("1_6r7qv")
+script = ExtResource("2_tnuxp")
 id = "snow"
 precipitation = "snow"
 amount = 450
@@ -20,3 +21,4 @@ cloud_color = Color(0.921569, 0.941176, 0.968627, 1)
 thunder = false
 grip_multiplier = 0.75
 wetness = 0.15
+ambient = ExtResource("1_tnlsq")

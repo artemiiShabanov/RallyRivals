@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="WeatherPreset" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="WeatherPreset" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/world/weather_preset.gd" id="1_wvqgg"]
+[ext_resource type="Resource" path="res://assets/audio/ambient/rain.tres" id="1_gfvj8"]
+[ext_resource type="Script" path="res://scripts/world/weather_preset.gd" id="2_wuf72"]
 
 [resource]
-script = ExtResource("1_wvqgg")
+script = ExtResource("2_wuf72")
 id = "rain"
 precipitation = "rain"
 amount = 700
@@ -20,3 +21,4 @@ cloud_color = Color(0.560784, 0.65098, 0.772549, 1)
 thunder = false
 grip_multiplier = 0.85
 wetness = 0.8
+ambient = ExtResource("1_gfvj8")

@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="WeatherPreset" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="WeatherPreset" load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/world/weather_preset.gd" id="1_f4who"]
+[ext_resource type="Resource" path="res://assets/audio/ambient/wind_low.tres" id="1_w3ylf"]
+[ext_resource type="Script" path="res://scripts/world/weather_preset.gd" id="2_57m0t"]
 
 [resource]
-script = ExtResource("1_f4who")
+script = ExtResource("2_57m0t")
 id = "fog"
 precipitation = "none"
 amount = 0
@@ -20,3 +21,4 @@ cloud_color = Color(0.721569, 0.721569, 0.678431, 1)
 thunder = false
 grip_multiplier = 1.0
 wetness = 0.25
+ambient = ExtResource("1_w3ylf")

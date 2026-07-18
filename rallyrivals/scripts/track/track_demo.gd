@@ -19,6 +19,13 @@ func _ready() -> void:
 	var track := ps.instantiate()
 	add_child(track)
 
+	# Venue ambience ("world" layer). Weather lays its own bed over this via WeatherFX.
+	var bed := AmbientBed.find_or_create(get_tree())
+	if bed != null:
+		var venue: AmbientDef = race.ambience if race != null and race.ambience != null \
+			else load("res://assets/audio/ambient/festival_crowd.tres") as AmbientDef
+		bed.set_layer("world", venue)
+
 	# Per-race conditions (code-track-conditions): fixed time-of-day + weather from the RaceDef.
 	if race != null:
 		if race.lighting != null:

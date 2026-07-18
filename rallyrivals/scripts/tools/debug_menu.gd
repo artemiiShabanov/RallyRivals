@@ -249,9 +249,29 @@ func _audio_menu() -> Array:
 				var def := load("res://assets/audio/sfx/".path_join(f)) as SfxDef
 				if def != null:
 					out.append({"label": "play " + f.get_basename(), "run": _play_sfx.bind(def)})
+	out.append({"label": "Ambience (world bed)", "sub": _ambient_menu()})
 	for bus in ["Master", "Music", "SFX", "UI"]:
 		out.append({"label": "%s vol (%d%%)" % [bus, roundi(Sfx.get_bus_volume(bus) * 100.0)], "sub": _bus_menu(bus)})
 	return out
+
+# Swap the venue bed live. The weather layer is owned by WeatherFX (use the Weather menu).
+func _ambient_menu() -> Array:
+	var out: Array = []
+	var da := DirAccess.open("res://assets/audio/ambient")
+	if da != null:
+		for f in da.get_files():
+			if f.get_extension() == "tres":
+				var def := load("res://assets/audio/ambient/".path_join(f)) as AmbientDef
+				if def != null:
+					out.append({"label": def.id, "run": _set_ambient.bind(def)})
+	out.append({"label": "(silence)", "run": _set_ambient.bind(null)})
+	return out
+
+func _set_ambient(def: AmbientDef) -> void:
+	var bed := AmbientBed.find_or_create(get_tree())
+	if bed != null:
+		bed.set_layer("world", def)
+		print("debug: ambience -> ", def.id if def != null else "off")
 
 func _bus_menu(bus: String) -> Array:
 	var out: Array = []

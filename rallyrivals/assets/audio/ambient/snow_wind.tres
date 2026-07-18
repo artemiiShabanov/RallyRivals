@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AmbientDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/ambient_def.gd" id="1_t7qfm"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambient/snow_wind.res" id="2_jh076"]
+
+[resource]
+script = ExtResource("1_t7qfm")
+id = "snow_wind"
+stream = ExtResource("2_jh076")
+volume_db = -19.0
+fade_time = 2.0
+bus = "SFX"

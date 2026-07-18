@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AmbientDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/ambient_def.gd" id="1_afxm4"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambient/rain_heavy.res" id="2_yyecb"]
+
+[resource]
+script = ExtResource("1_afxm4")
+id = "rain_heavy"
+stream = ExtResource("2_yyecb")
+volume_db = -11.0
+fade_time = 2.0
+bus = "SFX"

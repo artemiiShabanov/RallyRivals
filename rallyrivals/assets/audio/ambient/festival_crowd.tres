@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AmbientDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/ambient_def.gd" id="1_pu5y7"]
+[ext_resource type="AudioStream" path="res://assets/audio/ambient/festival_crowd.res" id="2_tncd3"]
+
+[resource]
+script = ExtResource("1_pu5y7")
+id = "festival_crowd"
+stream = ExtResource("2_tncd3")
+volume_db = -17.0
+fade_time = 2.0
+bus = "SFX"

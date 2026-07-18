@@ -19,6 +19,7 @@ extends Resource
 @export var lighting: LightingPreset
 @export var weather: WeatherPreset
 @export var season := "summer"           ## visual set (code-track-seasons)
+@export var ambience: AmbientDef         ## venue bed ("world" layer); weather brings its own
 
 @export_group("Reward pools (banked-best)")
 @export var money_pool := 0

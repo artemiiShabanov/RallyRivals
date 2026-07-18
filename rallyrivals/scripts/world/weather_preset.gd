@@ -22,3 +22,7 @@ extends Resource
 @export var thunder := false            ## random double-pulse sun flashes
 @export var grip_multiplier := 1.0      ## folded into wheel grip (surface x car x weather)
 @export var wetness := 0.0              ## 0..1 — darkens/glosses terrain via rr_wetness global
+
+@export_group("Sound")
+@export var ambient: AmbientDef         ## looping weather bed, crossfaded on the "weather" layer
+@export var thunder_sfx: SfxDef         ## one-shot crack, delayed after each flash (see WeatherFX)

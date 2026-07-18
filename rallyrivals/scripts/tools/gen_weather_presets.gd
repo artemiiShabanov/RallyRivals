@@ -1,7 +1,11 @@
 extends SceneTree
 ## Writes the five WeatherPreset .tres files (art-vfx-weather). Colours derive from
-## master-palette anchors; grip multipliers ship dormant for code-track-weather-grip.
+## master-palette anchors; grip multipliers feed code-track-weather-grip; each preset also
+## carries the ambience bed it plays (audio-sfx-ambient) — run gen_ambient_sfx.gd first.
 ## Run: godot --headless --script res://scripts/tools/gen_weather_presets.gd
+
+func _amb(id: String) -> AmbientDef:
+	return load("res://assets/audio/ambient/%s.tres" % id) as AmbientDef
 
 func _initialize() -> void:
 	var dir := "res://assets/weather/"
@@ -12,6 +16,7 @@ func _initialize() -> void:
 	clear.id = "clear"
 	clear.cloud_cover = 0.3
 	clear.cloud_color = Color("f2ebd9")
+	clear.ambient = _amb("wind_light")
 	presets.append(clear)
 
 	var rain := WeatherPreset.new()
@@ -29,6 +34,7 @@ func _initialize() -> void:
 	rain.cloud_color = Color("8fa6c5")
 	rain.grip_multiplier = 0.85
 	rain.wetness = 0.8
+	rain.ambient = _amb("rain")
 	presets.append(rain)
 
 	var snow := WeatherPreset.new()
@@ -47,6 +53,7 @@ func _initialize() -> void:
 	snow.cloud_color = Color("ebf0f7")
 	snow.grip_multiplier = 0.75
 	snow.wetness = 0.15
+	snow.ambient = _amb("snow_wind")
 	presets.append(snow)
 
 	var thunder := WeatherPreset.new()
@@ -65,6 +72,8 @@ func _initialize() -> void:
 	thunder.thunder = true
 	thunder.grip_multiplier = 0.8
 	thunder.wetness = 1.0
+	thunder.ambient = _amb("rain_heavy")
+	thunder.thunder_sfx = load("res://assets/audio/sfx/thunder.tres") as SfxDef
 	presets.append(thunder)
 
 	var fog := WeatherPreset.new()
@@ -76,6 +85,7 @@ func _initialize() -> void:
 	fog.cloud_cover = 0.95
 	fog.cloud_color = Color("b8b8ad")
 	fog.wetness = 0.25
+	fog.ambient = _amb("wind_low")
 	presets.append(fog)
 
 	for pr in presets:
