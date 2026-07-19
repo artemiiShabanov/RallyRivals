@@ -6,8 +6,8 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-13 placeholders + **24 sourced** — all beds, 3 engine bands, 2 surface loops, 12 one-shot defs.
-Still placeholder: skid_asphalt, 6 roll_*, checkpoint, engine_start/off, impacts, debris.
+12 placeholders + **25 sourced** — all beds, 3 engine bands, 2 surface loops, 12 one-shot defs.
+Still placeholder: skid_asphalt, 6 roll_*, engine_start/off, impacts, debris.
 
 **Dropped:** `ui_back` — a plain click covers it. Also `slipstream`, `nitro_loop`, `nitro_fire`.
 
@@ -52,7 +52,7 @@ Their owning systems will define their own config resources.
 
 | # | sound | var | PH | SRC | WIRED | owning task |
 |---|---|:--:|:--:|:--:|:--:|---|
-| 19 | checkpoint | 1 | ✅ | ⬜ | ✅ | wired in track_demo |
+| 19 | checkpoint | 1 | — | ✅ | ✅ | **SOURCED** (sfxr) — 0.32 s mono, wired in track_demo |
 | 20 | thunder | 2 | — | ✅ | ✅ | **SOURCED** — 2 variants, 2.75 s + 4.07 s |
 | 21 | countdown_beep | 1 | — | ✅ | ⬜ | **SOURCED** — 0.99 s, 0.72 s of silence trimmed |
 | 22 | countdown_go | 1 | — | ✅ | ⬜ | **SOURCED** — 0.48 s |
