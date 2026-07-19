@@ -7,6 +7,6 @@
 script = ExtResource("1_pu5y7")
 id = "festival_crowd"
 stream = ExtResource("2_tncd3")
-volume_db = -22.5
+volume_db = -27.5
 fade_time = 2.0
 bus = "SFX"

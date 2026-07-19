@@ -7,7 +7,7 @@ Anything CC-BY also needs a line in the in-game credits screen.
 
 | file | source | licence | author | date |
 |---|---|---|---|---|
-| `ambient/festival_crowd.wav` | ⚠️ **TODO — fill in** | ⚠️ **TODO** | ⚠️ **TODO** | 2026-07-19 |
+| `ambient/festival_crowd.wav` | https://gamesounds.xyz (Sonniss GDC bundle mirror) | #GameAudioGDC Bundle Licence — commercial OK, **no attribution required** | Sonniss contributor | 2026-07-19 |
 | everything else under `ambient/`, `loops/`, `sfx/` | synthesized — `scripts/tools/gen_placeholder_audio.gd` | CC0 (own work) | project | 2026-07-18 |
 
 **All 41 sounds are currently placeholders** — filtered noise and harmonic stacks generated from

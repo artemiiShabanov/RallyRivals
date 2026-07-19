@@ -15,7 +15,7 @@ Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 | # | sound | PH | SRC | WIRED | notes |
 |---|---|:--:|:--:|:--:|---|
-| 1 | festival_crowd | — | ✅ | ✅ | **SOURCED** 12 s stereo wav, −6 dBFS, seamless. ⚠️ provenance still TODO in SOURCES.md |
+| 1 | festival_crowd | — | ✅ | ✅ | **SOURCED** — gamesounds.xyz, 12 s stereo wav, seamless, −27.5 dB in mix |
 | 2 | wind_light | ✅ | ⬜ | ✅ | clear weather |
 | 3 | wind_low | ✅ | ⬜ | ✅ | fog |
 | 4 | rain | ✅ | ⬜ | ✅ | rain |
