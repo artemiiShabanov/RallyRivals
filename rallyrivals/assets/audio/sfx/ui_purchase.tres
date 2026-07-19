@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="SfxDef" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_qq05k"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/ui_purchase.res" id="2_8j68j"]
+[ext_resource type="AudioStream" uid="uid://31k6lqlgcxuq" path="res://assets/audio/sfx/ui_purchase.wav" id="2_8j68j"]
 
 [resource]
 script = ExtResource("1_qq05k")
 streams = Array[AudioStream]([ExtResource("2_8j68j")])
-volume_db = -5.0
+volume_db = -5.4
 pitch_min = 0.98
 pitch_max = 1.02
 bus = "UI"

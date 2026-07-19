@@ -6,7 +6,8 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-27 placeholders + **11 sourced** (6 beds, 3 engine bands, skid_loose, scrape). 5 are wired.
+15 placeholders + **23 sourced** — all beds, 3 engine bands, 2 surface loops, 12 one-shot defs.
+Still placeholder: ui_move, ui_back, skid_asphalt, 6 roll_*, checkpoint, engine_start/off, impacts, debris.
 
 **Deferred:** `slipstream`, `nitro_loop`, `nitro_fire` removed for now — their features
 (`code-vehicle-slipstream`, `code-vehicle-brand-features`) aren't built. Backlog tasks remain.
@@ -50,25 +51,25 @@ Their owning systems will define their own config resources.
 | # | sound | var | PH | SRC | WIRED | owning task |
 |---|---|:--:|:--:|:--:|:--:|---|
 | 19 | checkpoint | 1 | ✅ | ⬜ | ✅ | wired in track_demo |
-| 20 | thunder | 2 | ✅ | ⬜ | ✅ | WeatherFX, delayed after flash |
-| 21 | countdown_beep | 1 | ✅ | ⬜ | ⬜ | code-race-types |
-| 22 | countdown_go | 1 | ✅ | ⬜ | ⬜ | code-race-types |
-| 23 | lap_best | 1 | ✅ | ⬜ | ⬜ | code-race-timing |
-| 24 | finish_win | 1 | ✅ | ⬜ | ⬜ | code-race-result |
-| 25 | finish_lose | 1 | ✅ | ⬜ | ⬜ | code-race-result |
-| 26 | wrong_way | 1 | ✅ | ⬜ | ⬜ | code-track-checkpoints |
+| 20 | thunder | 2 | — | ✅ | ✅ | **SOURCED** — 2 variants, 2.75 s + 4.07 s |
+| 21 | countdown_beep | 1 | — | ✅ | ⬜ | **SOURCED** — 0.99 s, 0.72 s of silence trimmed |
+| 22 | countdown_go | 1 | — | ✅ | ⬜ | **SOURCED** — 0.48 s |
+| 23 | lap_best | 1 | — | ✅ | ⬜ | **SOURCED** — 0.57 s |
+| 24 | finish_win | 1 | — | ✅ | ⬜ | **SOURCED** — 0.84 s |
+| 25 | finish_lose | 1 | — | ✅ | ⬜ | **SOURCED** — 0.45 s |
+| 26 | wrong_way | 1 | — | ✅ | ⬜ | **SOURCED** — 0.23 s |
 | 27 | impact_light | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact |
 | 28 | impact_heavy | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact |
 | 29 | debris_cubes | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact (ADR-003 burst) |
 | 30 | engine_start | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
 | 31 | engine_off | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
-| 32 | ui_click | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 33 | ui_move | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 34 | ui_confirm | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 35 | ui_back | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 36 | ui_error | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 37 | ui_purchase | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 38 | ui_unlock | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui (pink-slip win) |
+| 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** — ⚠️ only 2.6 ms, verify it reads as a click |
+| 33 | ui_move | 1 | ✅ | ⬜ | ⬜ | ⚠️ **re-source** — dropped file had only 4 distinct sample values (~1.6 bits)
+| 34 | ui_confirm | 1 | — | ✅ | ⬜ | **SOURCED** — 0.06 s |
+| 35 | ui_back | 1 | ✅ | ⬜ | ⬜ | still to source (was not in the drop)
+| 36 | ui_error | 1 | — | ✅ | ⬜ | **SOURCED** — 0.18 s |
+| 37 | ui_purchase | 1 | — | ✅ | ⬜ | **SOURCED** — 0.43 s |
+| 38 | ui_unlock | 1 | — | ✅ | ⬜ | **SOURCED** — 0.62 s |
 
 ## Music — `audio-music-*`
 

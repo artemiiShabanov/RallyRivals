@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="SfxDef" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_2drjb"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/countdown_beep.res" id="2_7o108"]
+[ext_resource type="AudioStream" uid="uid://de0r4mr84m1nn" path="res://assets/audio/sfx/countdown_beep.wav" id="2_7o108"]
 
 [resource]
 script = ExtResource("1_2drjb")
 streams = Array[AudioStream]([ExtResource("2_7o108")])
-volume_db = -4.0
+volume_db = 0.4
 pitch_min = 1.0
 pitch_max = 1.0
 bus = "SFX"

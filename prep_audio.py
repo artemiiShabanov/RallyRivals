@@ -105,11 +105,28 @@ def seam_ratio(s, ch, frames):
     return seam / max(sum(deltas) / len(deltas), 1.0)
 
 
+def trim_silence(s, ch, thresh=0.02, tail_ms=25):
+    """Strip dead air from a one-shot, keeping a short tail so a decay isn't chopped. Library
+    one-shots are often padded — countdown_beep arrived with 0.74 s of trailing silence."""
+    n = len(s) // ch
+    pk = max(abs(v) for v in s) or 1
+    t = pk * thresh
+    lead = 0
+    while lead < n and all(abs(s[lead * ch + c]) < t for c in range(ch)):
+        lead += 1
+    trail = n - 1
+    while trail > lead and all(abs(s[trail * ch + c]) < t for c in range(ch)):
+        trail -= 1
+    lead = max(0, lead - int(RATE * 0.002))
+    trail = min(n - 1, trail + int(RATE * tail_ms / 1000))
+    return s[lead * ch:(trail + 1) * ch]
+
+
 def edge_fade(s, ch, ms=5):
-    """One-shots: a few ms in/out so a non-zero first or last sample can't click."""
-    f = int(RATE * ms / 1000)
+    """One-shots: a few ms in/out so a non-zero first or last sample can't click. Scaled down for
+    very short sounds — a fixed 5 ms would swallow a 3 ms click whole."""
     total = len(s) // ch
-    f = min(f, total // 2)
+    f = min(int(RATE * ms / 1000), total // 8)
     for k in range(f):
         g = k / f
         for c in range(ch):
@@ -167,7 +184,11 @@ def main():
                 out = make_loop(s, ch, total - f, f)
                 print(f"  natural seam poor — crossfaded {a.fade:.2f}s (body {(total - f) / RATE:.2f}s)")
     else:
-        out = edge_fade(s[: int(a.seconds * RATE) * ch] if a.seconds else s, ch)
+        out = s[: int(a.seconds * RATE) * ch] if a.seconds else s
+        before = len(out) // ch
+        out = edge_fade(trim_silence(out, ch), ch)
+        if len(out) // ch < before:
+            print(f"  trimmed {(before - len(out) // ch) / RATE:.3f}s of silence")
 
     before = rms_db(out)
     out, gain = normalize(out, peak_db)

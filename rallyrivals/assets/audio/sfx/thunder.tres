@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="SfxDef" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_fmgg7"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/thunder_1.res" id="2_btwpm"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/thunder_2.res" id="3_masbk"]
+[ext_resource type="AudioStream" uid="uid://dgler8dupet4u" path="res://assets/audio/sfx/thunder_1.wav" id="2_btwpm"]
+[ext_resource type="AudioStream" uid="uid://ci57wbgg1p3k7" path="res://assets/audio/sfx/thunder_2.wav" id="3_masbk"]
 
 [resource]
 script = ExtResource("1_fmgg7")
 streams = Array[AudioStream]([ExtResource("2_btwpm"), ExtResource("3_masbk")])
-volume_db = -3.0
+volume_db = -6.0
 pitch_min = 0.88
 pitch_max = 1.12
 bus = "SFX"
