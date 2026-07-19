@@ -67,6 +67,17 @@ music tracks and the six beds to each other. Peak-normalizing does **not** make 
 a bright click at −3 dBFS reads much louder than a dull thud at −3 — so audition each group
 back-to-back in game and fix outliers in the def.
 
+⚠️ **Two traps when setting levels, both learned the hard way:**
+
+1. **Don't measure an imported WAV's `.data` as PCM.** Godot imports WAVs as QOA-compressed
+   (`format 3`), so decoding `.data` as 16-bit samples reads compressed bytes as audio and returns
+   a meaningless, near-full-scale number. Measure the file on disk instead (`prep_audio.py` prints
+   RMS), or a `.res` you generated yourself, which really is raw PCM.
+2. **The synthesized placeholders are not a level reference.** They were never balanced against
+   each other by ear. Matching a real recording to the placeholder it replaces propagates an
+   arbitrary level — the crowd placeholder turned out ~27 dB too loud. Set new sounds relative to
+   something already ear-validated in the mix, and trust the ears over the arithmetic.
+
 **Sample rate:** keep sourced files at 44.1 kHz; don't downsample. The placeholders are 22.05 kHz
 because they're noise and it halves the repo, but real files get pitch-shifted — `SfxDef` jitters
 ±12% on impacts and the engine loop is pitch-driven across its whole range — and pitching a
@@ -400,9 +411,26 @@ If you end up doing this more than a handful of times, Reaper ($60 personal lice
 free evaluation) makes crossfades non-destructive and draggable, which is a different experience
 from Audacity's commit-and-undo loop.
 
+### `prep_audio.py` — the actual pipeline
+
+For sounds named per the manifest and dropped in `assets/audio/_incoming/`, this does the whole
+conversion in one step. It uses `afconvert`, which ships with macOS, so nothing needs installing:
+
+```bash
+python3 prep_audio.py wind_light 10          # loop: 10 s body
+python3 prep_audio.py impact_heavy_1         # one-shot: whole file
+python3 prep_audio.py engine_mid 2 --from 12.5   # loop starting 12.5 s in
+```
+
+Format, channel count and level target all follow from the id — beds go stereo to `ambient/`,
+driven loops go mono to `loops/`, positional one-shots go mono to `sfx/`. It builds the seamless
+loop, normalises, and reports the seam quality. Then set `edit/loop_mode=2` in the `.import` and
+point the `.tres` at the new stream.
+
 ### Batch commands
 
-`brew install ffmpeg sox` first. These are from documentation, not run here — check results by ear.
+The commands below are alternatives for anything `prep_audio.py` doesn't cover; they need
+`brew install ffmpeg sox` and are from documentation rather than run here.
 
 ```bash
 # convert to game-ready mono 44.1k/16-bit

@@ -6,7 +6,7 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-40 placeholders + **1 sourced** (`festival_crowd`). 5 are wired.
+38 placeholders + **3 sourced** (`festival_crowd`, `wind_light`, `wind_low`). 5 are wired.
 Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 ---
@@ -16,8 +16,8 @@ Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 | # | sound | PH | SRC | WIRED | notes |
 |---|---|:--:|:--:|:--:|---|
 | 1 | festival_crowd | — | ✅ | ✅ | **SOURCED** — gamesounds.xyz, 12 s stereo wav, seamless, −27.5 dB in mix |
-| 2 | wind_light | ✅ | ⬜ | ✅ | clear weather |
-| 3 | wind_low | ✅ | ⬜ | ✅ | fog |
+| 2 | wind_light | — | ✅ | ✅ | **SOURCED** — Adobe, 10 s stereo, seamless, −36.5 dB |
+| 3 | wind_low | — | ✅ | ✅ | **SOURCED** — Adobe, 10 s stereo, seamless, −37.0 dB |
 | 4 | rain | ✅ | ⬜ | ✅ | rain |
 | 5 | rain_heavy | ✅ | ⬜ | ✅ | thunderstorm |
 | 6 | snow_wind | ✅ | ⬜ | ✅ | snow |
