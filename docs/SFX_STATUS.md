@@ -29,9 +29,9 @@ Their owning systems will define their own config resources.
 
 | # | sound | PH | SRC | WIRED | owning task |
 |---|---|:--:|:--:|:--:|---|
-| 7 | engine_low | — | ✅ | ⬜ | **SOURCED** — 14.25 s mono, natural loop kept whole |
-| 8 | engine_mid | — | ✅ | ⬜ | **SOURCED** — 6.37 s mono, 1 s crossfade |
-| 9 | engine_high | ✅ | ⬜ | ⬜ | ⚠️ **re-source** — the dropped file was darker/lower than both others (see notes) |
+| 7 | engine_low | — | ✅ | ⬜ | **SOURCED** — Sonniss, 14.25 s mono, natural loop kept whole |
+| 8 | engine_mid | — | ✅ | ⬜ | **SOURCED** — Sonniss, 6.37 s mono, 1 s crossfade |
+| 9 | engine_high | ✅ | ⬜ | ⬜ | ⚠️ **re-source** — needs to be brighter/busier than engine_mid, same car + mic |
 | 10 | roll_asphalt | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 11 | roll_gravel | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 12 | roll_dirt | ✅ | ⬜ | ⬜ | audio-sfx-surface |

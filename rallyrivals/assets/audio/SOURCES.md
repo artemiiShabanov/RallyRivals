@@ -13,8 +13,8 @@ Anything CC-BY also needs a line in the in-game credits screen.
 | `ambient/rain.wav` | Adobe free SFX (Audition DLC) | Adobe Software Licence Agreement — commercial OK, **no attribution required**, no standalone redistribution | Adobe | 2026-07-19 |
 | `ambient/rain_heavy.wav` | Adobe free SFX (Audition DLC) | Adobe Software Licence Agreement — commercial OK, **no attribution required**, no standalone redistribution | Adobe | 2026-07-19 |
 | `ambient/snow_wind.wav` | Adobe free SFX (Audition DLC) | Adobe Software Licence Agreement — commercial OK, **no attribution required**, no standalone redistribution | Adobe | 2026-07-19 |
-| `loops/engine_low.wav` | ⚠️ **fill in — which bundle/library/car?** | | | 2026-07-19 |
-| `loops/engine_mid.wav` | ⚠️ **fill in — which bundle/library/car?** | | | 2026-07-19 |
+| `loops/engine_low.wav` | https://gamesounds.xyz (Sonniss GDC bundle mirror) | #GameAudioGDC Bundle Licence — commercial OK, **no attribution required** | Sonniss contributor | 2026-07-19 |
+| `loops/engine_mid.wav` | https://gamesounds.xyz (Sonniss GDC bundle mirror) | #GameAudioGDC Bundle Licence — commercial OK, **no attribution required** | Sonniss contributor | 2026-07-19 |
 | everything else under `loops/` and `sfx/` | synthesized — `scripts/tools/gen_placeholder_audio.gd` | CC0 (own work) | project | 2026-07-18 |
 
 **All ambience beds are sourced; `loops/` and `sfx/` are still placeholders** — filtered noise and harmonic stacks generated from
