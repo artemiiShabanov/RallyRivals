@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="SfxDef" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_2rd5y"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/debris_cubes_1.res" id="2_xga1q"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/debris_cubes_2.res" id="3_e51o0"]
-[ext_resource type="AudioStream" path="res://assets/audio/sfx/debris_cubes_3.res" id="4_3q5j4"]
+[ext_resource type="AudioStream" uid="uid://b40bddanxdbtf" path="res://assets/audio/sfx/debris_cubes_1.wav" id="2_xga1q"]
+[ext_resource type="AudioStream" uid="uid://blv3a2yg2li7g" path="res://assets/audio/sfx/debris_cubes_2.wav" id="3_e51o0"]
+[ext_resource type="AudioStream" uid="uid://cfhb7y2f3r40d" path="res://assets/audio/sfx/debris_cubes_3.wav" id="4_3q5j4"]
 
 [resource]
 script = ExtResource("1_2rd5y")
 streams = Array[AudioStream]([ExtResource("2_xga1q"), ExtResource("3_e51o0"), ExtResource("4_3q5j4")])
-volume_db = -8.0
+volume_db = 0.0
 pitch_min = 0.82
 pitch_max = 1.18
 bus = "SFX"

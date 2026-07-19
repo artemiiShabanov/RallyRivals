@@ -6,8 +6,8 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-12 placeholders + **25 sourced** — all beds, 3 engine bands, 2 surface loops, 12 one-shot defs.
-Still placeholder: skid_asphalt, 6 roll_*, engine_start/off, impacts, debris.
+9 placeholders + **28 sourced** — all beds, 3 engine bands, 2 surface loops, 12 one-shot defs.
+Still placeholder: skid_asphalt, 6 roll_*, engine_start/off.
 
 **Dropped:** `ui_back` — a plain click covers it. Also `slipstream`, `nitro_loop`, `nitro_fire`.
 
@@ -60,9 +60,9 @@ Their owning systems will define their own config resources.
 | 24 | finish_win | 1 | — | ✅ | ⬜ | **SOURCED** — 0.84 s |
 | 25 | finish_lose | 1 | — | ✅ | ⬜ | **SOURCED** — 0.45 s |
 | 26 | wrong_way | 1 | — | ✅ | ⬜ | **SOURCED** — 0.23 s |
-| 27 | impact_light | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact |
-| 28 | impact_heavy | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact |
-| 29 | debris_cubes | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact (ADR-003 burst) |
+| 27 | impact_light | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.09–0.32 s. ⚠️ variants differ widely in tone (81 pp spectral spread) |
+| 28 | impact_heavy | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.50–2.14 s. ⚠️ _3 is light on low end (5.3% <200 Hz) |
+| 29 | debris_cubes | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.45–1.38 s, bright clatter as intended |
 | 30 | engine_start | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
 | 31 | engine_off | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
 | 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — 2.6 ms, confirmed good by ear |
