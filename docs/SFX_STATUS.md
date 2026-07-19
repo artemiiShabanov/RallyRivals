@@ -6,7 +6,7 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-33 placeholders + **8 sourced** (all 6 beds, engine_low, engine_mid). 5 are wired.
+32 placeholders + **9 sourced** (all 6 beds, all 3 engine bands). 5 are wired.
 Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 ---
@@ -31,7 +31,7 @@ Their owning systems will define their own config resources.
 |---|---|:--:|:--:|:--:|---|
 | 7 | engine_low | — | ✅ | ⬜ | **SOURCED** — Sonniss, 14.25 s mono, natural loop kept whole |
 | 8 | engine_mid | — | ✅ | ⬜ | **SOURCED** — Sonniss, 6.37 s mono, 1 s crossfade |
-| 9 | engine_high | ✅ | ⬜ | ⬜ | ⚠️ **re-source** — needs to be brighter/busier than engine_mid, same car + mic |
+| 9 | engine_high | — | ✅ | ⬜ | **SOURCED** — Sonniss, 5.50 s mono, 0.5 s crossfade |
 | 10 | roll_asphalt | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 11 | roll_gravel | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 12 | roll_dirt | ✅ | ⬜ | ⬜ | audio-sfx-surface |
@@ -86,10 +86,7 @@ No placeholders for music on purpose — `audio-music-direction` decides the bri
 
 Full detail in `docs/AUDIO.md` §3 (sources + licences) and §4 (engine specifically).
 
-1. **engine_low/mid/high** — pull **Soundholder "Game Audio Engines"** from the Sonniss GDC 2020
-   bundle via gamesounds.xyz. 22 cars, already cut into idle loops, RPM loops and ramps. Also grab
-   the Pole Position **rally** cars (Škoda Fabia R5 WRC2, Toyota Corolla, Volvo 142). Free, no
-   attribution. This is the single biggest win available.
+1. ~~engine_low/mid/high~~ **done** (Sonniss). Next: build the band crossfade — `audio-sfx-engine`.
 2. **roll_gravel / roll_asphalt / skid_loose** — the surface system is the game's identity.
    Sonniss (344 Audio SUV Dirt Track, Soundholder Cars In Motion) + Adobe Transportation.
 3. **UI set (7 sounds)** — one Kenney CC0 pack closes the whole row. Or ChipTone in an afternoon.
