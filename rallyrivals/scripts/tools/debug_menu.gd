@@ -79,13 +79,13 @@ func _input(event: InputEvent) -> void:
 	elif not _open:
 		return
 	elif event.is_action_pressed("ui_down", true):
-		_sel = (_sel + 1) % (_stack.back() as Array).size(); _refresh()
+		_sel = (_sel + 1) % (_stack.back() as Array).size(); _refresh(); _ui("ui_move")
 	elif event.is_action_pressed("ui_up", true):
-		_sel = (_sel - 1 + (_stack.back() as Array).size()) % (_stack.back() as Array).size(); _refresh()
+		_sel = (_sel - 1 + (_stack.back() as Array).size()) % (_stack.back() as Array).size(); _refresh(); _ui("ui_move")
 	elif event.is_action_pressed("ui_right") or event.is_action_pressed("ui_accept"):
 		_activate()
 	elif event.is_action_pressed("ui_left"):
-		_back()
+		_back(); _ui("ui_click")
 	elif event.is_action_pressed("ui_cancel"):
 		_set_open(false)
 	else:
@@ -102,8 +102,16 @@ func _set_open(v: bool) -> void:
 		_sel = 0
 		_refresh()
 
+# The debug menu is the only navigable UI that exists, so it doubles as the audition harness for
+# the UI cue set. Real menus (code-ui-*) call the same sounds.
+func _ui(id: String) -> void:
+	var def := load("res://assets/audio/sfx/%s.tres" % id) as SfxDef
+	if def != null:
+		Sfx.play(def)
+
 func _activate() -> void:
 	var it: Dictionary = (_stack.back() as Array)[_sel]
+	_ui("ui_confirm" if it.has("sub") else "ui_click")
 	if it.has("sub"):
 		_stack.append(it["sub"])
 		_titles.append(it["label"])

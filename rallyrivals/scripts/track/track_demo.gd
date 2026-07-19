@@ -47,10 +47,20 @@ func _ready() -> void:
 		timing.name = "RaceTiming"
 		add_child(timing)
 		timing.setup(cps)
+		var lap_best_sfx := load("res://assets/audio/sfx/lap_best.tres") as SfxDef
+		var finish_sfx := load("res://assets/audio/sfx/finish_win.tres") as SfxDef
 		timing.lap_completed.connect(func(body: Node3D, t: float, n: int, best: bool) -> void:
-			print("LAP %d — %s: %.3f s%s" % [n, body.name, t, "  (best)" if best else ""]))
+			print("LAP %d — %s: %.3f s%s" % [n, body.name, t, "  (best)" if best else ""])
+			if best and lap_best_sfx != null:
+				Sfx.play(lap_best_sfx))
 		timing.stage_completed.connect(func(body: Node3D, t: float) -> void:
-			print("STAGE FINISH — %s: %.3f s" % [body.name, t]))
+			print("STAGE FINISH — %s: %.3f s" % [body.name, t])
+			if finish_sfx != null:
+				Sfx.play(finish_sfx)
+			# Cut the engine at the finish — the wind-down cue plus every loop out.
+			var ca := body.get_node_or_null("CarAudio") as CarAudio
+			if ca != null:
+				ca.shut_down())
 		timing.begin()
 
 	var start := track.get_node_or_null("StartFinish") as Marker3D

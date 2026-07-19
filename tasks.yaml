@@ -163,12 +163,12 @@ tasks:
 
   # ---------- audio ----------
   - {id: audio-sfx-core, title: "SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds", type: audio, group: sfx, size: default, status: done, blockers: []}
-  - {id: audio-sfx-engine, title: "Engine loop wired to throttle (CC0)", type: audio, group: sfx, size: default, status: todo, blockers: [audio-sfx-core, code-vehicle-controller]}
-  - {id: audio-sfx-surface, title: "Per-surface tire SFX (CC0)", type: audio, group: sfx, size: default, status: todo, blockers: [audio-sfx-core, code-vehicle-surface-grip]}
-  - {id: audio-sfx-impact, title: "Impact/damage SFX", type: audio, group: sfx, size: small, status: todo, blockers: [audio-sfx-core, code-vehicle-damage]}
+  - {id: audio-sfx-engine, title: "Engine audio: 3 RPM bands crossfaded + start/off cues", type: audio, group: sfx, size: default, status: done, blockers: [audio-sfx-core, code-vehicle-controller]}
+  - {id: audio-sfx-surface, title: "Per-surface tyre roll + skid, crossfaded on surface change", type: audio, group: sfx, size: default, status: done, blockers: [audio-sfx-core, code-vehicle-surface-grip]}
+  - {id: audio-sfx-impact, title: "Impact SFX scaled by collision impulse + debris burst", type: audio, group: sfx, size: small, status: done, blockers: [audio-sfx-core, code-vehicle-controller]}
   - {id: audio-sfx-slipstream, title: "Slipstream whoosh/rush cue", type: audio, group: sfx, size: small, status: todo, blockers: [audio-sfx-core, code-vehicle-slipstream]}
   - {id: audio-sfx-nitro, title: "Nitro/boost sound", type: audio, group: sfx, size: micro, status: todo, blockers: [audio-sfx-core, code-vehicle-brand-features]}
-  - {id: audio-sfx-ui, title: "UI clicks/confirms", type: audio, group: sfx, size: small, status: todo, blockers: [audio-sfx-core]}
+  - {id: audio-sfx-ui, title: "UI clicks/confirms (wired in debug menu; real menus reuse)", type: audio, group: sfx, size: small, status: done, blockers: [audio-sfx-core]}
   - {id: audio-sfx-ambient, title: "Ambient beds: festival crowd + per-weather (rain/snow/wind/fog) + thunder", type: audio, group: sfx, size: default, status: done, blockers: [audio-sfx-core]}
   - {id: audio-music-direction, title: "Music direction + sourcing plan", type: audio, group: music, size: big, status: todo, blockers: []}
   - {id: audio-music-menu, title: "Menu/career music track", type: audio, group: music, size: default, status: todo, blockers: [audio-music-direction]}

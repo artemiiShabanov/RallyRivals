@@ -57,6 +57,18 @@ const REF_MASS := 800.0                  # the mass all force/suspension baselin
 var grip_scale := 1.0
 var max_speed := INF                     # m/s; INF = uncapped (no CarDef)
 
+## Driver state, published for CarAudio (and any other observer). Set every physics frame.
+var throttle_amount := 0.0
+var is_braking := false
+var is_handbraking := false
+
+## Collision impulse in N·s, once per hit. CarAudio picks light vs heavy from the magnitude.
+signal impacted(strength: float)
+const IMPACT_MIN := 900.0                # below this it's a scrape, not a hit
+const IMPACT_COOLDOWN := 0.12            # s — one contact spans several physics frames
+var _impact_cool := 0.0
+var _touching := 0                       # bodies in contact right now (scrape source)
+
 var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
 var _base_stiffness := {}                # wheel -> scene-authored suspension baseline (REF_MASS)
@@ -141,6 +153,10 @@ func _physics_process(delta: float) -> void:
 
 	# Grip layer: front stays grippy, rear grips less (drift), and much less on handbrake.
 	var handbraking := Input.is_action_pressed("handbrake")
+	throttle_amount = throttle
+	is_braking = brake > 0.0
+	is_handbraking = handbraking
+	_impact_cool = maxf(0.0, _impact_cool - delta)
 	_update_taillights(brake > 0.0 or handbraking)
 	_apply_grip(handbraking)
 	# Anti-spin cap only while NOT braking: braking into a corner (esp. handbrake) is a
@@ -194,6 +210,63 @@ func _surface_grip(w: VehicleWheel3D) -> float:
 					var pos := w.global_position
 					return m.grip_at(pos.x, pos.z)
 	return base_grip
+
+## The SurfaceType a wheel is touching (null when airborne or on untagged ground). Same two
+## tagging schemes as _surface_grip, but returns the surface itself — CarAudio needs the identity,
+## not the number, to pick a roll loop.
+func _surface_at(w: VehicleWheel3D) -> SurfaceType:
+	if w.is_in_contact():
+		var body := w.get_contact_body()
+		if body != null:
+			if body.has_meta("surface"):
+				return body.get_meta("surface") as SurfaceType
+			if body.has_meta("surface_map"):
+				var m: SurfaceMap = body.get_meta("surface_map")
+				if m != null:
+					var pos := w.global_position
+					return m.surface_at(pos.x, pos.z)
+	return null
+
+## What the car is driving on: the surface under the first rear wheel in contact (the rears carry
+## the weight and do the sliding, so they define the sound).
+func current_surface() -> SurfaceType:
+	for w in _wheels:
+		if not w.use_as_steering:
+			var s := _surface_at(w)
+			if s != null:
+				return s
+	return null
+
+## 0 = full grip, 1 = fully sliding. VehicleWheel3D reports skidinfo per wheel (1 = no slip).
+func skid_amount() -> float:
+	var worst := 1.0
+	for w in _wheels:
+		if w.is_in_contact():
+			worst = minf(worst, w.get_skidinfo())
+	return 1.0 - worst
+
+func wheels_on_ground() -> int:
+	var n := 0
+	for w in _wheels:
+		if w.is_in_contact():
+			n += 1
+	return n
+
+func is_scraping() -> bool:
+	return _touching > 0
+
+## Collision impulses come from the solver, so this is the only place they exist. A single knock
+## spans several physics frames, hence the cooldown — without it one hit fires a burst of sounds.
+func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
+	_touching = state.get_contact_count()
+	if _impact_cool > 0.0:
+		return
+	var strongest := 0.0
+	for i in state.get_contact_count():
+		strongest = maxf(strongest, state.get_contact_impulse(i).length())
+	if strongest >= IMPACT_MIN:
+		_impact_cool = IMPACT_COOLDOWN
+		impacted.emit(strongest)
 
 ## Hard-cap the yaw rate: the car can never rotate faster than max_yaw_rate, so when the rear
 ## breaks loose it slides sideways at a held angle instead of whipping around to 180. Turns below

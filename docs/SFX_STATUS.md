@@ -9,8 +9,13 @@ Working checklist for sourcing production audio. Three independent columns:
 **37 of 37 sourced — every sound in the game is a real recording.** No generated placeholder
 remains anywhere in `assets/audio/`.
 
-Nothing is wired yet beyond `checkpoint` and `thunder`: the engine, surface, impact and UI sets
-are waiting on `audio-sfx-engine`, `audio-sfx-surface`, `audio-sfx-impact` and `code-ui-*`.
+**Wired:** engine (3 bands + start/off), all 6 roll loops + both skids + scrape, impacts and
+debris, checkpoint, thunder, lap_best, finish_win, and the UI cues in the debug menu.
+
+**Not wired yet, waiting on systems that don't exist:** `countdown_beep`/`countdown_go` and
+`finish_lose` need a race flow (`code-race-types`, `code-race-result`); `wrong_way` needs
+wrong-way detection (`code-track-checkpoints`); `ui_error`/`ui_purchase`/`ui_unlock` need real
+menus (`code-ui-*`).
 
 All roll loops are peak-normalised to **−14 dBFS** rather than −6: they are a texture layer that
 sits under engine and ambience. Final balance belongs to `audio-sfx-surface`.
@@ -39,18 +44,18 @@ Their owning systems will define their own config resources.
 
 | # | sound | PH | SRC | WIRED | owning task |
 |---|---|:--:|:--:|:--:|---|
-| 7 | engine_low | — | ✅ | ⬜ | **SOURCED** — Sonniss, 14.25 s mono, natural loop kept whole |
-| 8 | engine_mid | — | ✅ | ⬜ | **SOURCED** — Sonniss, 6.37 s mono, 1 s crossfade |
-| 9 | engine_high | — | ✅ | ⬜ | **SOURCED** — Sonniss, 5.50 s mono, 0.5 s crossfade |
-| 10 | roll_asphalt | — | ✅ | ⬜ | **SOURCED** — 4.10 s, high-passed 300 Hz (was 56% engine rumble) |
-| 11 | roll_gravel | — | ✅ | ⬜ | **SOURCED** — 5.55 s, level flattened (was −1.27 dB/s) |
-| 12 | roll_dirt | — | ✅ | ⬜ | **SOURCED** — 3.46 s, high-passed 350 Hz (was 68% engine rumble) |
-| 13 | roll_sand | — | ✅ | ⬜ | **SOURCED** — 4.91 s from 0.45 s, flattened (was −1.86 dB/s + fade-in) |
-| 14 | roll_snow | — | ✅ | ⬜ | **SOURCED** — 1.63 s, flattened |
-| 15 | roll_ice | — | ✅ | ⬜ | **SOURCED** — 2.28 s, high-passed 300 Hz + flattened |
-| 16 | skid_asphalt | — | ✅ | ⬜ | **SOURCED** — 1.59 s, flattened (was −6.08 dB/s). ⚠️ reads as noise not squeal (tonality 0.11), so it differs from skid_loose mainly in brightness |
-| 17 | skid_loose | — | ✅ | ⬜ | **SOURCED** — 1.15 s mono from 0.1 s, gritty (tonality 0.09) |
-| 18 | scrape | — | ✅ | ⬜ | **SOURCED** — 2.93 s mono, natural loop kept whole. ⚠️ 11 dB envelope swing — may read as pulsing once wired |
+| 7 | engine_low | — | ✅ | ✅ | **SOURCED** — Sonniss, 14.25 s mono, natural loop kept whole |
+| 8 | engine_mid | — | ✅ | ✅ | **SOURCED** — Sonniss, 6.37 s mono, 1 s crossfade |
+| 9 | engine_high | — | ✅ | ✅ | **SOURCED** — Sonniss, 5.50 s mono, 0.5 s crossfade |
+| 10 | roll_asphalt | — | ✅ | ✅ | **SOURCED** — 4.10 s, high-passed 300 Hz (was 56% engine rumble) |
+| 11 | roll_gravel | — | ✅ | ✅ | **SOURCED** — 5.55 s, level flattened (was −1.27 dB/s) |
+| 12 | roll_dirt | — | ✅ | ✅ | **SOURCED** — 3.46 s, high-passed 350 Hz (was 68% engine rumble) |
+| 13 | roll_sand | — | ✅ | ✅ | **SOURCED** — 4.91 s from 0.45 s, flattened (was −1.86 dB/s + fade-in) |
+| 14 | roll_snow | — | ✅ | ✅ | **SOURCED** — 1.63 s, flattened |
+| 15 | roll_ice | — | ✅ | ✅ | **SOURCED** — 2.28 s, high-passed 300 Hz + flattened |
+| 16 | skid_asphalt | — | ✅ | ✅ | **SOURCED** — 1.59 s, flattened (was −6.08 dB/s). ⚠️ reads as noise not squeal (tonality 0.11), so it differs from skid_loose mainly in brightness |
+| 17 | skid_loose | — | ✅ | ✅ | **SOURCED** — 1.15 s mono from 0.1 s, gritty (tonality 0.09) |
+| 18 | scrape | — | ✅ | ✅ | **SOURCED** — 2.93 s mono, natural loop kept whole. ⚠️ 11 dB envelope swing — may read as pulsing once wired |
 
 ## One-shots — `assets/audio/sfx/` (SfxDef + .res)
 
@@ -60,18 +65,18 @@ Their owning systems will define their own config resources.
 | 20 | thunder | 2 | — | ✅ | ✅ | **SOURCED** — 2 variants, 2.75 s + 4.07 s |
 | 21 | countdown_beep | 1 | — | ✅ | ⬜ | **SOURCED** — 0.99 s, 0.72 s of silence trimmed |
 | 22 | countdown_go | 1 | — | ✅ | ⬜ | **SOURCED** — 0.48 s |
-| 23 | lap_best | 1 | — | ✅ | ⬜ | **SOURCED** — 0.57 s |
-| 24 | finish_win | 1 | — | ✅ | ⬜ | **SOURCED** — 0.84 s |
+| 23 | lap_best | 1 | — | ✅ | ✅ | **SOURCED** — 0.57 s |
+| 24 | finish_win | 1 | — | ✅ | ✅ | **SOURCED** — 0.84 s |
 | 25 | finish_lose | 1 | — | ✅ | ⬜ | **SOURCED** — 0.45 s |
 | 26 | wrong_way | 1 | — | ✅ | ⬜ | **SOURCED** — 0.23 s |
-| 27 | impact_light | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.09–0.32 s. ⚠️ variants differ widely in tone (81 pp spectral spread) |
-| 28 | impact_heavy | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.50–2.14 s. ⚠️ _3 is light on low end (5.3% <200 Hz) |
-| 29 | debris_cubes | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.45–1.38 s, bright clatter as intended |
-| 30 | engine_start | 1 | — | ✅ | ⬜ | **SOURCED** — Sonniss, 1.20 s mono, crank preserved. ⚠️ ends at full level — must hand straight to the idle loop |
-| 31 | engine_off | 1 | — | ✅ | ⬜ | **SOURCED** — Sonniss, 2.29 s mono, 0.3 s tail fade added to reach silence |
-| 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — 2.6 ms, confirmed good by ear |
-| 33 | ui_move | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — 23 ms, confirmed good by ear |
-| 34 | ui_confirm | 1 | — | ✅ | ⬜ | **SOURCED** — 0.06 s |
+| 27 | impact_light | 3 | — | ✅ | ✅ | **SOURCED** — 3 variants, mono, 0.09–0.32 s. ⚠️ variants differ widely in tone (81 pp spectral spread) |
+| 28 | impact_heavy | 3 | — | ✅ | ✅ | **SOURCED** — 3 variants, mono, 0.50–2.14 s. ⚠️ _3 is light on low end (5.3% <200 Hz) |
+| 29 | debris_cubes | 3 | — | ✅ | ✅ | **SOURCED** — 3 variants, mono, 0.45–1.38 s, bright clatter as intended |
+| 30 | engine_start | 1 | — | ✅ | ✅ | **SOURCED** — Sonniss, 1.20 s mono, crank preserved. ⚠️ ends at full level — must hand straight to the idle loop |
+| 31 | engine_off | 1 | — | ✅ | ✅ | **SOURCED** — Sonniss, 2.29 s mono, 0.3 s tail fade added to reach silence |
+| 32 | ui_click | 1 | — | ✅ | ✅ | **SOURCED** (sfxr) — 2.6 ms, confirmed good by ear |
+| 33 | ui_move | 1 | — | ✅ | ✅ | **SOURCED** (sfxr) — 23 ms, confirmed good by ear |
+| 34 | ui_confirm | 1 | — | ✅ | ✅ | **SOURCED** — 0.06 s |
 | 35 | ui_error | 1 | — | ✅ | ⬜ | **SOURCED** — 0.18 s |
 | 36 | ui_purchase | 1 | — | ✅ | ⬜ | **SOURCED** — 0.43 s |
 | 37 | ui_unlock | 1 | — | ✅ | ⬜ | **SOURCED** — 0.62 s |

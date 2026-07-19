@@ -1,8 +1,13 @@
-[gd_scene load_steps=7 format=3 uid="uid://bde5slygli47"]
+[gd_scene load_steps=11 format=3 uid="uid://bde5slygli47"]
 
 [ext_resource type="Script" uid="uid://bicg20hpmlw67" path="res://scripts/vehicle/vehicle_controller.gd" id="1_ctrl"]
 [ext_resource type="ArrayMesh" uid="uid://c4vetfqcwox33" path="res://assets/voxels/cars/blockout.obj" id="2_body"]
 [ext_resource type="Resource" uid="uid://osmnnaot5tlw" path="res://assets/cars/kerb.tres" id="3_car"]
+[ext_resource type="Script" path="res://scripts/audio/car_audio.gd" id="4_audio"]
+[ext_resource type="Resource" path="res://assets/audio/engine_default.tres" id="5_engine"]
+[ext_resource type="Resource" path="res://assets/audio/sfx/impact_light.tres" id="6_impl"]
+[ext_resource type="Resource" path="res://assets/audio/sfx/impact_heavy.tres" id="7_imph"]
+[ext_resource type="Resource" path="res://assets/audio/sfx/debris_cubes.tres" id="8_debris"]
 
 [sub_resource type="BoxShape3D" id="BodyShape"]
 size = Vector3(2, 1, 4)
@@ -21,8 +26,17 @@ collision_mask = 3
 mass = 800.0
 center_of_mass_mode = 1
 center_of_mass = Vector3(0, -0.3, 0)
+contact_monitor = true
+max_contacts_reported = 6
 script = ExtResource("1_ctrl")
 car = ExtResource("3_car")
+
+[node name="CarAudio" type="Node3D" parent="."]
+script = ExtResource("4_audio")
+engine = ExtResource("5_engine")
+impact_light = ExtResource("6_impl")
+impact_heavy = ExtResource("7_imph")
+debris = ExtResource("8_debris")
 
 [node name="Body" type="MeshInstance3D" parent="."]
 mesh = ExtResource("2_body")
