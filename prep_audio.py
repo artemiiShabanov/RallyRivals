@@ -167,6 +167,12 @@ def main():
     ap.add_argument("seconds", nargs="?", type=float, help="loop body length (loops/beds only)")
     ap.add_argument("--from", dest="start", type=float, default=0.0, help="offset into the source")
     ap.add_argument("--fade", type=float, default=1.0, help="loop crossfade seconds")
+    ap.add_argument("--fade-out", dest="fade_out", type=float, default=0.005,
+                    help="one-shot tail fade in seconds; raise it when a sound is cut off "
+                         "before it has decayed (engine_off ends 12 dB above silence)")
+    ap.add_argument("--keep-quiet-head", action="store_true",
+                    help="skip silence trimming — for sounds that open quietly on purpose, "
+                         "like a starter motor cranking before the engine catches")
     a = ap.parse_args()
 
     dest_dir, channels, peak_db, is_loop = classify(a.id)
@@ -198,7 +204,9 @@ def main():
     else:
         out = s[: int(a.seconds * RATE) * ch] if a.seconds else s
         before = len(out) // ch
-        out = edge_fade(trim_silence(out, ch), ch)
+        if not a.keep_quiet_head:
+            out = trim_silence(out, ch)
+        out = edge_fade(out, ch, out_ms=a.fade_out * 1000.0)
         if len(out) // ch < before:
             print(f"  trimmed {(before - len(out) // ch) / RATE:.3f}s of silence")
 

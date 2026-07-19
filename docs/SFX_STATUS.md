@@ -6,13 +6,11 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-9 placeholders + **28 sourced** — all beds, 3 engine bands, 2 surface loops, 12 one-shot defs.
-Still placeholder: skid_asphalt, 6 roll_*, engine_start/off.
+7 placeholders + **30 sourced** — **every one-shot is now a real recording.**
+Still placeholder: skid_asphalt + the 6 roll_* surface loops.
 
-**Dropped:** `ui_back` — a plain click covers it. Also `slipstream`, `nitro_loop`, `nitro_fire`.
-
-**Deferred:** `slipstream`, `nitro_loop`, `nitro_fire` removed for now — their features
-(`code-vehicle-slipstream`, `code-vehicle-brand-features`) aren't built. Backlog tasks remain.
+**Dropped:** `ui_back` (a plain click covers it). **Deferred:** `slipstream`, `nitro_loop`,
+`nitro_fire` — their features aren't built; backlog tasks remain.
 Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 ---
@@ -63,8 +61,8 @@ Their owning systems will define their own config resources.
 | 27 | impact_light | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.09–0.32 s. ⚠️ variants differ widely in tone (81 pp spectral spread) |
 | 28 | impact_heavy | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.50–2.14 s. ⚠️ _3 is light on low end (5.3% <200 Hz) |
 | 29 | debris_cubes | 3 | — | ✅ | ⬜ | **SOURCED** — 3 variants, mono, 0.45–1.38 s, bright clatter as intended |
-| 30 | engine_start | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
-| 31 | engine_off | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
+| 30 | engine_start | 1 | — | ✅ | ⬜ | **SOURCED** — Sonniss, 1.20 s mono, crank preserved. ⚠️ ends at full level — must hand straight to the idle loop |
+| 31 | engine_off | 1 | — | ✅ | ⬜ | **SOURCED** — Sonniss, 2.29 s mono, 0.3 s tail fade added to reach silence |
 | 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — 2.6 ms, confirmed good by ear |
 | 33 | ui_move | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — 23 ms, confirmed good by ear |
 | 34 | ui_confirm | 1 | — | ✅ | ⬜ | **SOURCED** — 0.06 s |
