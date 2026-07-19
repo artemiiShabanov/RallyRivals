@@ -282,15 +282,17 @@ func _loops_menu() -> Array:
 	var da := DirAccess.open("res://assets/audio/loops")
 	if da != null:
 		for f in da.get_files():
-			if f.get_extension() == "res":
-				out.append({"label": f.get_basename(), "run": _toggle_loop.bind(f.get_basename())})
+			# .res while a sound is still a generated placeholder, .wav/.ogg once it's sourced.
+			if f.get_extension() in ["res", "wav", "ogg"]:
+				out.append({"label": f.get_basename(), "run": _toggle_loop.bind(f)})
 	out.append({"label": "(stop all)", "run": _toggle_loop.bind("")})
 	return out
 
-func _toggle_loop(id: String) -> void:
+func _toggle_loop(file: String) -> void:
 	var car := _car()
 	if car == null:
 		return
+	var id := file.get_basename()
 	var node_name := "DebugLoop_" + id
 	for c in car.get_children():
 		if c.name.begins_with("DebugLoop_"):
@@ -299,10 +301,10 @@ func _toggle_loop(id: String) -> void:
 				if id != "":
 					print("debug: loop off -> ", id)
 					return
-	if id == "":
+	if file == "":
 		print("debug: all loops off")
 		return
-	var stream := load("res://assets/audio/loops/%s.res" % id) as AudioStream
+	var stream := load("res://assets/audio/loops/".path_join(file)) as AudioStream
 	if stream == null:
 		return
 	var p := Sfx.attach_loop(car, stream)

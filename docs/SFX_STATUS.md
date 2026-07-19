@@ -6,7 +6,7 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-35 placeholders + **6 sourced — the whole ambience group is done.** 5 are wired.
+33 placeholders + **8 sourced** (all 6 beds, engine_low, engine_mid). 5 are wired.
 Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 ---
@@ -29,9 +29,9 @@ Their owning systems will define their own config resources.
 
 | # | sound | PH | SRC | WIRED | owning task |
 |---|---|:--:|:--:|:--:|---|
-| 7 | engine_low | ✅ | ⬜ | ⬜ | audio-sfx-engine |
-| 8 | engine_mid | ✅ | ⬜ | ⬜ | audio-sfx-engine ← **start here** |
-| 9 | engine_high | ✅ | ⬜ | ⬜ | audio-sfx-engine |
+| 7 | engine_low | — | ✅ | ⬜ | **SOURCED** — 14.25 s mono, natural loop kept whole |
+| 8 | engine_mid | — | ✅ | ⬜ | **SOURCED** — 6.37 s mono, 1 s crossfade |
+| 9 | engine_high | ✅ | ⬜ | ⬜ | ⚠️ **re-source** — the dropped file was darker/lower than both others (see notes) |
 | 10 | roll_asphalt | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 11 | roll_gravel | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 12 | roll_dirt | ✅ | ⬜ | ⬜ | audio-sfx-surface |

@@ -96,6 +96,15 @@ def make_loop(s, ch, n, f):
     return out
 
 
+def seam_ratio(s, ch, frames):
+    """How the wrap-around step compares to this signal's own typical step. A fixed threshold
+    can't work: white-ish noise legitimately jumps far between adjacent samples while a tonal
+    engine loop barely moves."""
+    seam = abs(s[0] - s[(frames - 1) * ch])
+    deltas = [abs(s[i * ch] - s[(i - 1) * ch]) for i in range(1, min(frames, 40000))]
+    return seam / max(sum(deltas) / len(deltas), 1.0)
+
+
 def edge_fade(s, ch, ms=5):
     """One-shots: a few ms in/out so a non-zero first or last sample can't click."""
     f = int(RATE * ms / 1000)
@@ -141,12 +150,22 @@ def main():
         total = len(s) // ch
 
     if is_loop:
-        if not a.seconds:
-            sys.exit(f"'{a.id}' is a loop — pass a length, e.g. `{a.id} 10`")
-        n, f = int(a.seconds * RATE), int(a.fade * RATE)
-        if total < n + f:
-            sys.exit(f"need {(n + f) / RATE:.1f}s from the offset, have {total / RATE:.1f}s")
-        out = make_loop(s, ch, n, f)
+        if a.seconds:
+            n, f = int(a.seconds * RATE), int(a.fade * RATE)
+            if total < n + f:
+                sys.exit(f"need {(n + f) / RATE:.1f}s from the offset, have {total / RATE:.1f}s")
+            out = make_loop(s, ch, n, f)
+        else:
+            # No length given: the file IS the loop (a pre-cut library loop). Only crossfade if
+            # its natural seam is worse than the signal's own typical sample-to-sample step —
+            # a clean loop cut on whole cycles needs no help, and fading it would only shorten it.
+            if seam_ratio(s, ch, total) <= 3.0:
+                out = s
+                print("  natural seam is clean — kept whole, no crossfade")
+            else:
+                f = int(a.fade * RATE)
+                out = make_loop(s, ch, total - f, f)
+                print(f"  natural seam poor — crossfaded {a.fade:.2f}s (body {(total - f) / RATE:.2f}s)")
     else:
         out = edge_fade(s[: int(a.seconds * RATE) * ch] if a.seconds else s, ch)
 
