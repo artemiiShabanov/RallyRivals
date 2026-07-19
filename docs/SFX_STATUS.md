@@ -6,7 +6,7 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-38 placeholders + **3 sourced** (`festival_crowd`, `wind_light`, `wind_low`). 5 are wired.
+35 placeholders + **6 sourced — the whole ambience group is done.** 5 are wired.
 Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 ---
@@ -18,9 +18,9 @@ Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 | 1 | festival_crowd | — | ✅ | ✅ | **SOURCED** — gamesounds.xyz, 12 s stereo wav, seamless, −27.5 dB in mix |
 | 2 | wind_light | — | ✅ | ✅ | **SOURCED** — Adobe, 10 s stereo, seamless, −36.5 dB |
 | 3 | wind_low | — | ✅ | ✅ | **SOURCED** — Adobe, 10 s stereo, seamless, −37.0 dB |
-| 4 | rain | ✅ | ⬜ | ✅ | rain |
-| 5 | rain_heavy | ✅ | ⬜ | ✅ | thunderstorm |
-| 6 | snow_wind | ✅ | ⬜ | ✅ | snow |
+| 4 | rain | — | ✅ | ✅ | **SOURCED** — Adobe, 10 s, seamless, −34.8 dB |
+| 5 | rain_heavy | — | ✅ | ✅ | **SOURCED** — Adobe, cut from 2.0 s (source fades in), −24.4 dB |
+| 6 | snow_wind | — | ✅ | ✅ | **SOURCED** — Adobe, 10 s, seamless, −38.6 dB |
 
 ## Driven loops — `assets/audio/loops/` (raw .res, no SfxDef)
 
@@ -94,7 +94,6 @@ Full detail in `docs/AUDIO.md` §3 (sources + licences) and §4 (engine specific
    Sonniss (344 Audio SUV Dirt Track, Soundholder Cars In Motion) + Adobe Transportation.
 3. **UI set (7 sounds)** — one Kenney CC0 pack closes the whole row. Or ChipTone in an afternoon.
 4. **impact_light / impact_heavy / debris_cubes** — Adobe Crashes + Impacts, or Kenney Impact.
-5. **Ambience** — Adobe Ambience + Weather + Sports (crowd).
 6. Everything else — replace opportunistically.
 
 Optional spend worth considering: **one month of Zapsplat Premium (~£4.99)** gets WAV instead of
