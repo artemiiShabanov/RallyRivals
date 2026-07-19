@@ -6,7 +6,7 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-29 placeholders + **9 sourced** (all 6 beds, all 3 engine bands). 5 are wired.
+27 placeholders + **11 sourced** (6 beds, 3 engine bands, skid_loose, scrape). 5 are wired.
 
 **Deferred:** `slipstream`, `nitro_loop`, `nitro_fire` removed for now — their features
 (`code-vehicle-slipstream`, `code-vehicle-brand-features`) aren't built. Backlog tasks remain.
@@ -41,9 +41,9 @@ Their owning systems will define their own config resources.
 | 13 | roll_sand | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 14 | roll_snow | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 15 | roll_ice | ✅ | ⬜ | ⬜ | audio-sfx-surface |
-| 16 | skid_asphalt | ✅ | ⬜ | ⬜ | audio-sfx-surface |
-| 17 | skid_loose | ✅ | ⬜ | ⬜ | audio-sfx-surface |
-| 18 | scrape | ✅ | ⬜ | ⬜ | audio-sfx-impact |
+| 16 | skid_asphalt | ✅ | ⬜ | ⬜ | ⚠️ **still to source** — needs a sustained squeal, not a skid event |
+| 17 | skid_loose | — | ✅ | ⬜ | **SOURCED** — 1.15 s mono from 0.1 s, gritty (tonality 0.09) |
+| 18 | scrape | — | ✅ | ⬜ | **SOURCED** — 2.93 s mono, natural loop kept whole. ⚠️ 11 dB envelope swing — may read as pulsing once wired |
 
 ## One-shots — `assets/audio/sfx/` (SfxDef + .res)
 
