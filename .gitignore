@@ -24,3 +24,8 @@ ground_*.res
 # throwaway probe scripts (headless verification, deleted after use)
 _probe*
 _gen_*
+
+# raw audio drops: the processed asset is what ships; SOURCES.md records where to re-download
+rallyrivals/assets/audio/_incoming/*
+!rallyrivals/assets/audio/_incoming/README.md
+!rallyrivals/assets/audio/_incoming/sources.txt

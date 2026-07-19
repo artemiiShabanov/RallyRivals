@@ -6,7 +6,7 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-All 41 placeholders are in. Nothing is sourced. 3 are wired.
+40 placeholders + **1 sourced** (`festival_crowd`). 5 are wired.
 Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 ---
@@ -15,7 +15,7 @@ Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 | # | sound | PH | SRC | WIRED | notes |
 |---|---|:--:|:--:|:--:|---|
-| 1 | festival_crowd | ✅ | ⬜ | ✅ | venue bed, all races |
+| 1 | festival_crowd | — | ✅ | ✅ | **SOURCED** 12 s stereo wav, −6 dBFS, seamless. ⚠️ provenance still TODO in SOURCES.md |
 | 2 | wind_light | ✅ | ⬜ | ✅ | clear weather |
 | 3 | wind_low | ✅ | ⬜ | ✅ | fog |
 | 4 | rain | ✅ | ⬜ | ✅ | rain |
