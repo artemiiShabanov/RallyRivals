@@ -66,7 +66,7 @@ Their owning systems will define their own config resources.
 | 30 | engine_start | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
 | 31 | engine_off | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
 | 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — 2.6 ms, confirmed good by ear |
-| 33 | ui_move | 1 | ✅ | ⬜ | ⬜ | ⚠️ **re-source** — dropped file had only 4 distinct sample values (~1.6 bits)
+| 33 | ui_move | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — 23 ms, confirmed good by ear |
 | 34 | ui_confirm | 1 | — | ✅ | ⬜ | **SOURCED** — 0.06 s |
 | 35 | ui_error | 1 | — | ✅ | ⬜ | **SOURCED** — 0.18 s |
 | 36 | ui_purchase | 1 | — | ✅ | ⬜ | **SOURCED** — 0.43 s |
@@ -168,7 +168,7 @@ Source shorthand:
 | `countdown_beep` `countdown_go` | 0.2 / 0.5 s | **CHIP** (generate — exact pitch control) | KENNEY Digital Audio |
 | `lap_best` | 0.5–1 s | CHIP | KENNEY Music Jingles |
 | `finish_win` `finish_lose` | 1–2 s | **KENNEY Music Jingles** | CHIP |
-| `ui_click` `ui_move` `ui_confirm` `ui_back` `ui_error` | 0.05–0.3 s | **KENNEY UI Audio + Interface Sounds** — one CC0 download covers all 7 | CHIP |
+| `ui_click` `ui_move` `ui_confirm` `ui_error` | 0.05–0.3 s | sfxr — generated, public domain | KENNEY UI Audio (CC0) |
 | `ui_purchase` `ui_unlock` | 0.5–1.5 s | KENNEY Music Jingles | CHIP |
 | `wrong_way` | 0.5–1 s | CHIP | KENNEY Interface |
 
