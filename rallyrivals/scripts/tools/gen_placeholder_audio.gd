@@ -58,7 +58,6 @@ const ONESHOTS := [
 	["ui_click", 1, "UI", -6.0, 0.0, "ui_click"],
 	["ui_move", 1, "UI", -11.0, 0.04, "ui_move"],
 	["ui_confirm", 1, "UI", -6.0, 0.02, "ui_confirm"],
-	["ui_back", 1, "UI", -8.0, 0.02, "ui_back"],
 	["ui_error", 1, "UI", -6.0, 0.0, "ui_error"],
 	["ui_purchase", 1, "UI", -5.0, 0.02, "ui_purchase"],
 	["ui_unlock", 1, "UI", -4.0, 0.01, "ui_unlock"],
@@ -270,7 +269,6 @@ func _oneshot(recipe: String, variant: int) -> PackedFloat32Array:
 		"ui_click": return _tone(1250.0, 0.05, 0.5)
 		"ui_move": return _tone(900.0, 0.035, 0.32)
 		"ui_confirm": return _seq([[660.0, 0.07, 0.40], [990.0, 0.14, 0.45]])
-		"ui_back": return _seq([[700.0, 0.06, 0.35], [470.0, 0.12, 0.38]])
 		"ui_error": return _buzz(180.0, 0.18, 0.42)
 		"ui_purchase": return _seq([[523.0, 0.07, 0.34], [659.0, 0.07, 0.36], [784.0, 0.20, 0.42]])
 		"ui_unlock": return _seq([[523.0, 0.09, 0.34], [659.0, 0.09, 0.36], [784.0, 0.09, 0.38], [1046.0, 0.34, 0.46]])

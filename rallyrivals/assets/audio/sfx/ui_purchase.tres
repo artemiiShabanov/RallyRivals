@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_qq05k")
 streams = Array[AudioStream]([ExtResource("2_8j68j")])
-volume_db = -5.4
+volume_db = -3.6
 pitch_min = 0.98
 pitch_max = 1.02
 bus = "UI"

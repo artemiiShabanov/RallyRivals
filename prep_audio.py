@@ -122,15 +122,27 @@ def trim_silence(s, ch, thresh=0.02, tail_ms=25):
     return s[lead * ch:(trail + 1) * ch]
 
 
-def edge_fade(s, ch, ms=5):
-    """One-shots: a few ms in/out so a non-zero first or last sample can't click. Scaled down for
-    very short sounds — a fixed 5 ms would swallow a 3 ms click whole."""
+def edge_fade(s, ch, in_ms=2, out_ms=5):
+    """One-shots: a short fade in/out so a non-zero first or last sample can't click.
+
+    The fade-in must NEVER reach the peak. Percussive one-shots — sfxr blips especially — often
+    peak at sample 0, and fading across that destroys the attack, leaves a much smaller residual
+    peak, and then normalisation amplifies the remains (ui_move needed +47 dB instead of +11).
+    So the fade-in is capped at the distance to the peak, and both fades at a fraction of the file
+    so a 3 ms click isn't swallowed whole."""
     total = len(s) // ch
-    f = min(int(RATE * ms / 1000), total // 8)
-    for k in range(f):
-        g = k / f
+    if total < 8:
+        return s
+    peak_idx = max(range(total), key=lambda i: max(abs(s[i * ch + c]) for c in range(ch)))
+    fin = min(int(RATE * in_ms / 1000), peak_idx, total // 8)
+    fout = min(int(RATE * out_ms / 1000), total // 8)
+    for k in range(fin):
+        g = k / fin
         for c in range(ch):
             s[k * ch + c] = int(s[k * ch + c] * g)
+    for k in range(fout):
+        g = k / fout
+        for c in range(ch):
             s[(total - 1 - k) * ch + c] = int(s[(total - 1 - k) * ch + c] * g)
     return s
 

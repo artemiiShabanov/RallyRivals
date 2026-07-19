@@ -6,8 +6,10 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-15 placeholders + **23 sourced** — all beds, 3 engine bands, 2 surface loops, 12 one-shot defs.
-Still placeholder: ui_move, ui_back, skid_asphalt, 6 roll_*, checkpoint, engine_start/off, impacts, debris.
+13 placeholders + **24 sourced** — all beds, 3 engine bands, 2 surface loops, 12 one-shot defs.
+Still placeholder: skid_asphalt, 6 roll_*, checkpoint, engine_start/off, impacts, debris.
+
+**Dropped:** `ui_back` — a plain click covers it. Also `slipstream`, `nitro_loop`, `nitro_fire`.
 
 **Deferred:** `slipstream`, `nitro_loop`, `nitro_fire` removed for now — their features
 (`code-vehicle-slipstream`, `code-vehicle-brand-features`) aren't built. Backlog tasks remain.
@@ -63,21 +65,20 @@ Their owning systems will define their own config resources.
 | 29 | debris_cubes | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact (ADR-003 burst) |
 | 30 | engine_start | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
 | 31 | engine_off | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
-| 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — ⚠️ only 2.6 ms; bump decay in sfxr if it reads as nothing |
+| 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — 2.6 ms, confirmed good by ear |
 | 33 | ui_move | 1 | ✅ | ⬜ | ⬜ | ⚠️ **re-source** — dropped file had only 4 distinct sample values (~1.6 bits)
 | 34 | ui_confirm | 1 | — | ✅ | ⬜ | **SOURCED** — 0.06 s |
-| 35 | ui_back | 1 | ✅ | ⬜ | ⬜ | still to source (was not in the drop)
-| 36 | ui_error | 1 | — | ✅ | ⬜ | **SOURCED** — 0.18 s |
-| 37 | ui_purchase | 1 | — | ✅ | ⬜ | **SOURCED** — 0.43 s |
-| 38 | ui_unlock | 1 | — | ✅ | ⬜ | **SOURCED** — 0.62 s |
+| 35 | ui_error | 1 | — | ✅ | ⬜ | **SOURCED** — 0.18 s |
+| 36 | ui_purchase | 1 | — | ✅ | ⬜ | **SOURCED** — 0.43 s |
+| 37 | ui_unlock | 1 | — | ✅ | ⬜ | **SOURCED** — 0.62 s |
 
 ## Music — `audio-music-*`
 
 | # | track | PH | SRC | WIRED |
 |---|---|:--:|:--:|:--:|
-| 39 | menu | ⬜ | ⬜ | ⬜ |
-| 40 | race | ⬜ | ⬜ | ⬜ |
-| 41 | boss | ⬜ | ⬜ | ⬜ |
+| 38 | menu | ⬜ | ⬜ | ⬜ |
+| 39 | race | ⬜ | ⬜ | ⬜ |
+| 40 | boss | ⬜ | ⬜ | ⬜ |
 
 No placeholders for music on purpose — `audio-music-direction` decides the brief first.
 

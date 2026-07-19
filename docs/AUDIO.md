@@ -86,7 +86,7 @@ downsampled file *up* exposes its missing bandwidth immediately. If you need the
 
 ## 2. Sound manifest
 
-**All 38 sounds have placeholders** — synthesized filtered noise and harmonic stacks from
+**All 37 sounds have placeholders** — synthesized filtered noise and harmonic stacks from
 `scripts/tools/gen_placeholder_audio.gd`, CC0 by construction, seeded so regeneration is
 byte-identical. None are production sounds; replace freely. Columns below track what each is
 *for* and which system owns it — **⬜ = still a placeholder, ✅ = real sound sourced.**
@@ -140,15 +140,15 @@ is the cheap version; don't source three until the one-loop version feels right.
 | `wrong_way` | one-shot | `code-track-checkpoints` |
 
 ### UI — `audio-sfx-ui`
-`ui_click` · `ui_move` (menu navigation) · `ui_confirm` · `ui_back` · `ui_error` · `ui_purchase` ·
-`ui_unlock` (pink-slip win). Kenney's interface pack covers this set in one CC0 download — the
+`ui_click` · `ui_move` (menu navigation) · `ui_confirm` · `ui_error` · `ui_purchase` ·
+`ui_unlock` (pink-slip win). No separate `ui_back` — a plain click covers leaving a screen. Kenney's interface pack covers this set in one CC0 download — the
 cheapest whole-task win on this page.
 
 ### Music — `audio-music-*`
 `menu` · `race` · `boss` — **no placeholders on purpose**; `audio-music-direction` writes the brief
 first, and a synthesized stand-in would only anchor the direction badly.
 
-**38 sound files + 3 music tracks** for the full game. Ambience and UI are the two cheapest groups;
+**37 sound files + 3 music tracks** for the full game. Ambience and UI are the two cheapest groups;
 engine and tyres are the two that actually sell the driving.
 
 ## 3. Where to get sounds for free

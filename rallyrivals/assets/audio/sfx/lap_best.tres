@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_o7we5")
 streams = Array[AudioStream]([ExtResource("2_wa6pk")])
-volume_db = -1.5
+volume_db = 0.0
 pitch_min = 0.98
 pitch_max = 1.02
 bus = "SFX"
