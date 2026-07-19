@@ -6,8 +6,11 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-7 placeholders + **30 sourced** — **every one-shot is now a real recording.**
-Still placeholder: skid_asphalt + the 6 roll_* surface loops.
+**36 of 37 sourced.** Only `skid_asphalt` is still a placeholder — it needs a sustained
+squeal rather than a skid event.
+
+All roll loops are peak-normalised to **−14 dBFS** rather than −6: they are a texture layer that
+sits under engine and ambience. Final balance belongs to `audio-sfx-surface`.
 
 **Dropped:** `ui_back` (a plain click covers it). **Deferred:** `slipstream`, `nitro_loop`,
 `nitro_fire` — their features aren't built; backlog tasks remain.
@@ -36,12 +39,12 @@ Their owning systems will define their own config resources.
 | 7 | engine_low | — | ✅ | ⬜ | **SOURCED** — Sonniss, 14.25 s mono, natural loop kept whole |
 | 8 | engine_mid | — | ✅ | ⬜ | **SOURCED** — Sonniss, 6.37 s mono, 1 s crossfade |
 | 9 | engine_high | — | ✅ | ⬜ | **SOURCED** — Sonniss, 5.50 s mono, 0.5 s crossfade |
-| 10 | roll_asphalt | ✅ | ⬜ | ⬜ | audio-sfx-surface |
-| 11 | roll_gravel | ✅ | ⬜ | ⬜ | audio-sfx-surface |
-| 12 | roll_dirt | ✅ | ⬜ | ⬜ | audio-sfx-surface |
-| 13 | roll_sand | ✅ | ⬜ | ⬜ | audio-sfx-surface |
-| 14 | roll_snow | ✅ | ⬜ | ⬜ | audio-sfx-surface |
-| 15 | roll_ice | ✅ | ⬜ | ⬜ | audio-sfx-surface |
+| 10 | roll_asphalt | — | ✅ | ⬜ | **SOURCED** — 4.10 s, high-passed 300 Hz (was 56% engine rumble) |
+| 11 | roll_gravel | — | ✅ | ⬜ | **SOURCED** — 5.55 s, level flattened (was −1.27 dB/s) |
+| 12 | roll_dirt | — | ✅ | ⬜ | **SOURCED** — 3.46 s, high-passed 350 Hz (was 68% engine rumble) |
+| 13 | roll_sand | — | ✅ | ⬜ | **SOURCED** — 4.91 s from 0.45 s, flattened (was −1.86 dB/s + fade-in) |
+| 14 | roll_snow | — | ✅ | ⬜ | **SOURCED** — 1.63 s, flattened |
+| 15 | roll_ice | — | ✅ | ⬜ | **SOURCED** — 2.28 s, high-passed 300 Hz + flattened |
 | 16 | skid_asphalt | ✅ | ⬜ | ⬜ | ⚠️ **still to source** — needs a sustained squeal, not a skid event |
 | 17 | skid_loose | — | ✅ | ⬜ | **SOURCED** — 1.15 s mono from 0.1 s, gritty (tonality 0.09) |
 | 18 | scrape | — | ✅ | ⬜ | **SOURCED** — 2.93 s mono, natural loop kept whole. ⚠️ 11 dB envelope swing — may read as pulsing once wired |

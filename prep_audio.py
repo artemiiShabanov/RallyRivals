@@ -105,6 +105,52 @@ def seam_ratio(s, ch, frames):
     return seam / max(sum(deltas) / len(deltas), 1.0)
 
 
+def highpass(s, ch, hz, poles=2):
+    """Strip engine rumble from a tyre-roll recording. A rolling car always has an engine, so
+    library roll loops carry its fundamental and low harmonics — often most of their energy. Tyre
+    grit lives above ~500 Hz, and the game's own engine loop supplies the low end anyway, so
+    cutting it here removes the bleed and prevents two engines fighting."""
+    a = math.exp(-2.0 * math.pi * hz / RATE)
+    n = len(s) // ch
+    for c in range(ch):
+        v = [s[i * ch + c] / 32768.0 for i in range(n)]
+        for _ in range(poles):
+            px = py = 0.0
+            for i in range(n):
+                x = v[i]
+                py = a * (py + x - px)
+                px = x
+                v[i] = py
+        for i in range(n):
+            s[i * ch + c] = max(-32768, min(32767, int(v[i] * 32768.0)))
+    return s
+
+
+def flatten(s, ch, win_s=0.3, max_boost_db=12.0):
+    """Hold the level constant across a loop. Recordings of a car passing or slowing drift in
+    level, and a loop whose end is quieter than its start pulses once per cycle. Gain is clamped
+    so quiet passages don't drag the noise floor up with them."""
+    n = len(s) // ch
+    win = max(int(RATE * win_s), 1024)
+    hop = win // 2
+    env = []
+    for a in range(0, max(n - win, 1), hop):
+        acc = sum((s[(a + k) * ch] / 32768.0) ** 2 for k in range(0, win, 8))
+        env.append(math.sqrt(acc / (win // 8)) + 1e-9)
+    if len(env) < 2:
+        return s
+    target = sorted(env)[len(env) // 2]
+    lim = 10 ** (max_boost_db / 20.0)
+    for i in range(n):
+        pos = min(i / hop, len(env) - 1.001)
+        k = int(pos)
+        e = env[k] + (env[k + 1] - env[k]) * (pos - k)
+        g = max(1.0 / lim, min(lim, target / e))
+        for c in range(ch):
+            s[i * ch + c] = max(-32768, min(32767, int(s[i * ch + c] * g)))
+    return s
+
+
 def trim_silence(s, ch, thresh=0.02, tail_ms=25):
     """Strip dead air from a one-shot, keeping a short tail so a decay isn't chopped. Library
     one-shots are often padded — countdown_beep arrived with 0.74 s of trailing silence."""
@@ -170,6 +216,12 @@ def main():
     ap.add_argument("--fade-out", dest="fade_out", type=float, default=0.005,
                     help="one-shot tail fade in seconds; raise it when a sound is cut off "
                          "before it has decayed (engine_off ends 12 dB above silence)")
+    ap.add_argument("--hpf", type=float, default=0.0,
+                    help="high-pass in Hz — strips engine rumble bleed from tyre-roll recordings")
+    ap.add_argument("--flatten", action="store_true",
+                    help="hold level constant across a loop, so a drifting source doesn't pulse")
+    ap.add_argument("--peak", type=float, default=None,
+                    help="override the peak target in dBFS (default -3 one-shot, -6 loop)")
     ap.add_argument("--keep-quiet-head", action="store_true",
                     help="skip silence trimming — for sounds that open quietly on purpose, "
                          "like a starter motor cranking before the engine catches")
@@ -183,6 +235,15 @@ def main():
     if a.start:
         s = s[int(a.start * RATE) * ch:]
         total = len(s) // ch
+
+    if a.hpf:
+        s = highpass(s, ch, a.hpf)
+        print(f"  high-passed at {a.hpf:.0f} Hz")
+    if a.flatten:
+        s = flatten(s, ch)
+        print("  level flattened across the loop")
+    if a.peak is not None:
+        peak_db = a.peak
 
     if is_loop:
         if a.seconds:

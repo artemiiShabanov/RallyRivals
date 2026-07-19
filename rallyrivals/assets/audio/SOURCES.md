@@ -22,7 +22,8 @@ Anything CC-BY also needs a line in the in-game credits screen.
 | `sfx/ui_*.wav`, `countdown_*.wav`, `lap_best.wav`, `finish_*.wav`, `wrong_way.wav`, `checkpoint.wav` | generated with **sfxr** (DrPetter) | public domain — generated output, owned outright | project | 2026-07-19 |
 | `sfx/impact_light_*.wav`, `impact_heavy_*.wav`, `debris_cubes_*.wav` | Adobe free SFX (Audition DLC) | Adobe Software Licence Agreement — commercial OK, **no attribution required**, no standalone redistribution | Adobe | 2026-07-19 |
 | `sfx/engine_start.wav` `engine_off.wav` | https://gamesounds.xyz (Sonniss GDC bundle mirror) | #GameAudioGDC Bundle Licence — commercial OK, **no attribution required** | Sonniss contributor | 2026-07-19 |
-| everything else under `loops/` | synthesized — `scripts/tools/gen_placeholder_audio.gd` | CC0 (own work) | project | 2026-07-18 |
+| `loops/roll_*.wav` (6 surfaces) | ⚠️ **which source?** | | | 2026-07-19 |
+| `loops/skid_asphalt.res` | synthesized — `scripts/tools/gen_placeholder_audio.gd` | CC0 (own work) | project | 2026-07-18 |
 
 **All beds and all one-shots are sourced.** Only the 7 remaining `loops/` entries (`skid_asphalt`
 and the six `roll_*`) are still synthesized placeholders — filtered noise generated from code, CC0
