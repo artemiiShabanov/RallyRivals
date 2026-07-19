@@ -6,7 +6,10 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-32 placeholders + **9 sourced** (all 6 beds, all 3 engine bands). 5 are wired.
+29 placeholders + **9 sourced** (all 6 beds, all 3 engine bands). 5 are wired.
+
+**Deferred:** `slipstream`, `nitro_loop`, `nitro_fire` removed for now — their features
+(`code-vehicle-slipstream`, `code-vehicle-brand-features`) aren't built. Backlog tasks remain.
 Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 ---
@@ -41,42 +44,39 @@ Their owning systems will define their own config resources.
 | 16 | skid_asphalt | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 17 | skid_loose | ✅ | ⬜ | ⬜ | audio-sfx-surface |
 | 18 | scrape | ✅ | ⬜ | ⬜ | audio-sfx-impact |
-| 19 | slipstream | ✅ | ⬜ | ⬜ | audio-sfx-slipstream |
-| 20 | nitro_loop | ✅ | ⬜ | ⬜ | audio-sfx-nitro |
 
 ## One-shots — `assets/audio/sfx/` (SfxDef + .res)
 
 | # | sound | var | PH | SRC | WIRED | owning task |
 |---|---|:--:|:--:|:--:|:--:|---|
-| 21 | checkpoint | 1 | ✅ | ⬜ | ✅ | wired in track_demo |
-| 22 | thunder | 2 | ✅ | ⬜ | ✅ | WeatherFX, delayed after flash |
-| 23 | countdown_beep | 1 | ✅ | ⬜ | ⬜ | code-race-types |
-| 24 | countdown_go | 1 | ✅ | ⬜ | ⬜ | code-race-types |
-| 25 | lap_best | 1 | ✅ | ⬜ | ⬜ | code-race-timing |
-| 26 | finish_win | 1 | ✅ | ⬜ | ⬜ | code-race-result |
-| 27 | finish_lose | 1 | ✅ | ⬜ | ⬜ | code-race-result |
-| 28 | wrong_way | 1 | ✅ | ⬜ | ⬜ | code-track-checkpoints |
-| 29 | impact_light | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact |
-| 30 | impact_heavy | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact |
-| 31 | debris_cubes | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact (ADR-003 burst) |
-| 32 | nitro_fire | 1 | ✅ | ⬜ | ⬜ | audio-sfx-nitro |
-| 33 | engine_start | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
-| 34 | engine_off | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
-| 35 | ui_click | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 36 | ui_move | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 37 | ui_confirm | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 38 | ui_back | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 39 | ui_error | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 40 | ui_purchase | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
-| 41 | ui_unlock | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui (pink-slip win) |
+| 19 | checkpoint | 1 | ✅ | ⬜ | ✅ | wired in track_demo |
+| 20 | thunder | 2 | ✅ | ⬜ | ✅ | WeatherFX, delayed after flash |
+| 21 | countdown_beep | 1 | ✅ | ⬜ | ⬜ | code-race-types |
+| 22 | countdown_go | 1 | ✅ | ⬜ | ⬜ | code-race-types |
+| 23 | lap_best | 1 | ✅ | ⬜ | ⬜ | code-race-timing |
+| 24 | finish_win | 1 | ✅ | ⬜ | ⬜ | code-race-result |
+| 25 | finish_lose | 1 | ✅ | ⬜ | ⬜ | code-race-result |
+| 26 | wrong_way | 1 | ✅ | ⬜ | ⬜ | code-track-checkpoints |
+| 27 | impact_light | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact |
+| 28 | impact_heavy | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact |
+| 29 | debris_cubes | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact (ADR-003 burst) |
+| 30 | engine_start | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
+| 31 | engine_off | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
+| 32 | ui_click | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
+| 33 | ui_move | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
+| 34 | ui_confirm | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
+| 35 | ui_back | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
+| 36 | ui_error | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
+| 37 | ui_purchase | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui |
+| 38 | ui_unlock | 1 | ✅ | ⬜ | ⬜ | audio-sfx-ui (pink-slip win) |
 
 ## Music — `audio-music-*`
 
 | # | track | PH | SRC | WIRED |
 |---|---|:--:|:--:|:--:|
-| 42 | menu | ⬜ | ⬜ | ⬜ |
-| 43 | race | ⬜ | ⬜ | ⬜ |
-| 44 | boss | ⬜ | ⬜ | ⬜ |
+| 39 | menu | ⬜ | ⬜ | ⬜ |
+| 40 | race | ⬜ | ⬜ | ⬜ |
+| 41 | boss | ⬜ | ⬜ | ⬜ |
 
 No placeholders for music on purpose — `audio-music-direction` decides the brief first.
 
@@ -133,8 +133,6 @@ Source shorthand:
 | `skid_asphalt` | 2–4 s | **FS CC0 squeal set: /s/71736/ /71737/ /71738/** (audible-edge, the canonical one) | ADOBE › Transportation |
 | `skid_loose` | 2–4 s | **SON-21 › 344 Audio dirt track** | SON-15 › Membrans Rally Cars 01/02 |
 | `scrape` | 2–4 s | ADOBE › Industry | SON-20 › Pole Position "Car Destruction" |
-| `slipstream` | 2–4 s | ADOBE › Production Elements (whooshes) | 99sounds.org whooshes |
-| `nitro_loop` | 2–4 s | ADOBE › Production Elements | BOOM free "Cinematic Series" (2.3 GB, no attribution) |
 
 **Prototyping the band system before sourcing:** https://opengameart.org/content/racing-car-engine-sound-loops
 (CC0, six pitch variants = a ready-made RPM ladder, low fidelity but the right shape).
@@ -159,7 +157,6 @@ Source shorthand:
 | `checkpoint` | 1 | 0.2–0.4 s | **CHIP** (generate) | KENNEY Interface |
 | `engine_start` | 1 | 1.5–3 s | **SON-20 › Soundholder engine on/off** | **BSB** starters (CC0); FS /s/405322/ (CC0) |
 | `engine_off` | 1 | 1–2 s | SON-20 › Soundholder engine on/off | BSB (CC0) |
-| `nitro_fire` | 1 | 0.5–1 s | ADOBE › Production Elements | 99sounds risers |
 
 ## One-shots, non-positional — WAV · stereo · −3 dBFS
 

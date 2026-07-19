@@ -86,7 +86,7 @@ downsampled file *up* exposes its missing bandwidth immediately. If you need the
 
 ## 2. Sound manifest
 
-**All 41 sounds have placeholders** — synthesized filtered noise and harmonic stacks from
+**All 38 sounds have placeholders** — synthesized filtered noise and harmonic stacks from
 `scripts/tools/gen_placeholder_audio.gd`, CC0 by construction, seeded so regeneration is
 byte-identical. None are production sounds; replace freely. Columns below track what each is
 *for* and which system owns it — **⬜ = still a placeholder, ✅ = real sound sourced.**
@@ -138,8 +138,6 @@ is the cheap version; don't source three until the one-loop version feels right.
 | `lap_best` | one-shot | `code-race-timing` |
 | `finish_win` / `finish_lose` | one-shot | `code-race-result` |
 | `wrong_way` | one-shot | `code-track-checkpoints` |
-| `slipstream` | driven loop | `audio-sfx-slipstream` |
-| `nitro_fire` + `nitro_loop` | one-shot + driven loop | `audio-sfx-nitro` |
 
 ### UI — `audio-sfx-ui`
 `ui_click` · `ui_move` (menu navigation) · `ui_confirm` · `ui_back` · `ui_error` · `ui_purchase` ·
@@ -150,7 +148,7 @@ cheapest whole-task win on this page.
 `menu` · `race` · `boss` — **no placeholders on purpose**; `audio-music-direction` writes the brief
 first, and a synthesized stand-in would only anchor the direction badly.
 
-**41 sound files + 3 music tracks** for the full game. Ambience and UI are the two cheapest groups;
+**38 sound files + 3 music tracks** for the full game. Ambience and UI are the two cheapest groups;
 engine and tyres are the two that actually sell the driving.
 
 ## 3. Where to get sounds for free

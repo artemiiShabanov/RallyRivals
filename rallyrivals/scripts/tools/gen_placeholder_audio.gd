@@ -50,8 +50,6 @@ const DRIVEN := [
 	["skid_asphalt", 39, "skid_asphalt", 2.0],   # squeal
 	["skid_loose", 40, "skid_loose", 2.0],       # gravel slide, no tone
 	["scrape", 41, "scrape", 2.0],
-	["slipstream", 42, "slipstream", 2.0],
-	["nitro_loop", 43, "nitro_loop", 2.0],
 ]
 
 # ---------------------------------------------------------------- one-shots
@@ -74,23 +72,42 @@ const ONESHOTS := [
 	["impact_light", 3, "SFX", -5.0, 0.12, "impact_light"],
 	["impact_heavy", 3, "SFX", -2.0, 0.10, "impact_heavy"],
 	["debris_cubes", 3, "SFX", -8.0, 0.18, "debris"],
-	["nitro_fire", 1, "SFX", -4.0, 0.06, "nitro_fire"],
 	["engine_start", 1, "SFX", -6.0, 0.04, "engine_start"],
 	["engine_off", 1, "SFX", -8.0, 0.04, "engine_off"],
 	["thunder", 2, "SFX", -3.0, 0.12, "thunder"],
 ]
 
+var _skipped: PackedStringArray = []
+
 func _initialize() -> void:
 	for d in [AMB, SFX, LOOPS]:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(d))
+	var n := 0
 	for b in BEDS:
-		_write_bed(b[0], b[1], b[2], b[3])
+		if _sourced(AMB, b[0]): continue
+		_write_bed(b[0], b[1], b[2], b[3]); n += 1
+	var l := 0
 	for d in DRIVEN:
-		_write_driven(d[0], d[1], d[2], d[3])
+		if _sourced(LOOPS, d[0]): continue
+		_write_driven(d[0], d[1], d[2], d[3]); l += 1
+	var o_count := 0
 	for o in ONESHOTS:
-		_write_oneshot(o[0], o[1], o[2], o[3], o[4], o[5])
-	print("placeholders: %d beds, %d loops, %d one-shot defs" % [BEDS.size(), DRIVEN.size(), ONESHOTS.size()])
+		if _sourced(SFX, o[0]): continue
+		_write_oneshot(o[0], o[1], o[2], o[3], o[4], o[5]); o_count += 1
+	print("placeholders written: %d beds, %d loops, %d one-shot defs" % [n, l, o_count])
+	if not _skipped.is_empty():
+		print("left alone (already sourced): %s" % ", ".join(_skipped))
 	quit()
+
+## A sound that has a real recording next to it is NEVER regenerated. Without this, running the
+## generator after sourcing silently reverts the def to the placeholder and resurrects the .res —
+## which is exactly what happened once. The sourced file is the source of truth.
+func _sourced(dir: String, id: String) -> bool:
+	for ext in ["wav", "ogg", "mp3"]:
+		if FileAccess.file_exists("%s%s.%s" % [dir, id, ext]):
+			_skipped.append(id)
+			return true
+	return false
 
 # ---------------------------------------------------------------- writers
 func _write_bed(id: String, db: float, seed_val: int, recipe: String) -> void:
@@ -245,14 +262,6 @@ func _synth(recipe: String, n: int) -> PackedFloat32Array:
 				grit = grit * 0.70 + (1.0 if _rng.randf() < 0.09 else 0.0) * (_rng.randf() * 2.0 - 1.0)
 				lp += (w - lp) * 0.50
 				out[i] = (grit * 0.9 + (w - lp) * 0.5) * (1.0 + 0.4 * sin(TAU * 11.0 * t))
-			"slipstream":
-				lp += (w - lp) * 0.16
-				lp2 += (w - lp2) * 0.05
-				out[i] = (lp - lp2) * 2.6 * (1.0 + 0.25 * sin(TAU * 1.5 * t))
-			"nitro_loop":
-				lp += (w - lp) * 0.40
-				lp2 += (w - lp2) * 0.03
-				out[i] = (w - lp) * 0.55 + lp2 * 2.2
 	return out
 
 # ---------------------------------------------------------------- one-shot synthesis
@@ -275,7 +284,6 @@ func _oneshot(recipe: String, variant: int) -> PackedFloat32Array:
 		"impact_light": return _hit(0.13, 0.20, 3.0, 120.0, 0.45)
 		"impact_heavy": return _hit(0.34, 0.13, 1.6, 62.0, 0.75)
 		"debris": return _debris(variant)
-		"nitro_fire": return _whoosh(0.55, 400.0, 3200.0)
 		"engine_start": return _engine_start()
 		"engine_off": return _engine_off()
 		"thunder": return _thunder(2.6 + variant * 0.7, 0.6 + variant * 0.25)
@@ -340,20 +348,6 @@ func _debris(variant: int) -> PackedFloat32Array:
 		for i in piece.size():
 			if start + i < out.size():
 				out[start + i] += piece[i] * 0.55
-	return out
-
-## Noise swept through a rising bandpass = air rushing past.
-func _whoosh(dur: float, f0: float, f1: float) -> PackedFloat32Array:
-	var n := int(dur * RATE)
-	var out := PackedFloat32Array()
-	out.resize(n)
-	var lp := 0.0
-	for i in n:
-		var p := float(i) / n
-		var env := sin(PI * p)                      # fade in and out — no clicks either end
-		var coef := clampf(lerpf(f0, f1, p) / (RATE * 0.5), 0.01, 0.9)
-		lp += ((_rng.randf() * 2.0 - 1.0) - lp) * coef
-		out[i] = (lp - lp * 0.3) * env * 0.8
 	return out
 
 ## Starter motor chugs, then the engine catches and settles.
