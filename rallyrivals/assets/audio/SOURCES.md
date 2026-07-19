@@ -18,7 +18,8 @@ Anything CC-BY also needs a line in the in-game credits screen.
 | `loops/engine_mid.wav` | https://gamesounds.xyz (Sonniss GDC bundle mirror) | #GameAudioGDC Bundle Licence — commercial OK, **no attribution required** | Sonniss contributor | 2026-07-19 |
 | `loops/skid_loose.wav` | ⚠️ **which source?** | | | 2026-07-19 |
 | `loops/scrape.wav` | ⚠️ **which source?** | | | 2026-07-19 |
-| `sfx/*.wav` (13 files: UI, countdown, lap/finish, wrong_way, thunder ×2) | ⚠️ **which source?** | | | 2026-07-19 |
+| `sfx/thunder_1.wav` `thunder_2.wav` | https://gamesounds.xyz (Sonniss GDC bundle mirror) | #GameAudioGDC Bundle Licence — commercial OK, **no attribution required** | Sonniss contributor | 2026-07-19 |
+| `sfx/ui_*.wav`, `countdown_*.wav`, `lap_best.wav`, `finish_*.wav`, `wrong_way.wav` | generated with **sfxr** (DrPetter) | public domain — generated output, owned outright | project | 2026-07-19 |
 | everything else under `loops/` and `sfx/` | synthesized — `scripts/tools/gen_placeholder_audio.gd` | CC0 (own work) | project | 2026-07-18 |
 
 **All ambience beds are sourced; `loops/` and `sfx/` are still placeholders** — filtered noise and harmonic stacks generated from

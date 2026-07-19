@@ -63,7 +63,7 @@ Their owning systems will define their own config resources.
 | 29 | debris_cubes | 3 | ✅ | ⬜ | ⬜ | audio-sfx-impact (ADR-003 burst) |
 | 30 | engine_start | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
 | 31 | engine_off | 1 | ✅ | ⬜ | ⬜ | audio-sfx-engine |
-| 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** — ⚠️ only 2.6 ms, verify it reads as a click |
+| 32 | ui_click | 1 | — | ✅ | ⬜ | **SOURCED** (sfxr) — ⚠️ only 2.6 ms; bump decay in sfxr if it reads as nothing |
 | 33 | ui_move | 1 | ✅ | ⬜ | ⬜ | ⚠️ **re-source** — dropped file had only 4 distinct sample values (~1.6 bits)
 | 34 | ui_confirm | 1 | — | ✅ | ⬜ | **SOURCED** — 0.06 s |
 | 35 | ui_back | 1 | ✅ | ⬜ | ⬜ | still to source (was not in the drop)
