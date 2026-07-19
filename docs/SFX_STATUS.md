@@ -6,8 +6,11 @@ Working checklist for sourcing production audio. Three independent columns:
 - **SRC** — production sound sourced + logged in `assets/audio/SOURCES.md`
 - **WIRED** — actually triggered by game code (not just sitting in the folder)
 
-**36 of 37 sourced.** Only `skid_asphalt` is still a placeholder — it needs a sustained
-squeal rather than a skid event.
+**37 of 37 sourced — every sound in the game is a real recording.** No generated placeholder
+remains anywhere in `assets/audio/`.
+
+Nothing is wired yet beyond `checkpoint` and `thunder`: the engine, surface, impact and UI sets
+are waiting on `audio-sfx-engine`, `audio-sfx-surface`, `audio-sfx-impact` and `code-ui-*`.
 
 All roll loops are peak-normalised to **−14 dBFS** rather than −6: they are a texture layer that
 sits under engine and ambience. Final balance belongs to `audio-sfx-surface`.
@@ -45,7 +48,7 @@ Their owning systems will define their own config resources.
 | 13 | roll_sand | — | ✅ | ⬜ | **SOURCED** — 4.91 s from 0.45 s, flattened (was −1.86 dB/s + fade-in) |
 | 14 | roll_snow | — | ✅ | ⬜ | **SOURCED** — 1.63 s, flattened |
 | 15 | roll_ice | — | ✅ | ⬜ | **SOURCED** — 2.28 s, high-passed 300 Hz + flattened |
-| 16 | skid_asphalt | ✅ | ⬜ | ⬜ | ⚠️ **still to source** — needs a sustained squeal, not a skid event |
+| 16 | skid_asphalt | — | ✅ | ⬜ | **SOURCED** — 1.59 s, flattened (was −6.08 dB/s). ⚠️ reads as noise not squeal (tonality 0.11), so it differs from skid_loose mainly in brightness |
 | 17 | skid_loose | — | ✅ | ⬜ | **SOURCED** — 1.15 s mono from 0.1 s, gritty (tonality 0.09) |
 | 18 | scrape | — | ✅ | ⬜ | **SOURCED** — 2.93 s mono, natural loop kept whole. ⚠️ 11 dB envelope swing — may read as pulsing once wired |
 
