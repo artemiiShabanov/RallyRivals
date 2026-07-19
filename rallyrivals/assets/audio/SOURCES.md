@@ -24,10 +24,9 @@ Anything CC-BY also needs a line in the in-game credits screen.
 | `sfx/engine_start.wav` `engine_off.wav` | https://gamesounds.xyz (Sonniss GDC bundle mirror) | #GameAudioGDC Bundle Licence — commercial OK, **no attribution required** | Sonniss contributor | 2026-07-19 |
 | everything else under `loops/` | synthesized — `scripts/tools/gen_placeholder_audio.gd` | CC0 (own work) | project | 2026-07-18 |
 
-**All ambience beds are sourced; `loops/` and `sfx/` are still placeholders** — filtered noise and harmonic stacks generated from
-code, so CC0 by construction and safe to ship, though not intended to. As each is replaced with a
-real recording, delete it from the blanket row above and give it its own row with a real source,
-licence and URL.
+**All beds and all one-shots are sourced.** Only the 7 remaining `loops/` entries (`skid_asphalt`
+and the six `roll_*`) are still synthesized placeholders — filtered noise generated from code, CC0
+by construction. As each is replaced, drop it from the blanket row above and give it its own row.
 
 Example of what a filled row looks like:
 
