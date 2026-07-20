@@ -198,20 +198,30 @@ func _add_ground(root: Node3D) -> Dictionary:
 	var w1_tex := ImageTexture.create_from_image(w1)
 	ResourceSaver.save(w1_tex, _out_dir.path_join("ground_weights1.res"))
 	w1_tex.take_over_path(_out_dir.path_join("ground_weights1.res"))
+	# Per-surface look, indexed the same way as the weight channels: colour, tint noise, how matte
+	# it is, and how much fake blocky relief it gets. All authored on the SurfaceType .tres.
 	var pal := PackedVector3Array()
 	var vars := PackedFloat32Array()
+	var rough := PackedFloat32Array()
+	var chunk := PackedFloat32Array()
 	for s in all_surfaces:
 		pal.append(Vector3(s.color.r, s.color.g, s.color.b))
 		vars.append(s.tint_variation)
+		rough.append(s.roughness)
+		chunk.append(s.chunkiness)
 	while pal.size() < 6:
 		pal.append(Vector3.ZERO)
 		vars.append(0.0)
+		rough.append(1.0)
+		chunk.append(0.0)
 	var terrain_mat := ShaderMaterial.new()
 	terrain_mat.shader = load("res://assets/shaders/terrain_surface.gdshader")
 	terrain_mat.set_shader_parameter("weights0", w0_tex)
 	terrain_mat.set_shader_parameter("weights1", w1_tex)
 	terrain_mat.set_shader_parameter("palette", pal)
 	terrain_mat.set_shader_parameter("variation", vars)
+	terrain_mat.set_shader_parameter("rough", rough)
+	terrain_mat.set_shader_parameter("chunk", chunk)
 	terrain_mat.set_shader_parameter("world_size", _size * mpp)
 
 	# --- visual: per-surface bucketed meshes (no collision) ---

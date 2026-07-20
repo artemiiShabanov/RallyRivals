@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bde5slygli47"]
+[gd_scene load_steps=12 format=3 uid="uid://bde5slygli47"]
 
 [ext_resource type="Script" uid="uid://bicg20hpmlw67" path="res://scripts/vehicle/vehicle_controller.gd" id="1_ctrl"]
 [ext_resource type="ArrayMesh" uid="uid://c4vetfqcwox33" path="res://assets/voxels/cars/blockout.obj" id="2_body"]

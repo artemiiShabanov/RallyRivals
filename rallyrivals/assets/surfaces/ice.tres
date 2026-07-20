@@ -10,3 +10,5 @@ grip = 3.0
 color = Color(0.78, 0.88, 0.95, 1)
 texture = ExtResource("2_t24yw")
 tint_variation = 0.04
+roughness = 0.25
+chunkiness = 0.0
