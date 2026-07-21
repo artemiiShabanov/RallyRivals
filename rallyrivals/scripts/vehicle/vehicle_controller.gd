@@ -227,6 +227,18 @@ func _surface_at(w: VehicleWheel3D) -> SurfaceType:
 					return m.surface_at(pos.x, pos.z)
 	return null
 
+## The rear wheels, in scene order — SkidMarks lays a ribbon under each.
+func rear_wheels() -> Array[VehicleWheel3D]:
+	var out: Array[VehicleWheel3D] = []
+	for w in _wheels:
+		if not w.use_as_steering:
+			out.append(w)
+	return out
+
+## The surface a specific wheel is touching (public wrapper for _surface_at).
+func surface_under(w: VehicleWheel3D) -> SurfaceType:
+	return _surface_at(w)
+
 ## What the car is driving on: the surface under the first rear wheel in contact (the rears carry
 ## the weight and do the sliding, so they define the sound).
 func current_surface() -> SurfaceType:
@@ -304,3 +316,6 @@ func respawn_at(t: Transform3D) -> void:
 	global_transform = t
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
+	var marks := get_node_or_null("SkidMarks") as SkidMarks
+	if marks != null:
+		marks.clear()   # don't leave a trail streaking from the old spot to the new one

@@ -4,6 +4,7 @@
 [ext_resource type="ArrayMesh" uid="uid://c4vetfqcwox33" path="res://assets/voxels/cars/blockout.obj" id="2_body"]
 [ext_resource type="Resource" uid="uid://osmnnaot5tlw" path="res://assets/cars/kerb.tres" id="3_car"]
 [ext_resource type="Script" path="res://scripts/audio/car_audio.gd" id="4_audio"]
+[ext_resource type="Script" path="res://scripts/vehicle/skid_marks.gd" id="9_skid"]
 [ext_resource type="Resource" path="res://assets/audio/engine_default.tres" id="5_engine"]
 [ext_resource type="Resource" path="res://assets/audio/sfx/impact_light.tres" id="6_impl"]
 [ext_resource type="Resource" path="res://assets/audio/sfx/impact_heavy.tres" id="7_imph"]
@@ -37,6 +38,9 @@ engine = ExtResource("5_engine")
 impact_light = ExtResource("6_impl")
 impact_heavy = ExtResource("7_imph")
 debris = ExtResource("8_debris")
+
+[node name="SkidMarks" type="Node3D" parent="."]
+script = ExtResource("9_skid")
 
 [node name="Body" type="MeshInstance3D" parent="."]
 mesh = ExtResource("2_body")

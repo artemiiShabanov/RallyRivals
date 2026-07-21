@@ -12,3 +12,4 @@ texture = ExtResource("2_s7aa3")
 tint_variation = 0.38
 roughness = 1.0
 chunkiness = 1.0
+mark_color = Color(0.14, 0.13, 0.11, 0.42)

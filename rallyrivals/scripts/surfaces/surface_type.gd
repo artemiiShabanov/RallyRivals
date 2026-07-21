@@ -19,5 +19,8 @@ extends Resource
 ## made of little cubes turned different ways. Loose surfaces want a lot (gravel reads as chunks),
 ## hard ones almost none. Costs nothing — it's lighting variation, not geometry.
 @export_range(0.0, 1.0) var chunkiness := 0.2
+## The mark a sliding tyre leaves here: black rubber on tarmac, a paler displaced groove on loose
+## ground, almost nothing on ice. Alpha is how visible the mark is — SkidMarks scales it by slip.
+@export var mark_color := Color(0.05, 0.05, 0.06, 0.55)
 
 # Later: @export var particles: PackedScene, @export var tire_sfx: AudioStream, rolling drag, etc.
