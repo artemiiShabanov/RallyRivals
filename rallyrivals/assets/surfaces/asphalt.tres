@@ -13,3 +13,4 @@ tint_variation = 0.05
 roughness = 0.92
 chunkiness = 0.06
 mark_color = Color(0.05, 0.05, 0.06, 0.55)
+mark_baseline = 0.0

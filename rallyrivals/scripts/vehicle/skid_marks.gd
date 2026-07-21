@@ -1,25 +1,32 @@
 class_name SkidMarks
 extends Node3D
-## Tyre marks laid on the ground where a rear wheel slides. The visual twin of the skid audio —
-## driven from the same VehicleController.skid_amount() — so a mark and its screech arrive together.
+## Tyre marks laid on the ground under the rear wheels. Two things blend into one ribbon:
+##   - a faint rolling RUT on soft ground (gravel, dirt, sand, snow) — left just by driving, always
+##   - the darker SKID mark when a wheel slides — black rubber on tarmac, a deeper groove elsewhere
+## Opacity = surface.mark_baseline (rolling) scaled up to full by skid intensity. On tarmac the
+## baseline is 0, so clean asphalt only marks when you actually slide.
 ##
-## Add as a child of the car. Each rear wheel gets a ribbon: while the wheel slips, quads are laid
-## from its last contact point to the current one, tinted by that surface's mark_color and faded by
-## slip strength. The ribbon lives in WORLD space (its mesh is top_level), so marks stay on the
-## ground as the car drives away. It's a bounded ring — past MAX_QUADS the oldest drop, so a long
-## race can't grow the mesh without limit. Pure surface decal: no decals, no physics, one mesh.
+## The skid component uses VehicleController.skid_intensity() — the SAME value the skid AUDIO reads
+## — so a mark and its screech begin and end together.
+##
+## Each rear wheel raycasts straight down for the ground rather than trusting suspension contact:
+## in a hard corner weight transfers off the inner wheel and its contact drops, which used to leave
+## only the outer wheel marking. The ray still finds the ground just below, so both wheels mark.
+##
+## One world-space ImmediateMesh (top_level), a bounded ring per wheel — a long race can't grow it.
 
-const MAX_QUADS := 260          # per wheel; ~0.12 m apart -> ~30 m of trail before it recycles
+const MAX_QUADS := 320          # per wheel; ~0.12 m apart -> ~38 m of trail before it recycles
 const SEG_DIST := 0.12          # m of travel between quads — framerate-independent density
 const HALF_WIDTH := 0.16        # tyre is ~0.3 m wide
-const LIFT := 0.04              # m above the contact point, so it doesn't z-fight the terrain
-const SLIP_MIN := 0.2           # below this the tyre is gripping — no mark
-const HANDBRAKE_SLIP := 0.75    # handbrake always lays a bold mark, whatever the solver reports
-const FADE_HEAD := 0.18         # oldest fraction of a ribbon that tapers out, so recycling doesn't pop
+const LIFT := 0.04              # m above the ground hit, so it doesn't z-fight the terrain
+const REACH := 0.45             # m below the wheel the ground ray looks (radius + lean slack)
+const MIN_ALPHA := 0.02         # below this a quad is invisible — don't lay it (keeps tarmac clean)
+const FADE_HEAD := 0.15         # oldest fraction of a ribbon that tapers out, so recycling doesn't pop
 
 var _car: VehicleController
 var _mesh: MeshInstance3D
 var _im: ImmediateMesh
+var _space: PhysicsDirectSpaceState3D
 # One ribbon per wheel: a ring of quads {a, b, c, d, col} plus the last pen-down state.
 var _ribbons: Array = []
 var _dirty := false
@@ -55,49 +62,66 @@ func _physics_process(_dt: float) -> void:
 			_ribbons.append({"quads": [], "last": Vector3.ZERO, "down": false})
 		if _ribbons.is_empty():
 			return
-	var speed := _car.linear_velocity.length()
-	var slip := _car.skid_amount()
-	if _car.is_handbraking:
-		slip = maxf(slip, HANDBRAKE_SLIP)
+	_space = get_world_3d().direct_space_state   # legal here: _physics_process IS the physics step
+
+	var moving := _car.linear_velocity.length() > 1.0
+	var skid := _car.skid_intensity()
 	var wheels := _car.rear_wheels()
 
 	for i in wheels.size():
 		if i >= _ribbons.size():
 			break
-		var wheel := wheels[i]
-		var rib: Dictionary = _ribbons[i]
-		var marking := speed > 2.0 and slip > SLIP_MIN and wheel.is_in_contact()
-		if not marking:
-			rib["down"] = false           # pen up: next mark starts a fresh, disconnected stroke
-			continue
-
-		var contact := wheel.global_position - Vector3.UP * wheel.wheel_radius + Vector3.UP * LIFT
-		if not rib["down"]:
-			rib["last"] = contact
-			rib["down"] = true
-			continue
-		if contact.distance_to(rib["last"]) < SEG_DIST:
-			continue
-
-		_add_quad(rib, rib["last"], contact, slip, wheel)
-		rib["last"] = contact
+		_update_wheel(wheels[i], _ribbons[i], moving, skid)
 
 	if _dirty:
 		_rebuild()
 		_dirty = false
 
-# A quad from the previous contact to the current one, width perpendicular to travel, laid flat.
-func _add_quad(rib: Dictionary, from: Vector3, to: Vector3, slip: float, wheel: VehicleWheel3D) -> void:
+func _update_wheel(wheel: VehicleWheel3D, rib: Dictionary, moving: bool, skid: float) -> void:
+	if not moving:
+		rib["down"] = false
+		return
+	# Look straight down for the ground, independent of suspension contact.
+	var origin := wheel.global_position + Vector3.UP * 0.1
+	var q := PhysicsRayQueryParameters3D.create(
+		origin, origin - Vector3.UP * (wheel.wheel_radius + REACH), 1)   # mask 1 = world
+	q.exclude = [_car.get_rid()]
+	var hit := _space.intersect_ray(q)
+	if hit.is_empty():
+		rib["down"] = false                     # airborne — break the stroke so it doesn't smear
+		return
+
+	var point: Vector3 = hit["position"] + Vector3.UP * LIFT
+	var surf := _car.surface_of(hit["collider"], point.x, point.z)
+	if surf == null:
+		rib["down"] = false
+		return
+	# baseline while rolling, rising to full alpha as the wheel slides.
+	var frac: float = clampf(surf.mark_baseline + (1.0 - surf.mark_baseline) * skid, 0.0, 1.0)
+	var alpha := surf.mark_color.a * frac
+	if alpha < MIN_ALPHA:
+		rib["down"] = false                     # nothing to draw here (clean tarmac) — pen up
+		return
+
+	if not rib["down"]:
+		rib["last"] = point
+		rib["down"] = true
+		return
+	if point.distance_to(rib["last"]) < SEG_DIST:
+		return
+
+	var col := surf.mark_color
+	col.a = alpha
+	_add_quad(rib, rib["last"], point, col)
+	rib["last"] = point
+
+# A quad from the previous ground point to the current one, width perpendicular to travel, flat.
+func _add_quad(rib: Dictionary, from: Vector3, to: Vector3, col: Color) -> void:
 	var dir := to - from
 	dir.y = 0.0
 	if dir.length() < 0.001:
 		return
 	var right := dir.normalized().cross(Vector3.UP).normalized() * HALF_WIDTH
-	var surf := _car.surface_under(wheel)
-	var base: Color = surf.mark_color if surf != null else Color(0.05, 0.05, 0.06, 0.55)
-	var col := base
-	col.a = base.a * clampf((slip - SLIP_MIN) / (1.0 - SLIP_MIN), 0.0, 1.0)
-
 	var quads: Array = rib["quads"]
 	quads.append({"a": from - right, "b": from + right, "c": to + right, "d": to - right, "col": col})
 	if quads.size() > MAX_QUADS:
@@ -118,12 +142,12 @@ func _rebuild() -> void:
 		var quads: Array = rib["quads"]
 		var head := int(quads.size() * FADE_HEAD)
 		for qi in quads.size():
-			var q: Dictionary = quads[qi]
-			var c: Color = q["col"]
+			var qd: Dictionary = quads[qi]
+			var c: Color = qd["col"]
 			if qi < head:                 # taper the oldest so dropping them doesn't pop
 				c.a *= float(qi + 1) / float(head + 1)
-			_tri(q["a"], q["b"], q["c"], c)
-			_tri(q["a"], q["c"], q["d"], c)
+			_tri(qd["a"], qd["b"], qd["c"], c)
+			_tri(qd["a"], qd["c"], qd["d"], c)
 	_im.surface_end()
 
 func _tri(p0: Vector3, p1: Vector3, p2: Vector3, c: Color) -> void:
@@ -131,7 +155,7 @@ func _tri(p0: Vector3, p1: Vector3, p2: Vector3, c: Color) -> void:
 	_im.surface_set_color(c); _im.surface_add_vertex(p1)
 	_im.surface_set_color(c); _im.surface_add_vertex(p2)
 
-## Wipe every mark (e.g. on respawn/reset).
+## Wipe every mark (respawn/reset), so a trail doesn't streak from the old spot to the new one.
 func clear() -> void:
 	for rib in _ribbons:
 		(rib["quads"] as Array).clear()

@@ -187,9 +187,9 @@ func _roll_stream(id: String) -> AudioStream:
 	return _rolls[id]
 
 func _update_skid(delta: float, speed: float, grounded: bool) -> void:
-	var slip := _car.skid_amount()
-	if _car.is_handbraking:
-		slip = maxf(slip, 0.6)
+	# Same slip value the skid MARKS read (VehicleController.skid_intensity), so screech and mark
+	# start and stop together.
+	var slip := _car.skid_intensity()
 	var want := grounded and speed > 3.0 and slip > 0.15
 	if want:
 		# Hard surfaces squeal, loose ones hiss. Surface grip is the cheapest proxy we have.

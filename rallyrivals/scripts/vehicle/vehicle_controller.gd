@@ -211,21 +211,35 @@ func _surface_grip(w: VehicleWheel3D) -> float:
 					return m.grip_at(pos.x, pos.z)
 	return base_grip
 
-## The SurfaceType a wheel is touching (null when airborne or on untagged ground). Same two
-## tagging schemes as _surface_grip, but returns the surface itself — CarAudio needs the identity,
-## not the number, to pick a roll loop.
+## The SurfaceType a wheel is touching (null when airborne or on untagged ground).
 func _surface_at(w: VehicleWheel3D) -> SurfaceType:
 	if w.is_in_contact():
-		var body := w.get_contact_body()
-		if body != null:
-			if body.has_meta("surface"):
-				return body.get_meta("surface") as SurfaceType
-			if body.has_meta("surface_map"):
-				var m: SurfaceMap = body.get_meta("surface_map")
-				if m != null:
-					var pos := w.global_position
-					return m.surface_at(pos.x, pos.z)
+		return surface_of(w.get_contact_body(), w.global_position.x, w.global_position.z)
 	return null
+
+## The SurfaceType a body carries at a world XZ. Two tagging schemes: meta "surface" (the whole
+## body is one surface) or meta "surface_map" (a baked track's single collision, sampled by
+## position). SkidMarks calls this with a raycast hit so each wheel gets its own surface.
+func surface_of(body: Object, x: float, z: float) -> SurfaceType:
+	if body == null:
+		return null
+	if body.has_meta("surface"):
+		return body.get_meta("surface") as SurfaceType
+	if body.has_meta("surface_map"):
+		var m: SurfaceMap = body.get_meta("surface_map")
+		if m != null:
+			return m.surface_at(x, z)
+	return null
+
+## Canonical skid intensity (0 gripping, 1 fully sliding), the ONE source both the skid audio and
+## the skid marks read so they can never drift out of sync. Handbrake forces a floor — pulling it
+## is a deliberate slide even if the solver hasn't caught up.
+const HANDBRAKE_SKID := 0.6
+func skid_intensity() -> float:
+	var s := skid_amount()
+	if is_handbraking:
+		s = maxf(s, HANDBRAKE_SKID)
+	return s
 
 ## The rear wheels, in scene order — SkidMarks lays a ribbon under each.
 func rear_wheels() -> Array[VehicleWheel3D]:
