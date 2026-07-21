@@ -14,6 +14,7 @@ const REACH := 0.45             # m below the wheel the ground ray looks
 const LIFT := 0.06              # spawn just above the ground
 const FULL_SPEED := 14.0        # m/s where kick-up reaches full density
 const MIN_INTENSITY := 0.02
+const THROW_ANGLE := 45.0       # deg above horizontal the cone is aimed — a backward rooster tail
 
 var _car: VehicleController
 var _space: PhysicsDirectSpaceState3D
@@ -64,6 +65,10 @@ func _physics_process(_dt: float) -> void:
 	var wet := WeatherFX.current_wetness
 	var wet_mid := Vector3.ZERO
 	var wet_hits := 0
+	# Cone aimed opposite the car's motion, THROW_ANGLE above horizontal — the cubes fly out behind
+	# the wheels. Emitters keep an identity basis (only their position is moved), so this world
+	# vector goes straight into ParticleProcessMaterial.direction.
+	var _throw := _throw_dir()
 
 	for i in wheels.size():
 		if i >= _ground.size():
@@ -88,6 +93,9 @@ func _physics_process(_dt: float) -> void:
 		e.global_position = point + Vector3.UP * LIFT
 		e.amount_ratio = clampf(intensity, 0.0, 1.0)
 		e.emitting = intensity > MIN_INTENSITY
+		var pm := e.process_material as ParticleProcessMaterial
+		if pm != null:
+			pm.direction = _throw
 
 	# Wet rooster-tail behind the axle, independent of the dry surface effect.
 	var wet_i := wet * speed_f
@@ -95,8 +103,22 @@ func _physics_process(_dt: float) -> void:
 		_wet.global_position = wet_mid / wet_hits + Vector3.UP * LIFT
 		_wet.amount_ratio = clampf(wet_i, 0.0, 1.0)
 		_wet.emitting = true
+		(_wet.process_material as ParticleProcessMaterial).direction = _throw
 	else:
 		_wet.emitting = false
+
+## Unit vector opposite the car's motion, tilted THROW_ANGLE above horizontal. Falls back to the
+## car's backward axis when nearly stopped (velocity too small to give a heading).
+func _throw_dir() -> Vector3:
+	var v := _car.linear_velocity
+	v.y = 0.0
+	var back: Vector3 = (-v).normalized() if v.length() > 0.5 else -_car.global_transform.basis.z
+	back.y = 0.0
+	if back.length() < 0.01:
+		back = Vector3.BACK
+	back = back.normalized()
+	var a := deg_to_rad(THROW_ANGLE)
+	return (back * cos(a) + Vector3.UP * sin(a)).normalized()
 
 func _ground_hit(wheel: VehicleWheel3D) -> Dictionary:
 	var origin := wheel.global_position + Vector3.UP * 0.1
