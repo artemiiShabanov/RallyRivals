@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="SurfaceType" load_steps=3 format=3 uid="uid://cub72rgxhyuc3"]
+[gd_resource type="Resource" script_class="SurfaceType" load_steps=3 format=3]
 
-[ext_resource type="Script" uid="uid://ca7fr60f4ylw7" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
-[ext_resource type="Texture2D" uid="uid://dw1mybw3vcdl0" path="res://assets/surfaces/tex/sand.png" id="2_i3x4x"]
+[ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
+[ext_resource type="Texture2D" path="res://assets/surfaces/tex/sand.png" id="2_i3x4x"]
 
 [resource]
 script = ExtResource("1_st")
@@ -13,12 +13,12 @@ tint_variation = 0.12
 roughness = 1.0
 chunkiness = 0.3
 mark_color = Color(0.5, 0.42, 0.27, 0.5)
-mark_baseline = 0.0
+mark_baseline = 0.3
 dust_amount = 72
 dust_color = Color(0.76, 0.66, 0.42, 0.75)
 dust_size = 0.05
 dust_baseline = 0.26
 dust_rise = 2.0
 dust_gravity = -1.8
-dust_spread = 40
+dust_spread = 40.0
 dust_lifetime = 0.9

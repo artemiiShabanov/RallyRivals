@@ -39,6 +39,10 @@ func _make_emitter() -> GPUParticles3D:
 	p.emitting = false
 	p.amount = 64
 	p.explosiveness = 0.0
+	# CRITICAL with local_coords off: the emitter moves with the car but the cubes stay behind in
+	# world space. The default culling box is centred on the (moving) node, so trailing cubes fall
+	# outside it and get culled — invisible. A generous fixed AABB keeps the whole trail on screen.
+	p.visibility_aabb = AABB(Vector3(-30, -30, -30), Vector3(60, 60, 60))
 	add_child(p)
 	return p
 

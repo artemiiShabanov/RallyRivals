@@ -9,7 +9,7 @@
 [ext_resource type="Resource" path="res://assets/audio/sfx/impact_heavy.tres" id="7_imph"]
 [ext_resource type="Resource" path="res://assets/audio/sfx/debris_cubes.tres" id="8_debris"]
 [ext_resource type="Script" uid="uid://cgn8waqnwqevg" path="res://scripts/vehicle/skid_marks.gd" id="9_skid"]
-[ext_resource type="Script" path="res://scripts/vehicle/surface_particles.gd" id="10_dust"]
+[ext_resource type="Script" uid="uid://ctpqv0jjugwnn" path="res://scripts/vehicle/surface_particles.gd" id="10_dust"]
 
 [sub_resource type="BoxShape3D" id="BodyShape"]
 size = Vector3(2, 1, 4)

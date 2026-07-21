@@ -19,6 +19,13 @@ func _ensure() -> void:
 	if _loaded:
 		return
 	_loaded = true
+	# A baked track embeds a SNAPSHOT of each SurfaceType taken at bake time, so any field added or
+	# changed on the .tres afterwards (grip, colour, marks, dust) would be stale until a rebake.
+	# Re-resolve each surface from its source path so runtime always uses the live .tres — edit a
+	# surface and it takes effect on the next run, no rebake.
+	off_road = _live(off_road)
+	for i in surfaces.size():
+		surfaces[i] = _live(surfaces[i])
 	# Load the raw PNG (not the imported texture) so palette colours are exact, not VRAM-compressed.
 	# CAVEAT (export): source PNGs aren't shipped in the .pck, so globalize_path fails there and we
 	# fall back to the imported texture, whose compression can shift colours. When we add an export
@@ -31,6 +38,14 @@ func _ensure() -> void:
 				_img = (tex as Texture2D).get_image()
 	if _img != null:
 		_size = _img.get_width()
+
+## Reload a SurfaceType from its .tres so it reflects current edits, not the baked snapshot.
+func _live(s: SurfaceType) -> SurfaceType:
+	if s != null and s.resource_path != "" and ResourceLoader.exists(s.resource_path):
+		var fresh := load(s.resource_path)
+		if fresh is SurfaceType:
+			return fresh
+	return s
 
 ## SurfaceType painted at a world XZ. Off-road / out of bounds -> off_road.
 func surface_at(wx: float, wz: float) -> SurfaceType:

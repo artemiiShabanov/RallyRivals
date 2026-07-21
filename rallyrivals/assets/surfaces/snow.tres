@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="SurfaceType" load_steps=3 format=3 uid="uid://cvuka24rl4osl"]
+[gd_resource type="Resource" script_class="SurfaceType" load_steps=3 format=3]
 
-[ext_resource type="Script" uid="uid://ca7fr60f4ylw7" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
-[ext_resource type="Texture2D" uid="uid://da0bqt04tbmwg" path="res://assets/surfaces/tex/snow.png" id="2_uwqgu"]
+[ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
+[ext_resource type="Texture2D" path="res://assets/surfaces/tex/snow.png" id="2_uwqgu"]
 
 [resource]
 script = ExtResource("1_st")
@@ -13,12 +13,12 @@ tint_variation = 0.06
 roughness = 0.88
 chunkiness = 0.22
 mark_color = Color(0.32, 0.38, 0.47, 0.55)
-mark_baseline = 0.0
+mark_baseline = 0.32
 dust_amount = 64
-dust_color = Color(0.95, 0.97, 1.0, 0.9)
+dust_color = Color(0.95, 0.97, 1, 0.9)
 dust_size = 0.05
 dust_baseline = 0.3
 dust_rise = 2.6
 dust_gravity = -0.7
-dust_spread = 46
+dust_spread = 46.0
 dust_lifetime = 1.2
