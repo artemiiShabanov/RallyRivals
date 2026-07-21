@@ -38,12 +38,13 @@ func _ready() -> void:
 
 	# Checkpoint + timing debug: gate passes, lap times, stage time (cut a corner -> no lap).
 	var cps := track.get_node_or_null("Checkpoints") as TrackCheckpoints
+	var timing: RaceTiming = null
 	if cps != null:
 		var cp_sfx := load("res://assets/audio/sfx/checkpoint.tres") as SfxDef
 		cps.gate_passed.connect(func(body: Node3D, index: int, total: int) -> void:
 			Sfx.play_at(cp_sfx, body.global_position)
 			print("checkpoint %d/%d — %s" % [index, total, body.name]))
-		var timing := RaceTiming.new()
+		timing = RaceTiming.new()
 		timing.name = "RaceTiming"
 		add_child(timing)
 		timing.setup(cps)
@@ -85,3 +86,11 @@ func _ready() -> void:
 	cam.target_path = NodePath("../Car")
 	add_child(cam)
 	cam.current = true
+
+	# HUD (code-ui-hud): speed / time / lap / split. Needs the car + timing, so it's built last.
+	if cps != null and timing != null:
+		var hud := RaceHud.new()
+		hud.name = "RaceHud"
+		add_child(hud)
+		var laps_total: int = race.laps if race != null else 3
+		hud.bind(car as VehicleController, timing, cps, laps_total)
