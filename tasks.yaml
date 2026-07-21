@@ -142,7 +142,7 @@ tasks:
   - {id: art-voxel-wheel-wreck, title: "Voxel wheel: Wreckhouse rim", type: art, group: voxel, size: small, status: todo, blockers: [art-voxel-brand-families]}
   - {id: art-voxel-wheel-mayfly, title: "Voxel wheel: Mayfly Speedworks rim", type: art, group: voxel, size: small, status: todo, blockers: [art-voxel-brand-families]}
   - {id: art-vfx-juice, title: "Screen shake + landing thump", type: art, group: vfx, size: micro, status: todo, blockers: [code-vehicle-controller]}
-  - {id: art-vfx-surface-particles, title: "Per-surface particles (dust/snow/spray)", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-surface-grip]}
+  - {id: art-vfx-surface-particles, title: "Per-surface particles (dust/snow/spray)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-surface-grip]}
   - {id: art-vfx-skidmarks, title: "Tyre skid marks (per-surface ribbon under sliding wheels)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-surface-grip]}
   - {id: art-vfx-slipstream, title: "Slipstream speed-lines/wind FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-slipstream]}
   - {id: art-vfx-damage, title: "Voxel-chipping damage FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-damage]}

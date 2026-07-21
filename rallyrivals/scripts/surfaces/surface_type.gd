@@ -27,4 +27,17 @@ extends Resource
 ## opacity on top, up to the full alpha above.
 @export_range(0.0, 1.0) var mark_baseline := 0.0
 
+@export_group("Kick-up")
+## Cubes a wheel throws off this surface (ADR-003: every particle is a cube). 0 = none — tarmac and
+## ice don't kick dust. Like the marks, emission is baseline while rolling and rises to full on a
+## skid, scaled by speed, using the shared skid_intensity().
+@export var dust_amount := 0                       ## peak live cubes per wheel (0 = this surface throws none)
+@export var dust_color := Color(0.40, 0.35, 0.30, 0.8)  ## rgb tint, a = peak opacity (fades to 0 over life)
+@export var dust_size := 0.08                      ## cube edge (m) — big = chunky debris, small = fine mist
+@export_range(0.0, 1.0) var dust_baseline := 0.2   ## emission just rolling, up to full on a skid
+@export var dust_rise := 2.0                       ## initial upward speed (m/s)
+@export var dust_gravity := -3.0                   ## y accel; deeply negative = chunks fall, near 0 = dust floats
+@export var dust_spread := 30.0                    ## emission cone half-angle (deg)
+@export var dust_lifetime := 0.8                   ## seconds a cube lives
+
 # Later: @export var particles: PackedScene, @export var tire_sfx: AudioStream, rolling drag, etc.

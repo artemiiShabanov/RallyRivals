@@ -333,3 +333,6 @@ func respawn_at(t: Transform3D) -> void:
 	var marks := get_node_or_null("SkidMarks") as SkidMarks
 	if marks != null:
 		marks.clear()   # don't leave a trail streaking from the old spot to the new one
+	var dust := get_node_or_null("SurfaceParticles") as SurfaceParticles
+	if dust != null:
+		dust.clear()
