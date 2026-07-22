@@ -323,39 +323,46 @@ func _toggle_loop(file: String) -> void:
 	print("debug: loop on -> ", id)
 
 # Swap the UI font live to compare candidates (assets/fonts + assets/fonts/candidates). Sets the
-# project theme's default_font, so every themed control re-renders. Pick one, then it gets baked
-# into gen_ui_theme.gd. Also cycles a couple of embolden levels of the current pick.
+# project theme's default_font, so every themed control re-renders. CRISP mode turns antialiasing
+# off — pixel/bitmap fonts MUST render crisp or they blur into mush; smooth fonts want it on. Also
+# adjusts weight (embolden). Pick a combo you like and it gets baked into gen_ui_theme.gd.
+var _last_font_path := "res://assets/fonts/DotGothic16-Regular.ttf"
+var _font_embolden := 0.2
+var _font_crisp := true
+
 func _font_menu() -> Array:
 	var out: Array = []
-	var paths := ["res://assets/fonts/", "res://assets/fonts/candidates/"]
-	for dir in paths:
+	for dir in ["res://assets/fonts/", "res://assets/fonts/candidates/"]:
 		var da := DirAccess.open(dir)
 		if da == null:
 			continue
 		for f in da.get_files():
 			if f.get_extension().to_lower() in ["ttf", "otf"]:
-				var path: String = dir + f
-				out.append({"label": f.get_basename(), "run": _set_font.bind(path, 0.35)})
-	out.append({"label": "-- current: bolder (embolden 0.6) --", "run": _reembolden.bind(0.6)})
-	out.append({"label": "-- current: normal (embolden 0.2) --", "run": _reembolden.bind(0.2)})
+				out.append({"label": f.get_basename(), "run": _set_font.bind(dir + f, _font_embolden, _font_crisp)})
+	out.append({"label": "· AA: %s (toggle)" % ("crisp" if _font_crisp else "smooth"),
+		"run": func() -> void: _set_font(_last_font_path, _font_embolden, not _font_crisp)})
+	out.append({"label": "· weight: %.1f  (+)" % _font_embolden,
+		"run": func() -> void: _set_font(_last_font_path, minf(_font_embolden + 0.2, 1.2), _font_crisp)})
+	out.append({"label": "· weight: %.1f  (−)" % _font_embolden,
+		"run": func() -> void: _set_font(_last_font_path, maxf(_font_embolden - 0.2, 0.0), _font_crisp)})
 	return out
 
-var _last_font_path := "res://assets/fonts/DotGothic16-Regular.ttf"
-
-func _set_font(path: String, embolden: float) -> void:
+func _set_font(path: String, embolden: float, crisp: bool) -> void:
 	_last_font_path = path
+	_font_embolden = embolden
+	_font_crisp = crisp
 	var base := load(path) as FontFile
 	var theme := load("res://assets/ui/theme.tres") as Theme
 	if base == null or theme == null:
 		return
+	base.antialiasing = TextServer.FONT_ANTIALIASING_NONE if crisp else TextServer.FONT_ANTIALIASING_GRAY
+	base.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_DISABLED if crisp else TextServer.SUBPIXEL_POSITIONING_AUTO
+	base.clear_cache()   # force re-rasterisation at the new antialiasing
 	var fv := FontVariation.new()
 	fv.base_font = base
 	fv.variation_embolden = embolden
 	theme.default_font = fv
-	print("debug: font -> %s (embolden %.2f)" % [path.get_file(), embolden])
-
-func _reembolden(embolden: float) -> void:
-	_set_font(_last_font_path, embolden)
+	print("debug: font -> %s  (%s, weight %.1f)" % [path.get_file(), "crisp" if crisp else "smooth", embolden])
 
 # Tune the tape look live. 0% is the true off switch (settings will expose the same dial).
 func _vhs_menu() -> Array:

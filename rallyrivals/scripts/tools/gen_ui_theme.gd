@@ -109,6 +109,10 @@ func _find_font() -> FontFile:
 			if f.get_extension().to_lower() in ["ttf", "otf"]:
 				var fnt := load(FONTS + f)
 				if fnt is FontFile:
+					# Crisp bitmap rendering — DotGothic16 (and any pixel font) blurs to mush with
+					# antialiasing on. Swap these two lines back to GRAY / AUTO for a smooth font.
+					fnt.antialiasing = TextServer.FONT_ANTIALIASING_NONE
+					fnt.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_DISABLED
 					return fnt
 	return null
 
