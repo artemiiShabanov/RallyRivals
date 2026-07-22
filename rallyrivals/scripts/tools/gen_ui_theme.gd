@@ -13,8 +13,8 @@ const OUT := "res://assets/ui/theme.tres"
 const FONTS := "res://assets/fonts/"
 
 # --- VCR-OSD chrome palette ---
-const BLUE := Color(0.09, 0.12, 0.58)      # the OSD field
-const BLUE_DK := Color(0.04, 0.06, 0.34)   # recessed field (inputs, tracks)
+const BLUE := Color(0.10, 0.22, 0.95)      # electric OSD field
+const BLUE_DK := Color(0.05, 0.11, 0.60)   # recessed field (inputs, tracks)
 const WHITE := Color(0.95, 0.97, 1.0)      # text
 const CYAN := Color(0.45, 0.90, 0.98)      # teletext accent (secondary text)
 const YELLOW := Color(0.98, 0.92, 0.38)    # teletext accent (headings/values)
@@ -29,8 +29,13 @@ func _initialize() -> void:
 	var t := Theme.new()
 	var font := _find_font()
 	if font != null:
-		t.default_font = font
-	t.default_font_size = 20
+		# Wrap in a FontVariation to embolden slightly — a bit heavier than the base weight, which
+		# reads bolder without needing a separate bold file (DotGothic16 ships one weight).
+		var fv := FontVariation.new()
+		fv.base_font = font
+		fv.variation_embolden = 0.35
+		t.default_font = fv
+	t.default_font_size = 22
 
 	# --- base Label (chrome text) ---
 	t.set_color("font_color", "Label", WHITE)
@@ -53,7 +58,7 @@ func _initialize() -> void:
 	t.set_color("font_pressed_color", "Button", SEL_FG)
 	t.set_color("font_focus_color", "Button", WHITE)
 	t.set_color("font_disabled_color", "Button", DIM)
-	t.set_font_size("font_size", "Button", 22)
+	t.set_font_size("font_size", "Button", 24)
 
 	# OptionButton mirrors Button.
 	for s in ["normal", "hover", "pressed", "focus", "disabled"]:

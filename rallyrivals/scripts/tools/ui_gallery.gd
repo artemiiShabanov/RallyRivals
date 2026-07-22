@@ -7,9 +7,9 @@ extends Control
 func _ready() -> void:
 	set_anchors_preset(PRESET_FULL_RECT)
 
-	# Full-screen blue OSD field behind everything.
+	# Full-screen blue OSD field behind everything (a touch darker than the panels for depth).
 	var bg := ColorRect.new()
-	bg.color = Color(0.07, 0.10, 0.50)
+	bg.color = Color(0.07, 0.16, 0.78)
 	bg.set_anchors_preset(PRESET_FULL_RECT)
 	bg.mouse_filter = MOUSE_FILTER_IGNORE
 	add_child(bg)

@@ -6,4 +6,4 @@ README.md).
 
 | file | source | licence | author | date |
 |---|---|---|---|---|
-| _(none yet — theme uses Godot's default font until one is dropped)_ | | | | |
+| `DotGothic16-Regular.ttf` | Google Fonts (github.com/google/fonts) | SIL Open Font License 1.1 — commercial OK, embeddable | Fontworks | 2026-07-22 |
