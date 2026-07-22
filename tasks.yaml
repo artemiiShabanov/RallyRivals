@@ -167,7 +167,7 @@ tasks:
   - {id: art-world-seasons, title: "Seasonal dressing sets (only seasons a track uses)", type: art, group: world, size: big, status: todo, blockers: [code-track-seasons, art-voxel-environment]}
   - {id: art-shader-surface, title: "Terrain surface/splat-blend shader", type: art, group: shader, size: default, status: done, blockers: [code-track-generator]}
   - {id: art-shader-road, title: "Per-surface material response: matte/gloss + fake blocky relief", type: art, group: shader, size: default, status: done, blockers: [code-track-generator]}
-  - {id: art-shader-vhs, title: "VHS tape post-process (grain/bleed/tracking; intensity slider + off switch)", type: art, group: shader, size: default, status: todo, blockers: []}
+  - {id: art-shader-vhs, title: "VHS tape post-process (grain/bleed/tracking; intensity slider + off switch)", type: art, group: shader, size: default, status: done, blockers: []}
 
   # ---------- audio ----------
   - {id: audio-sfx-core, title: "SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds", type: audio, group: sfx, size: default, status: done, blockers: []}
