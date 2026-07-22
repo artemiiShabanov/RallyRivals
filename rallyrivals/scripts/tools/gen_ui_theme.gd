@@ -1,111 +1,101 @@
 extends SceneTree
 ## Builds the shared UI theme (art-ui-theme): assets/ui/theme.tres, set as the project default.
-## TWO registers, per the broadcast pivot (GDD §9):
-##   - CHROME (menus/meta): white-on-blue VCR-OSD / teletext — hard blue fields, white text, an
-##     inverted white-field highlight on the selected item. Panels, buttons, inputs, sliders.
-##   - TELEMETRY (the in-race HUD): the Hud* label variations + HudPanel styleboxes stay a CLEAN
-##     white-on-dark scorebug, NOT the blue chrome — so the scorebug reads as broadcast graphics
-##     over the footage, not a menu. (Restyle proper is code-ui-scorebug.)
+## Ultra-simple white-on-blue VCR-OSD (GDD §9): flat blue fields, white text, NO borders. The
+## selected menu item inverts to a white field with blue text — the OSD cursor. One accent: white.
+## The in-race TELEMETRY register (Hud* variations + HudPanel) stays clean white-on-dark, distinct
+## from the blue chrome, so the scorebug reads as broadcast graphics not a menu.
 ## Font: first .ttf/.otf in assets/fonts/ (README there), else the engine default.
 ## Run: godot --headless --script res://scripts/tools/gen_ui_theme.gd
 
 const OUT := "res://assets/ui/theme.tres"
 const FONTS := "res://assets/fonts/"
+const EMBOLDEN := 0.35
 
-# --- VCR-OSD chrome palette ---
+# --- palette: white on electric blue, nothing else ---
 const BLUE := Color(0.10, 0.22, 0.95)      # electric OSD field
-const BLUE_DK := Color(0.05, 0.11, 0.60)   # recessed field (inputs, tracks)
-const WHITE := Color(0.95, 0.97, 1.0)      # text
-const CYAN := Color(0.45, 0.90, 0.98)      # teletext accent (secondary text)
-const YELLOW := Color(0.98, 0.92, 0.38)    # teletext accent (headings/values)
-const DIM := Color(0.55, 0.62, 0.88)       # disabled / secondary
-const SEL_FG := Color(0.05, 0.08, 0.42)    # text on the white highlight
-# --- telemetry (scorebug) palette ---
+const BLUE_DK := Color(0.05, 0.11, 0.60)   # recessed field (buttons/inputs/tracks)
+const WHITE := Color(0.95, 0.97, 1.0)
+const DIM := Color(0.62, 0.68, 0.92)       # disabled / secondary (a muted white-blue)
+const SEL_FG := Color(0.05, 0.10, 0.55)    # blue text on the white cursor
+# telemetry (scorebug)
 const TELE_DARK := Color(0.02, 0.02, 0.04, 0.68)
-const RED := Color("a10b2b")
 
 func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://assets/ui/"))
 	var t := Theme.new()
 	var font := _find_font()
 	if font != null:
-		# Wrap in a FontVariation to embolden slightly — a bit heavier than the base weight, which
-		# reads bolder without needing a separate bold file (DotGothic16 ships one weight).
 		var fv := FontVariation.new()
 		fv.base_font = font
-		fv.variation_embolden = 0.35
+		fv.variation_embolden = EMBOLDEN
 		t.default_font = fv
 	t.default_font_size = 22
 
-	# --- base Label (chrome text) ---
 	t.set_color("font_color", "Label", WHITE)
 	t.set_color("font_outline_color", "Label", Color(0, 0, 0, 0.5))
-	t.set_constant("outline_size", "Label", 3)   # thin — legibility over the tape grain
+	t.set_constant("outline_size", "Label", 3)
 
-	# --- Panels: hard blue field, thin white box outline (the OSD "window") ---
-	t.set_stylebox("panel", "PanelContainer", _box(BLUE, WHITE, 2))
-	t.set_stylebox("panel", "Panel", _box(BLUE, WHITE, 2))
+	# Panels: flat blue field, no border.
+	t.set_stylebox("panel", "PanelContainer", _fill(BLUE))
+	t.set_stylebox("panel", "Panel", _fill(BLUE))
 
-	# --- Buttons: OSD menu items. Idle = recessed field; hover/focus/press = inverted white bar ---
-	var sel := _box(WHITE, WHITE, 2)
-	t.set_stylebox("normal", "Button", _box(BLUE_DK, WHITE, 2))
-	t.set_stylebox("hover", "Button", sel)
-	t.set_stylebox("pressed", "Button", sel)
-	t.set_stylebox("focus", "Button", _box(Color(0, 0, 0, 0), YELLOW, 2))
-	t.set_stylebox("disabled", "Button", _box(BLUE_DK.darkened(0.3), DIM, 1))
+	# Buttons: OSD menu items. Idle = recessed field; hover/press/FOCUS invert to the white cursor
+	# (focus carries the highlight since there are no borders to mark it).
+	var cursor := _fill(WHITE)
+	t.set_stylebox("normal", "Button", _fill(BLUE_DK))
+	t.set_stylebox("hover", "Button", cursor)
+	t.set_stylebox("pressed", "Button", cursor)
+	t.set_stylebox("focus", "Button", cursor)
+	t.set_stylebox("disabled", "Button", _fill(BLUE_DK.darkened(0.35)))
 	t.set_color("font_color", "Button", WHITE)
 	t.set_color("font_hover_color", "Button", SEL_FG)
 	t.set_color("font_pressed_color", "Button", SEL_FG)
-	t.set_color("font_focus_color", "Button", WHITE)
+	t.set_color("font_focus_color", "Button", SEL_FG)
 	t.set_color("font_disabled_color", "Button", DIM)
 	t.set_font_size("font_size", "Button", 24)
 
-	# OptionButton mirrors Button.
 	for s in ["normal", "hover", "pressed", "focus", "disabled"]:
 		t.set_stylebox(s, "OptionButton", t.get_stylebox(s, "Button"))
 	t.set_color("font_color", "OptionButton", WHITE)
 	t.set_color("font_hover_color", "OptionButton", SEL_FG)
 
-	# --- LineEdit (settings fields / rename) ---
-	t.set_stylebox("normal", "LineEdit", _box(BLUE_DK, WHITE, 2))
-	t.set_stylebox("focus", "LineEdit", _box(BLUE_DK, YELLOW, 2))
+	# LineEdit — recessed field, brighter when focused (no border to signal it).
+	t.set_stylebox("normal", "LineEdit", _fill(BLUE_DK))
+	t.set_stylebox("focus", "LineEdit", _fill(BLUE_DK.lightened(0.12)))
 	t.set_color("font_color", "LineEdit", WHITE)
 	t.set_color("font_placeholder_color", "LineEdit", DIM)
-	t.set_color("caret_color", "LineEdit", YELLOW)
-	t.set_color("selection_color", "LineEdit", CYAN * Color(1, 1, 1, 0.4))
+	t.set_color("caret_color", "LineEdit", WHITE)
+	t.set_color("selection_color", "LineEdit", Color(1, 1, 1, 0.30))
 
-	# --- CheckBox ---
 	t.set_color("font_color", "CheckBox", WHITE)
-	t.set_color("font_hover_color", "CheckBox", CYAN)
-	t.set_color("font_pressed_color", "CheckBox", CYAN)
+	t.set_color("font_hover_color", "CheckBox", WHITE)
+	t.set_color("font_pressed_color", "CheckBox", WHITE)
 	t.set_color("font_disabled_color", "CheckBox", DIM)
 
-	# --- HSlider (settings, incl. the VHS-intensity dial) ---
-	t.set_stylebox("slider", "HSlider", _bar(BLUE_DK, WHITE))
-	t.set_stylebox("grabber_area", "HSlider", _bar(WHITE, WHITE))
-	t.set_stylebox("grabber_area_highlight", "HSlider", _bar(YELLOW, YELLOW))
+	t.set_stylebox("slider", "HSlider", _bar(BLUE_DK))
+	t.set_stylebox("grabber_area", "HSlider", _bar(WHITE))
+	t.set_stylebox("grabber_area_highlight", "HSlider", _bar(WHITE))
 
-	# --- ProgressBar ---
-	t.set_stylebox("background", "ProgressBar", _box(BLUE_DK, WHITE, 2))
-	t.set_stylebox("fill", "ProgressBar", _box(WHITE, WHITE, 0))
+	t.set_stylebox("background", "ProgressBar", _fill(BLUE_DK))
+	t.set_stylebox("fill", "ProgressBar", _fill(WHITE))
 	t.set_color("font_color", "ProgressBar", WHITE)
 
-	# --- chrome label variations ---
-	_var(t, "OsdTitle", 40, YELLOW, 4)
-	_var(t, "OsdHead", 26, CYAN, 3)
+	# chrome label variations (all white now — size is the only distinction)
+	_var(t, "OsdTitle", 44, WHITE, 4)
+	_var(t, "OsdHead", 28, WHITE, 3)
 	_var(t, "OsdDim", 18, DIM, 2)
 
-	# --- telemetry / scorebug register (clean white-on-dark, NOT blue) ---
+	# telemetry / scorebug register (white-on-dark, kept distinct from the chrome)
 	_var(t, "HudValue", 68, WHITE, 8)
 	_var(t, "HudUnit", 20, WHITE, 5)
 	_var(t, "HudTimer", 44, WHITE, 7)
-	_var(t, "HudBest", 18, YELLOW, 4)
+	_var(t, "HudBest", 18, WHITE, 4)
 	_var(t, "HudTag", 28, WHITE, 6)
 	_var(t, "HudSplit", 32, WHITE, 7)
 	t.set_type_variation("HudPanel", "PanelContainer")
-	t.set_stylebox("panel", "HudPanel", _box(TELE_DARK, WHITE, 2))
+	t.set_stylebox("panel", "HudPanel", _fill(TELE_DARK))
 	t.set_type_variation("HudPanelHot", "PanelContainer")
-	t.set_stylebox("panel", "HudPanelHot", _box(TELE_DARK, RED, 2))
+	t.set_stylebox("panel", "HudPanelHot", _fill(TELE_DARK))
 
 	ResourceSaver.save(t, OUT)
 	_set_project_default()
@@ -122,12 +112,11 @@ func _find_font() -> FontFile:
 					return fnt
 	return null
 
-# Hard-edged filled box with a thin border — the OSD window / menu item.
-func _box(bg: Color, border: Color, width: int) -> StyleBoxFlat:
+# Flat filled box, no border, hard corners — the OSD field / menu item.
+func _fill(bg: Color) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg
-	sb.border_color = border
-	sb.set_border_width_all(width)
+	sb.set_border_width_all(0)
 	sb.set_corner_radius_all(0)
 	sb.content_margin_left = 14
 	sb.content_margin_right = 14
@@ -135,12 +124,10 @@ func _box(bg: Color, border: Color, width: int) -> StyleBoxFlat:
 	sb.content_margin_bottom = 7
 	return sb
 
-# Slim bar for slider tracks/fills.
-func _bar(bg: Color, border: Color) -> StyleBoxFlat:
+func _bar(bg: Color) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = bg
-	sb.border_color = border
-	sb.set_border_width_all(1)
+	sb.set_border_width_all(0)
 	sb.set_corner_radius_all(0)
 	sb.content_margin_top = 5
 	sb.content_margin_bottom = 5

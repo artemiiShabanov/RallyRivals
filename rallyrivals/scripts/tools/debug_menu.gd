@@ -65,6 +65,7 @@ func _menu() -> Array:
 		{"label": "Weather", "sub": _weather_menu()},
 		{"label": "Audio", "sub": _audio_menu()},
 		{"label": "VHS filter (%d%%)" % roundi(VHSFilter.intensity * 100.0), "sub": _vhs_menu()},
+		{"label": "Font (compare)", "sub": _font_menu()},
 		{"label": "Time scale (%sx)" % String.num(Engine.time_scale), "sub": [
 			{"label": "0.25x", "run": func() -> void: Engine.time_scale = 0.25},
 			{"label": "0.5x", "run": func() -> void: Engine.time_scale = 0.5},
@@ -320,6 +321,41 @@ func _toggle_loop(file: String) -> void:
 	p.name = node_name
 	p.play()
 	print("debug: loop on -> ", id)
+
+# Swap the UI font live to compare candidates (assets/fonts + assets/fonts/candidates). Sets the
+# project theme's default_font, so every themed control re-renders. Pick one, then it gets baked
+# into gen_ui_theme.gd. Also cycles a couple of embolden levels of the current pick.
+func _font_menu() -> Array:
+	var out: Array = []
+	var paths := ["res://assets/fonts/", "res://assets/fonts/candidates/"]
+	for dir in paths:
+		var da := DirAccess.open(dir)
+		if da == null:
+			continue
+		for f in da.get_files():
+			if f.get_extension().to_lower() in ["ttf", "otf"]:
+				var path: String = dir + f
+				out.append({"label": f.get_basename(), "run": _set_font.bind(path, 0.35)})
+	out.append({"label": "-- current: bolder (embolden 0.6) --", "run": _reembolden.bind(0.6)})
+	out.append({"label": "-- current: normal (embolden 0.2) --", "run": _reembolden.bind(0.2)})
+	return out
+
+var _last_font_path := "res://assets/fonts/DotGothic16-Regular.ttf"
+
+func _set_font(path: String, embolden: float) -> void:
+	_last_font_path = path
+	var base := load(path) as FontFile
+	var theme := load("res://assets/ui/theme.tres") as Theme
+	if base == null or theme == null:
+		return
+	var fv := FontVariation.new()
+	fv.base_font = base
+	fv.variation_embolden = embolden
+	theme.default_font = fv
+	print("debug: font -> %s (embolden %.2f)" % [path.get_file(), embolden])
+
+func _reembolden(embolden: float) -> void:
+	_set_font(_last_font_path, embolden)
 
 # Tune the tape look live. 0% is the true off switch (settings will expose the same dial).
 func _vhs_menu() -> Array:

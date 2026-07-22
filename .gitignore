@@ -29,3 +29,6 @@ _gen_*
 rallyrivals/assets/audio/_incoming/*
 !rallyrivals/assets/audio/_incoming/README.md
 !rallyrivals/assets/audio/_incoming/sources.txt
+
+# font candidates: comparison-only, not shipped
+rallyrivals/assets/fonts/candidates/
