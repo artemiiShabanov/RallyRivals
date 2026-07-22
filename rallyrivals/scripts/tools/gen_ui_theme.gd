@@ -29,7 +29,7 @@ func _initialize() -> void:
 		fv.base_font = font
 		fv.variation_embolden = EMBOLDEN
 		t.default_font = fv
-	t.default_font_size = 22
+	t.default_font_size = 24   # chrome is one uniform size (= Button) — flat teletext look
 
 	t.set_color("font_color", "Label", WHITE)
 	t.set_color("font_outline_color", "Label", Color(0, 0, 0, 0.5))
@@ -80,10 +80,11 @@ func _initialize() -> void:
 	t.set_stylebox("fill", "ProgressBar", _fill(WHITE))
 	t.set_color("font_color", "ProgressBar", WHITE)
 
-	# chrome label variations (all white now — size is the only distinction)
-	_var(t, "OsdTitle", 44, WHITE, 4)
-	_var(t, "OsdHead", 28, WHITE, 3)
-	_var(t, "OsdDim", 18, DIM, 2)
+	# chrome label variations — all one uniform size (= Button), per the flat-teletext look; they
+	# differ only by colour now (OsdDim is muted).
+	_var(t, "OsdTitle", 24, WHITE, 3)
+	_var(t, "OsdHead", 24, WHITE, 3)
+	_var(t, "OsdDim", 24, DIM, 3)
 
 	# telemetry / scorebug register (white-on-dark, kept distinct from the chrome)
 	_var(t, "HudValue", 68, WHITE, 8)
