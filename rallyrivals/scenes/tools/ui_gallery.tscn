@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c5vlx0qjrvw06"]
 
-[ext_resource type="Script" path="res://scripts/tools/ui_gallery.gd" id="1_gal"]
+[ext_resource type="Script" uid="uid://b27g3onietfme" path="res://scripts/tools/ui_gallery.gd" id="1_gal"]
 
 [node name="UiGallery" type="Control"]
 layout_mode = 3

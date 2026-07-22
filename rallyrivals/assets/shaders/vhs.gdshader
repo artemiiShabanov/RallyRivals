@@ -19,8 +19,9 @@ uniform float aberration_px = 2.6;
 uniform float wobble_px = 2.0;
 uniform float grain = 0.09;
 uniform float scanlines = 0.10;
-uniform float vignette = 0.42;
-uniform float warmth = 0.08;
+uniform float vignette = 0.18;      // edges only — kept light so it doesn't read as global dimming
+uniform float warmth = 0.06;
+uniform float brightness = 1.06;    // small lift to offset the tape's tendency to darken
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -54,18 +55,20 @@ void fragment() {
 	float bar = smoothstep(0.0, 0.03, pos) * (1.0 - smoothstep(0.03, 0.07, pos));
 	col += bar * 0.07 * G;
 
-	// Scanlines (always) — low amplitude; they shimmer under motion.
-	col *= 1.0 - scanlines * I * (0.5 + 0.5 * sin(uv.y * size.y * 3.14159265));
+	// Scanlines — net-neutral: lines oscillate around 1.0 (some brighter, some darker), so they add
+	// tape texture without dimming the overall image.
+	col *= 1.0 + scanlines * I * sin(uv.y * size.y * 3.14159265) * 0.5;
 
 	// Animated grain.
 	col += (hash(uv * size + fract(t) * 91.7) - 0.5) * grain * I;
 
-	// Vignette + tape warmth/desat.
+	// Gentle vignette (edges only) + a whisper of desat, then a small brightness lift so the tape
+	// doesn't leave the picture darker than it found it.
 	vec2 d = uv - 0.5;
-	col *= 1.0 - dot(d, d) * vignette * I * 2.0;
+	col *= 1.0 - dot(d, d) * vignette * I;
 	float luma = dot(col, vec3(0.299, 0.587, 0.114));
 	col = mix(col, vec3(luma), warmth * I);
-	col *= mix(vec3(1.0), vec3(1.04, 0.98, 0.95), I);
+	col *= mix(1.0, brightness, I);
 
 	COLOR = vec4(col, 1.0);
 }
