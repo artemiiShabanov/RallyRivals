@@ -87,6 +87,12 @@ func _ready() -> void:
 	add_child(cam)
 	cam.current = true
 
+	# The tape (art-shader-vhs): wraps the world footage. Layer 5 keeps it under the HUD (50), so
+	# the telemetry scorebug stays crisp. Tune live in the debug menu (\ -> VHS filter).
+	var vhs := VHSFilter.new()
+	vhs.name = "VHSFilter"
+	add_child(vhs)
+
 	# HUD (code-ui-hud): speed / time / lap / split. Needs the car + timing, so it's built last.
 	if cps != null and timing != null:
 		var hud := RaceHud.new()

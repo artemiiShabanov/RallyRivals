@@ -64,6 +64,7 @@ func _menu() -> Array:
 		{"label": "Lighting", "sub": _lighting_menu()},
 		{"label": "Weather", "sub": _weather_menu()},
 		{"label": "Audio", "sub": _audio_menu()},
+		{"label": "VHS filter (%d%%)" % roundi(VHSFilter.intensity * 100.0), "sub": _vhs_menu()},
 		{"label": "Time scale (%sx)" % String.num(Engine.time_scale), "sub": [
 			{"label": "0.25x", "run": func() -> void: Engine.time_scale = 0.25},
 			{"label": "0.5x", "run": func() -> void: Engine.time_scale = 0.5},
@@ -319,6 +320,15 @@ func _toggle_loop(file: String) -> void:
 	p.name = node_name
 	p.play()
 	print("debug: loop on -> ", id)
+
+# Tune the tape look live. 0% is the true off switch (settings will expose the same dial).
+func _vhs_menu() -> Array:
+	var out: Array = []
+	for pct in [0, 25, 40, 55, 70, 100]:
+		out.append({"label": "%d%%" % pct, "run": func() -> void:
+			VHSFilter.intensity = pct / 100.0
+			print("debug: VHS -> %d%%" % pct)})
+	return out
 
 func _bus_menu(bus: String) -> Array:
 	var out: Array = []
