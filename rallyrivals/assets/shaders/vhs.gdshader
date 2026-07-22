@@ -1,23 +1,26 @@
 shader_type canvas_item;
 // VHS tape post-process (art-shader-vhs). A full-screen ColorRect reads the rendered frame
-// (hint_screen_texture) and re-draws it degraded: chroma bleed, tracking wobble, a rolling head-
-// switch band, grain, scanlines, vignette, tape warmth. Everything scales by `intensity` (0 = clean
-// passthrough), so ONE dial drives the whole look — the settings slider and the debug menu write it.
-//
-// Tuned for DRIVING: noticeable but gentle. Heavier tracking/glitch for transitions (menus, loading,
-// replays) is a future variant that cranks the same knobs. Sits below the HUD layer, so the scorebug
-// never gets fogged.
+// (hint_screen_texture) and re-draws it degraded. Two tiers of effect:
+//   ALWAYS-ON (scaled by `intensity`): chroma bleed, steady per-row shimmer, grain, scanlines,
+//     vignette, tape warmth. Safe under motion — this is the driving look.
+//   GLITCH (scaled by `intensity * glitch`): the vertically-SCROLLING artifacts — the rolling
+//     head-switch bright bar and the tracking tear. These read as a line crawling up the frame,
+//     which is distracting while driving, so the race sets glitch=0 and only menus/loading/replays
+//     set glitch=1.
+// One `intensity` dial (0 = clean passthrough = off switch) drives every filter; the settings
+// slider and the debug menu write it. Sits below the HUD, so the scorebug never gets fogged.
 
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
-uniform float intensity : hint_range(0.0, 1.0) = 0.6;
+uniform float intensity : hint_range(0.0, 1.0) = 0.75;
+uniform float glitch : hint_range(0.0, 1.0) = 0.0;   // 0 = driving (no scrolling line), 1 = menus
 
-// Per-effect weights (relative to intensity) — the knobs to tune.
-uniform float aberration_px = 1.6;    // chroma split, pixels
-uniform float wobble_px = 1.3;        // horizontal tracking displacement, pixels
-uniform float grain = 0.055;
-uniform float scanlines = 0.06;
-uniform float vignette = 0.30;
-uniform float warmth = 0.05;
+// Per-effect weights — the knobs. Cranked harder than the first pass.
+uniform float aberration_px = 2.6;
+uniform float wobble_px = 2.0;
+uniform float grain = 0.09;
+uniform float scanlines = 0.10;
+uniform float vignette = 0.42;
+uniform float warmth = 0.08;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -25,30 +28,33 @@ float hash(vec2 p) {
 
 void fragment() {
 	float I = intensity;
-	vec2 px = SCREEN_PIXEL_SIZE;      // 1 / viewport, so effects are resolution-independent
+	float G = intensity * glitch;     // scrolling artifacts: menus only
+	vec2 px = SCREEN_PIXEL_SIZE;
 	vec2 size = 1.0 / px;
 	float t = TIME;
 	vec2 uv = SCREEN_UV;
 
-	// Tracking wobble: a small per-row horizontal shake, plus an occasional stronger band that
-	// scrolls up the frame — the tape not quite holding sync. Kept tiny so the road stays steady.
+	// Steady per-row shimmer (always) — a fine horizontal tremble, not a moving line.
 	float shake = sin(uv.y * 90.0 + t * 3.0) * 0.5 + sin(uv.y * 13.0 - t * 1.3) * 0.5;
-	float band = smoothstep(0.965, 1.0, sin(uv.y * 4.0 - t * 0.5) * 0.5 + 0.5);
-	uv.x += (shake * 0.4 + band * 3.0) * wobble_px * px.x * I;
+	uv.x += shake * wobble_px * px.x * I;
 
-	// Chroma bleed: split R/B horizontally.
+	// Scrolling tracking tear (menus only) — a band that jumps horizontally, creeping up the frame.
+	float band = smoothstep(0.965, 1.0, sin(uv.y * 4.0 - t * 0.5) * 0.5 + 0.5);
+	uv.x += band * 3.5 * px.x * G;
+
+	// Chroma bleed.
 	float ab = aberration_px * px.x * I;
 	vec3 col = vec3(
 		texture(screen_tex, uv + vec2(ab, 0.0)).r,
 		texture(screen_tex, uv).g,
 		texture(screen_tex, uv - vec2(ab, 0.0)).b);
 
-	// Rolling head-switch band: a faint bright bar creeping down the frame.
+	// Rolling head-switch bright bar (menus only) — the bottom-to-top line.
 	float pos = fract(uv.y + t * 0.08);
 	float bar = smoothstep(0.0, 0.03, pos) * (1.0 - smoothstep(0.03, 0.07, pos));
-	col += bar * 0.05 * I;
+	col += bar * 0.07 * G;
 
-	// Scanlines — very low amplitude; they shimmer under motion, so keep them a whisper.
+	// Scanlines (always) — low amplitude; they shimmer under motion.
 	col *= 1.0 - scanlines * I * (0.5 + 0.5 * sin(uv.y * size.y * 3.14159265));
 
 	// Animated grain.
@@ -59,7 +65,7 @@ void fragment() {
 	col *= 1.0 - dot(d, d) * vignette * I * 2.0;
 	float luma = dot(col, vec3(0.299, 0.587, 0.114));
 	col = mix(col, vec3(luma), warmth * I);
-	col *= mix(vec3(1.0), vec3(1.03, 0.99, 0.96), I);
+	col *= mix(vec3(1.0), vec3(1.04, 0.98, 0.95), I);
 
 	COLOR = vec4(col, 1.0);
 }

@@ -11,12 +11,16 @@ extends CanvasLayer
 ## only sits on top.
 
 ## 0 = off (clean), 1 = full. Settings + debug menu write this; all filters read it.
-static var intensity := 0.55
+static var intensity := 0.75
+## Vertically-scrolling artifacts (rolling bar + tracking tear): 0 for the race (they read as a
+## line crawling up the frame), 1 for menus/loading/replays. Per-instance, so a menu filter sets 1.
+@export var glitch := 0.0
 
 var _rect: ColorRect
 var _mat: ShaderMaterial
 
 func _ready() -> void:
+	add_to_group("vhs_filter")
 	if layer == 1:
 		layer = 5   # default: over the world, under the HUD (layer 50) — scorebug stays crisp
 	_mat = ShaderMaterial.new()
@@ -29,4 +33,5 @@ func _ready() -> void:
 
 func _process(_dt: float) -> void:
 	_mat.set_shader_parameter("intensity", intensity)
+	_mat.set_shader_parameter("glitch", glitch)
 	_rect.visible = intensity > 0.001   # true off — no draw, no back-buffer copy, no cost

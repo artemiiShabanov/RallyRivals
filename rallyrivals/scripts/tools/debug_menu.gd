@@ -324,10 +324,16 @@ func _toggle_loop(file: String) -> void:
 # Tune the tape look live. 0% is the true off switch (settings will expose the same dial).
 func _vhs_menu() -> Array:
 	var out: Array = []
-	for pct in [0, 25, 40, 55, 70, 100]:
+	for pct in [0, 25, 40, 55, 75, 100]:
 		out.append({"label": "%d%%" % pct, "run": func() -> void:
 			VHSFilter.intensity = pct / 100.0
 			print("debug: VHS -> %d%%" % pct)})
+	# Preview the menu-only scrolling artifacts (rolling bar + tear) on the driving filter.
+	out.append({"label": "Menu glitch (preview toggle)", "run": func() -> void:
+		var v := get_tree().get_first_node_in_group("vhs_filter") as VHSFilter
+		if v != null:
+			v.glitch = 1.0 - v.glitch
+			print("debug: VHS glitch -> %s" % v.glitch)})
 	return out
 
 func _bus_menu(bus: String) -> Array:
