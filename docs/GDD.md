@@ -80,8 +80,9 @@ See [PILLARS.md](PILLARS.md). In short:
 - **Antagonists:** named, characterful rivals climbed one by one; each chapter ends in a
   boss duel. Personality, signature ride, taunts — the hook to want the next win. **Delivered
   on-air** (§9): VHS interview segments, "UP NEXT" bumpers, a commentary chyron that starts
-  acknowledging the wildcard as you rise. The S boss is the **reigning champion** who publicly
-  dismisses you — the beef is earned on the broadcast, no backstory.
+  acknowledging the wildcard as you rise. The S boss is the **reigning champion — a cold,
+  untouchable legend** who barely acknowledges the wildcard exists; the tension is his aloof
+  dismissal, not a personal grudge. No backstory.
 - **Brand identity:** each rival reps a manufacturer and drives the car you pink-slip.
 - **Behavior (player-favoring asymmetry):** slipstream and damage are **player-side tools**.
   AI *provides* draft but never uses it; AI *takes* damage (your hits or its own crashes)
@@ -134,8 +135,8 @@ See [PILLARS.md](PILLARS.md). In short:
 - **Achievements → paint skins (cosmetic only):** achievements unlock **paint skins** —
   purely visual, **never** stats/class, off the money/CP economies. A light collect-loop.
 - **Car shop (the teleshopping break):** always open, gated by **price**; parallel to pink-slips —
-  presented as a sleazy VHS **used-car / teleshopping ad segment** ("CALL NOW", price flashing on
-  screen). ⚠️ Keep pink-slip cars special vs buyable. **Decided:** money comes **solely from race
+  presented as a sleazy VHS **used-car / teleshopping ad segment hosted by Big Sal himself** (§9)
+  ("CALL NOW", price flashing on screen). ⚠️ Keep pink-slip cars special vs buyable. **Decided:** money comes **solely from race
   payouts** (per-race, banked-best money pool) — one clean source, mirroring CP.
 - **Classes S/A/B/C/D:** one at-a-glance rank bundling the 5 stats. Shop price ↔ class;
   rivals escalate D/C → S; pink-slips climb it. **Decided:** **only Grand Prix is
@@ -184,7 +185,12 @@ teleshopping ad break (§8); pink-slip win = "● OWNERSHIP TRANSFERRED" bumper 
 - **Systems:** settings + input remap + save (ship reqs), **plus a tape-filter intensity slider and
   an off switch** (accessibility — non-optional).
 - **Rule:** the VHS/broadcast look is decoration. It must never cost a glance-read or a corner.
-- **Open:** the in-fiction show / pirate-station name + station ident (bug, sign-off card).
+- **Station (Decided):** the show `RALLYRIVALS` airs on **BIG SAL'S SPEED NETWORK** — corner bug
+  reads `SAL'S`, title cards read *"BIG SAL'S SPEED NETWORK presents… RALLYRIVALS."* **Big Sal** is
+  the face of the channel: a sleazy used-car promoter who bought a transmitter out of a van. He
+  **hosts the teleshopping car ads** (§8) — the shop host and the station owner are the same greasy
+  man — does the sign-off (*"Sal loves ya. Drive safe. Or don't."*), and is the broadcast's running
+  voice. One character ties station, shop, and tone together.
 
 ## 10. Audio
 > No audio experience → lean on CC0 libraries + tooling (log in [CREDITS.md](../CREDITS.md)).
