@@ -1,6 +1,6 @@
-[gd_resource type="Theme" load_steps=17 format=3]
+[gd_resource type="Theme" load_steps=17 format=3 uid="uid://dqd0iltn1ckil"]
 
-[ext_resource type="FontFile" path="res://assets/fonts/DotGothic16-Regular.ttf" id="1_6cha6"]
+[ext_resource type="FontFile" uid="uid://brsgo73pwruce" path="res://assets/fonts/DotGothic16-Regular.ttf" id="1_6cha6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6cha6"]
 content_margin_left = 14.0
@@ -106,7 +106,7 @@ Button/colors/font_disabled_color = Color(0.62, 0.68, 0.92, 1)
 Button/colors/font_focus_color = Color(0.05, 0.1, 0.55, 1)
 Button/colors/font_hover_color = Color(0.05, 0.1, 0.55, 1)
 Button/colors/font_pressed_color = Color(0.05, 0.1, 0.55, 1)
-Button/font_sizes/font_size = 24
+Button/font_sizes/font_size = 35
 Button/styles/disabled = SubResource("StyleBoxFlat_6cha6")
 Button/styles/focus = SubResource("StyleBoxFlat_ib6tx")
 Button/styles/hover = SubResource("StyleBoxFlat_ib6tx")
@@ -123,7 +123,7 @@ HudBest/base_type = &"Label"
 HudBest/colors/font_color = Color(0.95, 0.97, 1, 1)
 HudBest/colors/font_outline_color = Color(0, 0, 0, 0.6)
 HudBest/constants/outline_size = 4
-HudBest/font_sizes/font_size = 18
+HudBest/font_sizes/font_size = 35
 HudPanel/base_type = &"PanelContainer"
 HudPanel/styles/panel = SubResource("StyleBoxFlat_7h6bm")
 HudPanelHot/base_type = &"PanelContainer"
@@ -156,6 +156,7 @@ HudValue/font_sizes/font_size = 68
 Label/colors/font_color = Color(0.95, 0.97, 1, 1)
 Label/colors/font_outline_color = Color(0, 0, 0, 0.5)
 Label/constants/outline_size = 3
+Label/font_sizes/font_size = 35
 LineEdit/colors/caret_color = Color(0.95, 0.97, 1, 1)
 LineEdit/colors/font_color = Color(0.95, 0.97, 1, 1)
 LineEdit/colors/font_placeholder_color = Color(0.62, 0.68, 0.92, 1)
@@ -173,17 +174,17 @@ OsdDim/base_type = &"Label"
 OsdDim/colors/font_color = Color(0.62, 0.68, 0.92, 1)
 OsdDim/colors/font_outline_color = Color(0, 0, 0, 0.6)
 OsdDim/constants/outline_size = 3
-OsdDim/font_sizes/font_size = 24
+OsdDim/font_sizes/font_size = 35
 OsdHead/base_type = &"Label"
 OsdHead/colors/font_color = Color(0.95, 0.97, 1, 1)
 OsdHead/colors/font_outline_color = Color(0, 0, 0, 0.6)
 OsdHead/constants/outline_size = 3
-OsdHead/font_sizes/font_size = 24
+OsdHead/font_sizes/font_size = 35
 OsdTitle/base_type = &"Label"
 OsdTitle/colors/font_color = Color(0.95, 0.97, 1, 1)
 OsdTitle/colors/font_outline_color = Color(0, 0, 0, 0.6)
 OsdTitle/constants/outline_size = 3
-OsdTitle/font_sizes/font_size = 24
+OsdTitle/font_sizes/font_size = 35
 Panel/styles/panel = SubResource("StyleBoxFlat_66ixa")
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_yda6c")
 ProgressBar/colors/font_color = Color(0.95, 0.97, 1, 1)

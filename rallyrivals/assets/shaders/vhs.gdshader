@@ -15,13 +15,13 @@ uniform float intensity : hint_range(0.0, 1.0) = 0.75;
 uniform float glitch : hint_range(0.0, 1.0) = 0.0;   // 0 = driving (no scrolling line), 1 = menus
 
 // Per-effect weights — the knobs. Cranked harder than the first pass.
-uniform float aberration_px = 2.6;
-uniform float wobble_px = 2.0;
-uniform float grain = 0.09;
-uniform float scanlines = 0.10;
+uniform float aberration_px = 3.6;
+uniform float wobble_px = 1.0;
+uniform float grain = 0.1;
+uniform float scanlines = 0.05;
 uniform float vignette = 0.18;      // edges only — kept light so it doesn't read as global dimming
 uniform float warmth = 0.06;
-uniform float brightness = 1.06;    // small lift to offset the tape's tendency to darken
+uniform float brightness = 1.03;    // small lift to offset the tape's tendency to darken
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
