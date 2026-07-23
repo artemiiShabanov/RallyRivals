@@ -1,7 +1,8 @@
 extends MenuScreen
 ## Title / main menu (code-ui-title) — the game's front door, routed entirely through Flow.
-##   NEW GAME  -> slot select (start a fresh career)
-##   CONTINUE  -> load the most-recently-played slot, straight into the career hub (disabled if none)
+##   NEW GAME  -> slot select in NEW mode (start a fresh career; occupied slots ask to overwrite)
+##   CONTINUE  -> with one save, loads it straight into the hub; with several, opens the picker
+##               (CONTINUE mode). Disabled when no save exists.
 ##   SETTINGS  -> settings + input remap
 ##   QUIT      -> exit
 
@@ -11,7 +12,7 @@ func _build(col: VBoxContainer) -> void:
 	col.add_child(spacer(22))
 
 	var new_btn := menu_button("NEW GAME")
-	new_btn.pressed.connect(func() -> void: Flow.goto(Routes.SAVE_SLOTS))
+	new_btn.pressed.connect(_go.bind(SaveSlotsScreen.Mode.NEW))
 	col.add_child(new_btn)
 
 	var cont := menu_button("CONTINUE")
@@ -30,16 +31,14 @@ func _build(col: VBoxContainer) -> void:
 	# Land focus on the most useful action for keyboard/gamepad.
 	(new_btn if cont.disabled else cont).grab_focus()
 
-func _on_continue() -> void:
-	var slot := _most_recent_slot()
-	if slot >= 0 and Save.load_slot(slot):
-		Flow.goto(Routes.CAREER_HUB)
+func _go(mode: SaveSlotsScreen.Mode) -> void:
+	SaveSlotsScreen.mode = mode
+	Flow.goto(Routes.SAVE_SLOTS)
 
-func _most_recent_slot() -> int:
-	var best := -1
-	var best_t := -1
-	for s in Save.summaries():
-		if s.get("exists", false) and int(s.get("played_unix", 0)) > best_t:
-			best_t = int(s.get("played_unix", 0))
-			best = int(s["slot"])
-	return best
+## One save is no choice — load it and go. Several (or a load failure) fall through to the picker.
+func _on_continue() -> void:
+	var occ := Save.occupied_slots()
+	if occ.size() == 1 and Save.load_slot(occ[0]):
+		Flow.goto(Routes.CAREER_HUB)
+	else:
+		_go(SaveSlotsScreen.Mode.CONTINUE)

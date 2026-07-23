@@ -21,10 +21,15 @@ func slot_exists(slot: int) -> bool:
 	return FileAccess.file_exists(_path(slot))
 
 func has_any() -> bool:
+	return not occupied_slots().is_empty()
+
+## Slot indices that hold a save, in order.
+func occupied_slots() -> Array:
+	var out: Array = []
 	for i in SLOTS:
 		if slot_exists(i):
-			return true
-	return false
+			out.append(i)
+	return out
 
 ## Start a fresh career in the slot (overwrites any existing), grant the starter car, persist, and
 ## make it active. Returns the new profile.
