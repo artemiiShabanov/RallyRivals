@@ -92,6 +92,9 @@ func _build(track_ps: PackedScene) -> void:
 	_car.name = "Car"
 	_car.transform = Transform3D(Basis(right, Vector3.UP, fwd), spawn)
 	_car.input_enabled = false          # parked until GO
+	var picked := Cars.by_id(Save.active.current_car) if Save.active != null else null
+	if picked != null:                  # race the car chosen in the garage/pre-race (else scene default)
+		_car.car = picked
 	add_child(_car)
 
 	var cam := ChaseCamera.new()

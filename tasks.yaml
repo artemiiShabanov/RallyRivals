@@ -94,7 +94,7 @@ tasks:
   - {id: code-ui-car-view, title: "Car preview component (3D model turntable)", type: code, group: ui, size: default, status: done, blockers: [code-vehicle-model-wiring]}
   - {id: code-ui-shop, title: "Car shop screen", type: code, group: ui, size: default, status: done, blockers: [code-meta-shop, code-ui-car-view]}
   - {id: code-ui-garage, title: "Garage / car-select screen", type: code, group: ui, size: default, status: done, blockers: [code-meta-garage, code-ui-car-view]}
-  - {id: code-ui-prerace-carselect, title: "Change car from pre-race (owned-car picker)", type: code, group: ui, size: small, status: todo, blockers: [code-ui-prerace, code-meta-garage]}
+  - {id: code-ui-prerace-carselect, title: "Change car from pre-race (owned-car picker)", type: code, group: ui, size: small, status: done, blockers: [code-ui-prerace, code-meta-garage]}
   - {id: code-ui-boss-intro, title: "Boss-rival intro screen (car + class)", type: code, group: ui, size: default, status: todo, blockers: [content-rivals-defs]}
   - {id: code-ui-pause, title: "Pause menu", type: code, group: ui, size: small, status: done, blockers: [code-core-scene-flow]}
   - {id: code-ui-scorebug, title: "Restyle HUD as telemetry scorebug", type: code, group: ui, size: small, status: todo, blockers: [code-ui-hud, art-ui-hud-gfx]}

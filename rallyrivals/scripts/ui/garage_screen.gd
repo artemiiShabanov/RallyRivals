@@ -1,8 +1,11 @@
+class_name GarageScreen
 extends MenuScreen
 ## Garage (code-ui-garage): the cars you own. Move through the list on the left and the detail panel
 ## (3D turntable + stat bars) follows your focus; SELECT makes the shown car your current one (the
-## one you take to the grid). The current car carries a ● marker. Reached from the hub GARAGE tile;
-## BACK returns there.
+## one you take to the grid). The current car carries a ● marker. Reached from the hub GARAGE tile
+## (BACK returns there), or from pre-race as the car picker (return_to routes BACK to pre-race).
+
+static var return_to := ""
 
 var _view: CarView
 var _bars: StatBars
@@ -60,7 +63,7 @@ func _build(col: VBoxContainer) -> void:
 	_select.pressed.connect(_on_select)
 	actions.add_child(_select)
 	var back := menu_button("BACK", "ui_click")
-	back.pressed.connect(func() -> void: Flow.goto(Routes.CAREER_HUB))
+	back.pressed.connect(_leave)
 	actions.add_child(back)
 
 	_rebuild_list()
@@ -71,7 +74,13 @@ func _build(col: VBoxContainer) -> void:
 	_focus_car(start)   # land focus on the shown car so highlight and preview agree
 
 func _on_cancel() -> void:
-	Flow.goto(Routes.CAREER_HUB)
+	_leave()
+
+## Return to whoever opened the garage — pre-race when it's the car picker, else the hub.
+func _leave() -> void:
+	var dest := return_to if return_to != "" else Routes.CAREER_HUB
+	return_to = ""
+	Flow.goto(dest)
 
 func _rebuild_list() -> void:
 	for c in _list.get_children():

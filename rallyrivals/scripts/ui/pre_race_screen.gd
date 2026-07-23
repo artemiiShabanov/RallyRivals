@@ -52,6 +52,13 @@ func _build(col: VBoxContainer) -> void:
 		Flow.goto(Routes.RACE))
 	actions.add_child(start)
 
+	# Reuse the garage as the owned-car picker; BACK there returns here, showing the new car.
+	var change := menu_button("CHANGE CAR")
+	change.pressed.connect(func() -> void:
+		GarageScreen.return_to = Routes.PRE_RACE
+		Flow.goto(Routes.GARAGE))
+	actions.add_child(change)
+
 	var back := menu_button("BACK", "ui_click")
 	back.pressed.connect(func() -> void: Flow.goto(Routes.CAREER_HUB))
 	actions.add_child(back)
