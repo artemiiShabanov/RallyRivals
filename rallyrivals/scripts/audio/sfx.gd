@@ -41,14 +41,14 @@ func attach_loop(parent: Node3D, stream: AudioStream, bus := "SFX") -> AudioStre
 	parent.add_child(p)
 	return p
 
-static func set_bus_volume(bus_name: String, linear: float) -> void:
+func set_bus_volume(bus_name: String, linear: float) -> void:
 	var i := AudioServer.get_bus_index(bus_name)
 	if i < 0:
 		return
 	AudioServer.set_bus_volume_db(i, linear_to_db(maxf(linear, 0.0001)))
 	AudioServer.set_bus_mute(i, linear < 0.001)
 
-static func get_bus_volume(bus_name: String) -> float:
+func get_bus_volume(bus_name: String) -> float:
 	var i := AudioServer.get_bus_index(bus_name)
 	if i < 0 or AudioServer.is_bus_mute(i):
 		return 0.0

@@ -78,9 +78,9 @@ func _leave() -> void:
 ## thrown back to the top of the list every time they flip a setting.
 func _render() -> void:
 	var key := ""
-	var owner := get_viewport().gui_get_focus_owner()
-	if owner != null and owner.has_meta("focus_key"):
-		key = str(owner.get_meta("focus_key"))
+	var focused := get_viewport().gui_get_focus_owner()
+	if focused != null and focused.has_meta("focus_key"):
+		key = str(focused.get_meta("focus_key"))
 
 	for c in _col.get_children():
 		_col.remove_child(c)      # remove now (not just queue_free) so layout + focus settle cleanly
@@ -197,11 +197,11 @@ func _slider_row(text: String, value: float, on_change: Callable) -> HBoxContain
 	s.focus_entered.connect(func() -> void: play_cue("ui_move"))
 	row.add_child(s)
 
-	var v := Label.new()
-	v.name = "Val"
-	v.text = "%d%%" % roundi(value)
-	v.custom_minimum_size.x = VALUE_W
-	row.add_child(v)
+	var val := Label.new()
+	val.name = "Val"
+	val.text = "%d%%" % roundi(value)
+	val.custom_minimum_size.x = VALUE_W
+	row.add_child(val)
 	return row
 
 ## label + a segmented OFF|ON switch, occupying the same column as the sliders so the row grid holds.

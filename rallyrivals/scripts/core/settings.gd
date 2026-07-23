@@ -115,9 +115,11 @@ func rebind(action: String, key: InputEventKey) -> void:
 
 func _apply_input() -> void:
 	for a in REMAPPABLE:
-		var arr: Variant = _cfg.get_value("input", a, null)
-		if arr == null or not InputMap.has_action(a):
+		# ConfigFile treats a null default as "no default" and errors on a missing key, so gate on
+		# has_section_key rather than passing null — a fresh config simply keeps the shipped binding.
+		if not _cfg.has_section_key("input", a) or not InputMap.has_action(a):
 			continue
+		var arr: Array = _cfg.get_value("input", a, [])
 		InputMap.action_erase_events(a)
 		for s in arr:
 			var e: Variant = str_to_var(s)
