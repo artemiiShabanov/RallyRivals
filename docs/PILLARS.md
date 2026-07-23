@@ -21,23 +21,20 @@ smooth, nothing else matters.
 - **Vetoes:** mushy or floaty handling, anything that drops frames, friction that breaks
   flow, hold-accelerate-to-win tracks.
 
-## 3. Old-School Campaign — On The Tape
-Simple but effective, NFS: Most Wanted style — but told entirely through a **bootleg pirate
-broadcast**. A boss-to-boss climb: you're the unknown wildcard clawing up the card to dethrone the
-reigning outlaw champion at the top. Rivals have faces, mouths, and signature rides; the rivalry is
-delivered **on-air** — interview segments, commentary, the chyron — never scripted cutscenes. The
-beef at the top is *earned on the broadcast* (the champion dismisses you publicly), not a loaded-in
-backstory. And the door's always open: lose a race, you still inch forward.
-- **Serves:** Blacklist-style boss progression, characterful antagonists, pink-slip stakes,
-  lenient/never-hard-walled progression, broadcast-diegetic story delivery ("on the tape").
-- **Vetoes:** faceless opponents, hollow "win the cup" goals, win-to-progress gates, punishing
-  dead-ends, bloated career layers, **anything that breaks the on-the-tape fiction** (out-of-frame
-  cutscenes, gamey menus) or a scripted backstory the broadcast can't show.
+## 3. Boss-to-Boss Career
+A lenient class-climbing progression, NFS:MW-shaped but **mechanical, not narrative**. Beat each
+chapter's boss to pink-slip their car and climb toward the top class. The hook is the *chase* —
+better cars, harder rivals, the next unlock — not a story. The door's always open: lose a race, you
+still inch forward. **No narrative in v1** (characters/story deferred).
+- **Serves:** boss-to-boss progression, pink-slip car unlocks, class climb,
+  lenient/never-hard-walled progression, desirable/distinct rival cars.
+- **Vetoes:** win-to-progress gates, punishing dead-ends, bloated career layers, and — for now —
+  **lore/story/character work** (deferred, not this build).
 
 ## Anti-pillars (explicitly NOT making)
 - A sim or tuning-heavy racer — no setups, no min-maxing.
 - A grind/frustration ladder that walls out the player.
 - A graphics-fidelity showcase that costs framerate.
-- A faceless, story-less "race series."
-- A **style filter that costs readability or feel** — the VHS/broadcast look decorates the game, it
-  never fights the driving or fogs a corner.
+- A **story-driven** racer (v1 has no narrative — VHS is style, not fiction).
+- A **style filter that costs readability or feel** — the VHS look decorates the game, it never
+  fights the driving or fogs a corner.

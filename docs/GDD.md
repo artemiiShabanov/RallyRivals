@@ -4,35 +4,29 @@
 > here. Open sub-questions marked **Open:** inline.
 
 ## 1. High concept
-Arcade 3D rally racer in a voxel world, presented as a **degraded bootleg VHS of a pirate broadcast**
-covering an underground outlaw racing festival. You're an unknown **wildcard** who climbs the
-broadcast's card — region to region, race to race — pink-slipping each local champion's car until
-you dethrone the reigning outlaw legend at the top.
+Arcade 3D rally racer in a voxel world, worn with a **VHS tape aesthetic**. Climb a class-based
+**boss-to-boss career** against AI rivals, pink-slipping their cars as you rise through the classes.
 
-**Framing (Decided — the pivot).** The whole game is *footage on a tape*, and it's fully diegetic:
-- a subtle **VHS post-process** wraps the entire render (grain, mild bleed, occasional tracking
-  wobble) — noticeable, but it barely touches the driving;
-- all menus/meta are the pirate broadcast's cheap **white-on-blue VCR-OSD** graphics;
-- the in-race HUD is a clean **broadcast telemetry scorebug** (kept legible — *not* the blue menu look);
-- loading = tracking/rewind/"PLEASE STAND BY", saving = "● REC", the shop is a teleshopping ad
-  break, and story is delivered **on-air** (rival interviews, a commentary ticker, title cards).
-Nothing breaks the conceit that you found a weird tape. The **mechanical core is unchanged** —
-handling, tracks, surfaces, roster, economy all stand; the pivot reshapes the frame, not the drive.
+**VHS style (Decided) — a pure aesthetic, no in-fiction framing.** A subtle VHS tape post-process
+over the whole render (grain, mild bleed, occasional tracking wobble — noticeable but barely touches
+the driving; §11), a **white-on-blue OSD-style** UI theme, and a clean **telemetry-style HUD**.
+Intensity slider + off switch. **No narrative in v1** — the campaign is a mechanical progression;
+story/characters are deferred (§6, §12).
 
 ## 2. Pillars
 See [PILLARS.md](PILLARS.md). In short:
 1. **Glance to Read, Grind to Master** — arcade clarity over hidden depth.
 2. **Arcade Rally Flow** — feel-first + performance-first driving on shifting terrain.
-3. **Old-School Campaign — On The Tape** — NFS:MW-style boss climb told through the pirate
-   broadcast (wildcard → champion).
+3. **Boss-to-Boss Career** — a lenient class-climbing progression vs AI rivals (pink-slip car
+   unlocks); no narrative in v1.
 
 ## 3. Core loop
 - **Moment-to-moment:** drive shifting surfaces, draft rivals, manage damage, hit jumps,
   hold the line.
 - **Race:** enter an Officials or Wilds race (varied types) → place (no win required) →
   earn **money** + **campaign points (CP)**.
-- **Meta:** spend money at the always-open **teleshopping** car shop; earn achievement paint
-  skins (§8); bank CP toward the chapter boss.
+- **Meta:** spend money at the always-open **car shop**; earn achievement paint skins (§8);
+  bank CP toward the chapter boss.
 - **Chapter (= 1 region):** at ≈70% chapter CP the **boss race** unlocks → beat the boss →
   **pink-slip their car** → next region.
 
@@ -74,15 +68,12 @@ See [PILLARS.md](PILLARS.md). In short:
 - **Chapter gating (two-step):** (1) **CP** unlock the **boss race** at ≈70% chapter total
   (~30% slack = escape valve for disliked/lost races); (2) **beating the boss** unlocks the
   **next chapter/region** + pink-slips the boss's car. CP get you *to* the boss; only the
-  win advances the story. CP gate nothing else.
+  win advances the campaign. CP gate nothing else.
 
 ## 6. AI rivals
-- **Antagonists:** named, characterful rivals climbed one by one; each chapter ends in a
-  boss duel. Personality, signature ride, taunts — the hook to want the next win. **Delivered
-  on-air** (§9): VHS interview segments, "UP NEXT" bumpers, a commentary chyron that starts
-  acknowledging the wildcard as you rise. The S boss is the **reigning champion — a cold,
-  untouchable legend** who barely acknowledges the wildcard exists; the tension is his aloof
-  dismissal, not a personal grudge. No backstory.
+- **Rivals:** named, brand-affiliated AI opponents climbed class by class; each chapter ends in a
+  boss race. **No narrative in v1** — rivals are progression gates and the cars you pink-slip, not
+  characters. Personalities/taunts/story are deferred (§12).
 - **Brand identity:** each rival reps a manufacturer and drives the car you pink-slip.
 - **Behavior (player-favoring asymmetry):** slipstream and damage are **player-side tools**.
   AI *provides* draft but never uses it; AI *takes* damage (your hits or its own crashes)
@@ -91,8 +82,8 @@ See [PILLARS.md](PILLARS.md). In short:
 - **v1 campaign = 4 chapters**, each a **mix of two classes** (races draw from both),
   widening as you climb:
   - Ch1 **C+D** · Ch2 **D+B** · Ch3 **D+A** · Ch4 **A+S**. Boss sits at the chapter's top
-    class (C → B → A → **S** = the reigning champion). Low tiers (esp. D) persist for variety +
-    budget options. 4 boss-rivals total.
+    class (C → B → A → **S**). Low tiers (esp. D) persist for variety + budget options.
+    4 boss-rivals total.
   - **Open:** rival count if non-boss rivals are added.
 
 ## 7. Tracks & environments
@@ -124,20 +115,17 @@ See [PILLARS.md](PILLARS.md). In short:
   region still mixes surfaces per race. Travel changes the *look*, not the surface set.
 
 ## 8. Progression & meta
-- **Two currencies, no overlap:** **money → garage** (what you drive), **CP → story** (how
+- **Two currencies, no overlap:** **money → garage** (what you drive), **CP → progression** (how
   far you advance).
-- **Pink-slip unlocks (broadcast title match):** the boss race is a **"PINK SLIP ON THE LINE"**
-  stakes match; win → an on-air **"● OWNERSHIP TRANSFERRED"** bumper hands you their (brand's) car.
-  Story progress = garage growth. Each rival's car must be desirable + distinct.
-- **Garage / car selection (competitor profiles):** your stable and the pick-a-car screen are the
-  broadcast's **competitor profile cards** — VCR-navigated, the 5 stat bars shown as a broadcast
-  stat-line, never a gamey garage menu.
+- **Pink-slip unlocks:** beat the boss → win their (brand's) car. Each rival's car must be
+  desirable + distinct. Garage growth is the reward for advancing.
+- **Garage / car selection:** your owned cars + the pick-a-car screen; the 5 stat bars shown for
+  instant comparison.
 - **Achievements → paint skins (cosmetic only):** achievements unlock **paint skins** —
   purely visual, **never** stats/class, off the money/CP economies. A light collect-loop.
-- **Car shop (the teleshopping break):** always open, gated by **price**; parallel to pink-slips —
-  presented as a sleazy VHS **used-car / teleshopping ad segment hosted by Big Sal himself** (§9)
-  ("CALL NOW", price flashing on screen). ⚠️ Keep pink-slip cars special vs buyable. **Decided:** money comes **solely from race
-  payouts** (per-race, banked-best money pool) — one clean source, mirroring CP.
+- **Car shop:** always open, gated by **price**; parallel to pink-slips. ⚠️ Keep pink-slip cars
+  special vs buyable. **Decided:** money comes **solely from race payouts** (per-race, banked-best
+  money pool) — one clean source, mirroring CP.
 - **Classes S/A/B/C/D:** one at-a-glance rank bundling the 5 stats. Shop price ↔ class;
   rivals escalate D/C → S; pink-slips climb it. **Decided:** **only Grand Prix is
   class-gated** (bring a car of the event's class — the "serious" event, tied to the
@@ -148,49 +136,30 @@ See [PILLARS.md](PILLARS.md). In short:
   Coverage: ≥1 car per class S–D per brand (≥15 cars). **Decided (v1): no brand features** —
   pure stat/feel personalities; revisit post-v1 (nitro is the canonical candidate).
   - **Apex Cartel** — corner-king: grip/steering/braking high, modest power. Low crisp
-    wedges, mono paint + one accent stripe. Ch3 boss (A). Starter car = a battered D-class Apex
-    the wildcard rolls in with.
+    wedges, mono paint + one accent stripe. Ch3 boss (A). Starter car = a battered D-class Apex.
   - **Wreckhouse** — straight-line bruiser: top speed + heavy chassis, weak
-    steering/braking. Slab muscle, bumper bars, scuffed plates. The **reigning champion's** own
-    outfit: Ch1 boss (C, junior enforcer) and Ch4 boss (S, the champion themselves) — the
-    first badge you pink-slip and the last.
+    steering/braking. Slab muscle, bumper bars, scuffed plates. Ch1 boss (C) and Ch4 boss (S) —
+    the first badge you pink-slip and the last.
   - **Mayfly Speedworks** — fast-but-brittle: top acceleration, light, damage hurts it
     more (hooks into the damage system). Cab-forward bodies, big intakes, loud two-tones.
     Ch2 boss (B).
 
-## 9. UI / UX — the broadcast (Decided — pivot)
-Fully diegetic: every screen is the pirate broadcast, or the VCR playing the tape. **Two visual
-registers, deliberately different:**
-- **Broadcast chrome (all menus/meta):** ultra-simple **white-on-blue VCR-OSD / teletext** look —
-  chunky mono type, hard blue fields, minimal. Career map, car selection, shop, results, settings.
-- **Telemetry scorebug (in-race HUD):** clean broadcast-motorsport graphics — a lower-third
-  speed / time / split strip + a "● LIVE" bug. Legible at speed, and **not** the blue menu look;
-  kept clean per the clarity pillar — the tape filter never fogs it.
-
-**Diegetic touchpoints (fully committed):** loading = tracking distortion / rewind / "PLEASE STAND
-BY"; race start = broadcast title card + "● LIVE"; results = scorebug + "INSTANT REPLAY" wipe;
-save = "● REC"; **career map** = the broadcast's programming schedule / TV-guide grid; **shop** =
-teleshopping ad break (§8); pink-slip win = "● OWNERSHIP TRANSFERRED" bumper (§8).
-
-- **Story delivery (on-air only):** rival **interview segments** — static pixel portraits
-  everywhere, few-frame animated talking-heads for boss intros (budget where it lands) — plus a
-  persistent **commentary ticker / chyron** carrying flavor + the running arc, and **title cards /
-  hype packages** before big races. "The tape is damaged" is a free ellipsis for anything we don't
-  want to show. Cheaper than cutscenes, and it can never break the on-the-tape fiction.
-- **Readability:** five stat bars are the competitor stat-line; instant car comparison. The pre-race
-  screen (track/surfaces/season/weather + chosen car & bars) is a broadcast preview; a loading
-  screen (as tracking/rewind) covers async scene load — no hitch into the race.
-- **Font:** a broadcast/OSD face — teletext-mono for the chrome, a clean wide face with tabular
-  figures for the scorebug (sourced; see `assets/fonts/`).
-- **Systems:** settings + input remap + save (ship reqs), **plus a tape-filter intensity slider and
-  an off switch** (accessibility — non-optional).
-- **Rule:** the VHS/broadcast look is decoration. It must never cost a glance-read or a corner.
-- **Station (Decided):** the show `RALLYRIVALS` airs on **BIG SAL'S SPEED NETWORK** — corner bug
-  reads `SAL'S`, title cards read *"BIG SAL'S SPEED NETWORK presents… RALLYRIVALS."* **Big Sal** is
-  the face of the channel: a sleazy used-car promoter who bought a transmitter out of a van. He
-  **hosts the teleshopping car ads** (§8) — the shop host and the station owner are the same greasy
-  man — does the sign-off (*"Sal loves ya. Drive safe. Or don't."*), and is the broadcast's running
-  voice. One character ties station, shop, and tone together.
+## 9. UI / UX
+- **Style (Decided) — VHS, purely visual:** **white-on-blue OSD-style** menus (flat blue fields,
+  white text, no borders, one uniform crisp bitmap size) + a clean **telemetry-style HUD** scorebug
+  (white on dark, kept legible — *not* the blue menu look). Both sit under the VHS tape filter
+  (§11). No in-fiction framing.
+- **Readability:** five stat bars front-and-center; instant car comparison. The pre-race screen
+  (track/surfaces/season/weather + chosen car & bars) previews the race; a loading screen covers
+  async scene load — no hitch into the race.
+- **Screens:** career map (region map of races + CP/boss progress), car select / garage, shop,
+  results, boss-rival intro, settings + input remap, pause.
+- **Font:** DotGothic16 (SIL OFL), rendered crisp (antialiasing off — bitmap fonts blur otherwise);
+  see `assets/fonts/`.
+- **Systems:** settings + input remap + save (ship reqs), **plus a VHS-filter intensity slider + an
+  off switch** (accessibility — non-optional).
+- **Rule:** the VHS look is decoration. It must never cost a glance-read or a corner.
+- **Open:** UI theme polish; icon set.
 
 ## 10. Audio
 > No audio experience → lean on CC0 libraries + tooling (log in [CREDITS.md](../CREDITS.md)).
@@ -204,25 +173,24 @@ teleshopping ad break (§8); pink-slip win = "● OWNERSHIP TRANSFERRED" bumper 
   0.1 m), manual `.obj` export, source + artifact both committed. Damage = pre-authored
   voxel damage-state swaps + cube-particle bursts; **all particles are voxel cubes** (never
   billboards). Makes the ~15-car roster + brand families solo-achievable.
-- **Pixel art** for 2D/UI/characters (§9).
+- **Pixel art** for 2D/UI (§9).
 - **Seam coherence (Decided — ADR-003):** voxel-on-low-poly contrast — terrain/road keep
   smooth geometry but render flat-shaded with solid splat colours; ONE master palette shared
   by voxel models and terrain ties the world together.
-- **VHS tape filter (Decided — pivot):** a subtle full-screen post-process over the *entire*
-  render — grain, mild chroma bleed, vignette, occasional tracking wobble. "Noticeable, but it
-  barely affects the driving." Heavier tracking/glitch is reserved for **transitions** (menus,
-  loading, replays) where nothing's moving. **Intensity slider + off switch** (§9, accessibility).
-  The voxel world + master palette are untouched underneath — the tape sits on top. **UI palette**
-  shifts to VHS **white-on-blue** for the chrome; the world-side palette is unchanged. **Open:**
-  the shader recipe (post-process pass vs. Environment adjustments) + perf cost.
+- **VHS tape filter (Decided — style, no lore):** a subtle full-screen post-process over the
+  *entire* render — grain, mild chroma bleed, vignette, occasional tracking wobble. "Noticeable, but
+  it barely affects the driving." Heavier tracking/glitch reserved for **transitions** (menus,
+  loading) where nothing's moving. **Intensity slider + off switch** (§9, accessibility). The voxel
+  world + master palette are untouched underneath — the tape sits on top. **UI shifts to
+  white-on-blue** OSD; the world-side palette is unchanged. A pure aesthetic choice.
 
-## 12. Scope / cut list
-- **Pivot (Decided):** re-framed the game as a **bootleg VHS of a pirate broadcast** (§1, §9, §11).
-  **Dropped:** the scripted *revenge / father's-garage* backstory (a broadcast can't show it) and
-  the pixel-art *arcade* UI direction. **Kept, unchanged:** career structure, boss climb,
-  pink-slips, economy, handling, tracks, surfaces, roster — the pivot reshapes the frame, not the
-  mechanics. Stakes relocate to the broadcast (wildcard → dethrone the reigning champion, beef
-  earned on-air).
+- **VHS aesthetic (Decided):** the game wears a VHS style — tape post-process + white-on-blue OSD
+  menus + telemetry HUD (§1, §9, §11). **Purely visual, no lore.**
+- **Narrative cut (Decided — all story out of v1):** cut the scripted *revenge / father's-garage*
+  backstory, rival personalities/taunts, story beats, AND the briefly-explored bootleg-broadcast
+  fiction (Big Sal, pirate station, teleshopping, on-air delivery, ticker, station ident). The
+  campaign is a **mechanical class-climb**: bosses as progression gates, pink-slip car unlocks,
+  brands as implicit stat-styles. Narrative may return later; **not now**.
 - **Cut:** upgrade-card system (contradicted "no upgrades"; nitro parked as the post-v1
   brand-feature candidate — v1 brands are pure stat personalities, §8).
 - **v1 scoping (Open):** number of chapters (= regions, 1:1), rivals/tiers, total cars,

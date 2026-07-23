@@ -12,7 +12,7 @@ meta:
     code:    [core, vehicle, track, ai, race, meta, ui, tools]
     art:     [voxel, vfx, ui-art, world, shader]
     audio:   [sfx, music]
-    content: [tracks, cars, rivals, surfaces, broadcast]
+    content: [tracks, cars, rivals, surfaces]
     balance: [handling, economy, difficulty, surfaces]
     design:  [gdd, adr, spec, playtest]
     setup:   [config, build, repo]
@@ -82,18 +82,16 @@ tasks:
   - {id: code-ai-boss, title: "Boss-rival duel behavior", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
   - {id: code-ui-statbars, title: "Five stat bars display widget", type: code, group: ui, size: small, status: todo, blockers: []}
   - {id: code-ui-hud, title: "Basic HUD (speed / position / timer)", type: code, group: ui, size: default, status: done, blockers: [code-race-timing]}
-  - {id: code-ui-menus, title: "VCR-OSD menus + settings + input remap", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow]}
-  - {id: code-ui-loading, title: "Loading screen: tracking/rewind 'PLEASE STAND BY'", type: code, group: ui, size: small, status: todo, blockers: [code-core-scene-flow]}
+  - {id: code-ui-menus, title: "Menus + settings + input remap", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow]}
+  - {id: code-ui-loading, title: "Loading screen (async scene load)", type: code, group: ui, size: small, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-ui-prerace, title: "Pre-race info screen", type: code, group: ui, size: default, status: todo, blockers: [code-ui-statbars, code-race-defs]}
-  - {id: code-ui-results, title: "Results: telemetry scorebug + INSTANT REPLAY wipe", type: code, group: ui, size: default, status: todo, blockers: [code-race-result, code-meta-economy]}
-  - {id: code-ui-career-map, title: "Career map: TV-guide programming schedule (CP/boss progress)", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow, code-meta-chapters, code-race-defs]}
-  - {id: code-ui-shop, title: "Teleshopping car-shop screen (Big Sal ad break)", type: code, group: ui, size: default, status: todo, blockers: [code-meta-shop]}
+  - {id: code-ui-results, title: "Post-race results + rewards screen", type: code, group: ui, size: default, status: todo, blockers: [code-race-result, code-meta-economy]}
+  - {id: code-ui-career-map, title: "Region map of races + CP/boss progress", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow, code-meta-chapters, code-race-defs]}
+  - {id: code-ui-shop, title: "Car shop screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-shop]}
   - {id: code-ui-garage, title: "Garage / car-select screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-garage]}
-  - {id: code-ui-boss-intro, title: "Boss interview segment (VHS talking-head)", type: code, group: ui, size: default, status: todo, blockers: [content-rivals-defs]}
+  - {id: code-ui-boss-intro, title: "Boss-rival intro screen (car + class)", type: code, group: ui, size: default, status: todo, blockers: [content-rivals-defs]}
   - {id: code-ui-pause, title: "Pause menu", type: code, group: ui, size: small, status: todo, blockers: [code-core-scene-flow]}
-  - {id: code-ui-ticker, title: "Commentary ticker / chyron (scrolling broadcast text)", type: code, group: ui, size: small, status: todo, blockers: []}
-  - {id: code-ui-broadcast-cards, title: "Broadcast cards + bumpers (LIVE / UP NEXT / OWNERSHIP TRANSFERRED / sign-off)", type: code, group: ui, size: default, status: todo, blockers: []}
-  - {id: code-ui-scorebug, title: "Restyle HUD as broadcast telemetry scorebug", type: code, group: ui, size: small, status: todo, blockers: [code-ui-hud, art-ui-hud-gfx]}
+  - {id: code-ui-scorebug, title: "Restyle HUD as telemetry scorebug", type: code, group: ui, size: small, status: todo, blockers: [code-ui-hud, art-ui-hud-gfx]}
 
   # ---------- code: meta (progression / economy) ----------
   - {id: code-meta-currencies, title: "Money + CP wallets", type: code, group: meta, size: small, status: todo, blockers: []}
@@ -109,10 +107,8 @@ tasks:
   - {id: content-surfaces-defs, title: "SurfaceType resources (asphalt/dirt/snow/sand/gravel/ice)", type: content, group: surfaces, size: default, status: done, blockers: []}
   - {id: content-cars-roster, title: "Define car stat roster (classes S-D)", type: content, group: cars, size: default, status: done, blockers: []}
   - {id: content-cars-manufacturers, title: "Define 3-4 manufacturers (identity + brand feature)", type: content, group: cars, size: default, status: done, blockers: []}
-  - {id: content-rivals-defs, title: "Define 4 boss-rivals + taunts", type: content, group: rivals, size: default, status: todo, blockers: []}
+  - {id: content-rivals-defs, title: "Define 4 boss-rivals (brand + class per chapter)", type: content, group: rivals, size: default, status: todo, blockers: []}
   - {id: content-rivals-campaign, title: "4-chapter structure (class mixes, boss per chapter)", type: content, group: rivals, size: default, status: todo, blockers: [content-rivals-defs]}
-  - {id: content-rivals-story, title: "Story beats on-air (intro / chapter transitions / ending, broadcast-delivered)", type: content, group: rivals, size: small, status: todo, blockers: [content-rivals-defs]}
-  - {id: content-broadcast-copy, title: "Broadcast copy: Big Sal ad reads + ticker lines + card text", type: content, group: broadcast, size: default, status: todo, blockers: []}
   - {id: content-tracks-first, title: "First real track (heightmap/surface/markers images)", type: content, group: tracks, size: big, status: todo, blockers: [code-track-bake-tool]}
   # umbrella — split into per-track tasks once v1 scope (GDD 12) settles chapter/track counts
   - {id: content-tracks-campaign, title: "Campaign track set (v1 regions x races)", type: content, group: tracks, size: huge, status: todo, blockers: [content-tracks-first, content-rivals-campaign]}
@@ -152,13 +148,9 @@ tasks:
   - {id: art-vfx-damage, title: "Voxel-chipping damage FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-damage]}
   - {id: art-vfx-weather, title: "Weather visuals (rain/snow/fog)", type: art, group: vfx, size: big, status: done, blockers: [code-track-generator]}
   - {id: art-vfx-nitro, title: "Nitro/boost FX", type: art, group: vfx, size: small, status: todo, blockers: [code-vehicle-brand-features]}
-  - {id: art-ui-portraits, title: "Rival broadcast portraits (interview / roster cards)", type: art, group: ui-art, size: default, status: todo, blockers: [content-rivals-defs]}
-  - {id: art-ui-hud-gfx, title: "Telemetry scorebug HUD graphics (broadcast lower-third)", type: art, group: ui-art, size: default, status: todo, blockers: []}
-  - {id: art-ui-theme, title: "VHS broadcast UI theme (white-on-blue VCR-OSD) + OSD font", type: art, group: ui-art, size: big, status: todo, blockers: []}
-  - {id: art-ui-boss-anim, title: "Animated boss talking-head frames", type: art, group: ui-art, size: default, status: todo, blockers: [content-rivals-defs]}
+  - {id: art-ui-hud-gfx, title: "HUD scorebug graphics (telemetry-style)", type: art, group: ui-art, size: default, status: todo, blockers: []}
+  - {id: art-ui-theme, title: "VHS UI theme (white-on-blue OSD) + font", type: art, group: ui-art, size: big, status: todo, blockers: []}
   - {id: art-ui-paint-skins, title: "Paint-skin set", type: art, group: ui-art, size: default, status: todo, blockers: [art-voxel-car-kerb]}
-  - {id: art-ui-sal, title: "Big Sal host art (teleshopping + sign-off talking-head)", type: art, group: ui-art, size: default, status: todo, blockers: []}
-  - {id: art-ui-station-ident, title: "Station ident: SAL'S corner bug + sign-off card", type: art, group: ui-art, size: small, status: todo, blockers: []}
   - {id: art-world-terrain-tex, title: "Terrain splat textures", type: art, group: world, size: big, status: todo, blockers: [code-track-generator]}
   - {id: art-world-palette, title: "Master colour palette (voxel + terrain ramps, ADR-003)", type: art, group: world, size: small, status: done, blockers: []}
   - {id: art-world-skybox, title: "Skybox + seasonal sky sets", type: art, group: world, size: default, status: todo, blockers: []}
