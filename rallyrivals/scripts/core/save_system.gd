@@ -13,6 +13,8 @@ const START_MONEY := 10000         ## placeholder seed so the shop is usable; re
 ## Fired whenever money or CP changes (spend/earn/debug top-up) — screens showing the wallet listen
 ## to refresh without a full rebuild.
 signal wallet_changed
+## Fired when the owned set or current selection changes (garage select, shop buy, pink-slip).
+signal car_changed
 
 var active: SaveProfile            ## the loaded slot, or null on the menus
 
@@ -117,6 +119,25 @@ func earn_cp(amount: int) -> void:
 	active.cp += amount
 	write()
 	wallet_changed.emit()
+
+# --- garage (code-meta-garage) ---
+
+## Make an owned car the current one (ignored if not owned). Persists + emits car_changed.
+func select_car(id: String) -> bool:
+	if active == null or not (id in active.owned_cars):
+		return false
+	active.current_car = id
+	write()
+	car_changed.emit()
+	return true
+
+## Add a car to the garage (shop buy / pink-slip). Persists + emits car_changed.
+func add_car(id: String) -> void:
+	if active == null or id in active.owned_cars:
+		return
+	active.owned_cars.append(id)
+	write()
+	car_changed.emit()
 
 ## Lightweight per-slot info for the slot-select screen (no full load). Always returns SLOTS entries.
 func summaries() -> Array:

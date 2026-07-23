@@ -23,8 +23,11 @@ func _build(col: VBoxContainer) -> void:
 	col.add_child(race)
 
 	col.add_child(_stub("CAREER MAP"))
-	col.add_child(_stub("CAR SHOP"))
-	col.add_child(_stub("GARAGE"))
+	col.add_child(_stub("CAR SHOP"))     # goes live with code-ui-shop
+
+	var garage := _tile("GARAGE")
+	garage.pressed.connect(func() -> void: Flow.goto(Routes.GARAGE))
+	col.add_child(garage)
 
 	col.add_child(spacer(18))
 
