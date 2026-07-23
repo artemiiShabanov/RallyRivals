@@ -1,3 +1,4 @@
+class_name SettingsScreen
 extends MenuScreen
 ## Settings + input remap (code-ui-settings). Two pages in one screen so neither list overflows:
 ##   MAIN     — audio bus sliders, VHS filter intensity (0 = off), fullscreen, reset, back
