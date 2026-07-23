@@ -69,9 +69,16 @@ func set_fullscreen(on: bool) -> void:
 	_dirty = true
 	_apply_fullscreen(on)
 
+## Only touch the window when it actually needs changing — a blind windowed-set on boot would
+## clobber the project's own launch mode (display/window/size/mode = maximized).
 func _apply_fullscreen(on: bool) -> void:
-	DisplayServer.window_set_mode(
-		DisplayServer.WINDOW_MODE_FULLSCREEN if on else DisplayServer.WINDOW_MODE_WINDOWED)
+	var cur := DisplayServer.window_get_mode()
+	var is_fs := cur == DisplayServer.WINDOW_MODE_FULLSCREEN \
+		or cur == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+	if on and not is_fs:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+	elif not on and is_fs:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MAXIMIZED)
 
 # --- input remap ---
 
@@ -94,6 +101,7 @@ func rebind(action: String, key: InputEventKey) -> void:
 		if not (e is InputEventKey):
 			kept.append(e)                     # gamepad bindings survive a keyboard remap
 	var ne := InputEventKey.new()
+	ne.device = -1     # match the shipped bindings: any device, not just the one that typed it
 	ne.physical_keycode = key.physical_keycode if key.physical_keycode != 0 else key.keycode
 	kept.push_front(ne)
 	InputMap.action_erase_events(action)

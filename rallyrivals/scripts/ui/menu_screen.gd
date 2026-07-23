@@ -14,6 +14,11 @@ const BG := Color(0.07, 0.16, 0.78)
 const PAD_LEFT := 110
 const PAD_EDGE := 64
 
+# Mirrors gen_ui_theme.gd — for widgets we draw ourselves (toggles) that can't use a theme stylebox.
+const WHITE := Color(0.95, 0.97, 1.0)
+const BLUE_DK := Color(0.05, 0.11, 0.60)
+const SEL_FG := Color(0.05, 0.10, 0.55)
+
 var _sfx_armed := false
 
 func _ready() -> void:
@@ -55,6 +60,12 @@ func _ready() -> void:
 	vhs.glitch = 1.0     # menus/loading run the full unstable-tape look
 	add_child(vhs)
 
+	# Keyboard/gamepad users must never land on a screen with nothing focused. Screens that seed
+	# their own focus in _build (title, slots) already own it — this only fills the gap. Runs before
+	# the cues arm so opening a screen stays silent.
+	if get_viewport().gui_get_focus_owner() == null:
+		focus_first()
+
 	await get_tree().process_frame
 	_sfx_armed = true
 
@@ -75,6 +86,29 @@ func _scrolls() -> bool:
 ## ui_cancel / Esc handler — default does nothing; screens with a "back" override this.
 func _on_cancel() -> void:
 	pass
+
+# --- focus ---
+
+## First focusable control under `root`, depth-first. Skips disabled buttons and non-focusables.
+func first_focusable(root: Node) -> Control:
+	for c in root.get_children():
+		if c is Control:
+			var ctl := c as Control
+			var ok := ctl.focus_mode != Control.FOCUS_NONE
+			if ctl is BaseButton and (ctl as BaseButton).disabled:
+				ok = false
+			if ok:
+				return ctl
+		var found := first_focusable(c)
+		if found != null:
+			return found
+	return null
+
+## Seed keyboard/gamepad focus on the first thing a player can act on.
+func focus_first(root: Node = null) -> void:
+	var c := first_focusable(root if root != null else self)
+	if c != null:
+		c.grab_focus()
 
 # --- audio ---
 
