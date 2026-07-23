@@ -64,6 +64,7 @@ func _menu() -> Array:
 		{"label": "Lighting", "sub": _lighting_menu()},
 		{"label": "Weather", "sub": _weather_menu()},
 		{"label": "Audio", "sub": _audio_menu()},
+		{"label": "Wallet ($%d · CP %d)" % [Save.active.money if Save.active != null else 0, Save.active.cp if Save.active != null else 0], "sub": _wallet_menu()},
 		{"label": "VHS filter (%d%%)" % roundi(VHSFilter.intensity * 100.0), "sub": _vhs_menu()},
 		{"label": "Font (compare)", "sub": _font_menu()},
 		{"label": "Time scale (%sx)" % String.num(Engine.time_scale), "sub": [
@@ -72,6 +73,16 @@ func _menu() -> Array:
 			{"label": "1x", "run": func() -> void: Engine.time_scale = 1.0},
 			{"label": "2x", "run": func() -> void: Engine.time_scale = 2.0},
 		]},
+	]
+
+# Cheat top-up so the shop is testable before the real earn economy (code-meta-economy). No-ops
+# with no profile loaded (the menus). _refresh() after each so the parent label updates.
+func _wallet_menu() -> Array:
+	return [
+		{"label": "+ $5,000", "run": func() -> void: Save.earn(5000)},
+		{"label": "+ $25,000", "run": func() -> void: Save.earn(25000)},
+		{"label": "+ $100,000", "run": func() -> void: Save.earn(100000)},
+		{"label": "+ 10 CP", "run": func() -> void: Save.earn_cp(10)},
 	]
 
 # ---------- input / navigation ----------

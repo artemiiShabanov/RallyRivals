@@ -91,18 +91,21 @@ tasks:
   - {id: code-ui-prerace, title: "Pre-race info screen", type: code, group: ui, size: default, status: done, blockers: [code-ui-statbars, code-race-defs]}
   - {id: code-ui-results, title: "Post-race results + rewards screen (reward line stubbed until economy)", type: code, group: ui, size: default, status: done, blockers: [code-race-result]}
   - {id: code-ui-career-map, title: "Region map of races + CP/boss progress", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow, code-meta-chapters, code-race-defs]}
-  - {id: code-ui-shop, title: "Car shop screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-shop]}
-  - {id: code-ui-garage, title: "Garage / car-select screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-garage]}
+  - {id: code-ui-car-view, title: "Car preview component (3D model turntable)", type: code, group: ui, size: default, status: done, blockers: [code-vehicle-model-wiring]}
+  - {id: code-ui-shop, title: "Car shop screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-shop, code-ui-car-view]}
+  - {id: code-ui-garage, title: "Garage / car-select screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-garage, code-ui-car-view]}
+  - {id: code-ui-prerace-carselect, title: "Change car from pre-race (owned-car picker)", type: code, group: ui, size: small, status: todo, blockers: [code-ui-prerace, code-meta-garage]}
   - {id: code-ui-boss-intro, title: "Boss-rival intro screen (car + class)", type: code, group: ui, size: default, status: todo, blockers: [content-rivals-defs]}
   - {id: code-ui-pause, title: "Pause menu", type: code, group: ui, size: small, status: done, blockers: [code-core-scene-flow]}
   - {id: code-ui-scorebug, title: "Restyle HUD as telemetry scorebug", type: code, group: ui, size: small, status: todo, blockers: [code-ui-hud, art-ui-hud-gfx]}
 
   # ---------- code: meta (progression / economy) ----------
-  - {id: code-meta-currencies, title: "Money + CP wallets", type: code, group: meta, size: small, status: todo, blockers: []}
+  - {id: code-meta-currencies, title: "Money + CP wallets (seed money + debug top-up; real earn = economy)", type: code, group: meta, size: small, status: done, blockers: []}
+  - {id: code-meta-car-catalog, title: "Car catalog registry (all/owned/by-class + placeholder prices)", type: code, group: meta, size: small, status: done, blockers: [content-cars-roster]}
   - {id: code-meta-economy, title: "Banked-best top-up payout economy", type: code, group: meta, size: big, status: todo, blockers: [code-race-result, code-meta-currencies, code-race-defs]}
   - {id: code-meta-classes, title: "Class system S-D + class gating", type: code, group: meta, size: default, status: todo, blockers: [content-cars-roster]}
-  - {id: code-meta-shop, title: "Always-open price-gated car shop", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies, content-cars-roster]}
-  - {id: code-meta-garage, title: "Owned-cars garage + selection", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies]}
+  - {id: code-meta-shop, title: "Always-open price-gated car shop", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies, code-meta-car-catalog]}
+  - {id: code-meta-garage, title: "Owned-cars garage + selection", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies, code-meta-car-catalog]}
   - {id: code-meta-pinkslip, title: "Beat rival -> win their car (pink-slip)", type: code, group: meta, size: default, status: todo, blockers: [code-meta-garage, code-ai-boss]}
   - {id: code-meta-achievements, title: "Achievements -> paint skins", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies]}
   - {id: code-meta-chapters, title: "Chapter CP gate (~70%) + advance on boss win", type: code, group: meta, size: big, status: todo, blockers: [code-meta-economy, code-ai-boss]}

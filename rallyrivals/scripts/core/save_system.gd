@@ -8,6 +8,11 @@ extends Node
 const SLOTS := 3
 const DIR := "user://saves"
 const STARTER_CAR := "kerb"        ## battered D-class Apex — the free starter (GDD §8)
+const START_MONEY := 10000         ## placeholder seed so the shop is usable; real earn = code-meta-economy
+
+## Fired whenever money or CP changes (spend/earn/debug top-up) — screens showing the wallet listen
+## to refresh without a full rebuild.
+signal wallet_changed
 
 var active: SaveProfile            ## the loaded slot, or null on the menus
 
@@ -37,7 +42,7 @@ func new_game(slot: int) -> SaveProfile:
 	var now := int(Time.get_unix_time_from_system())
 	var p := SaveProfile.new()
 	p.slot = slot
-	p.money = 0
+	p.money = START_MONEY
 	p.cp = 0
 	p.owned_cars = PackedStringArray([STARTER_CAR])
 	p.current_car = STARTER_CAR
@@ -83,6 +88,35 @@ func delete_slot(slot: int) -> void:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(_path(slot)))
 	if active != null and active.slot == slot:
 		active = null
+
+# --- wallet (code-meta-currencies) — the shop spends, results/debug earn; each change persists and
+# emits wallet_changed. CP is earned toward progression, never spent (GDD §8).
+
+func can_afford(cost: int) -> bool:
+	return active != null and active.money >= cost
+
+## Deduct money if affordable; returns whether the purchase went through.
+func spend(cost: int) -> bool:
+	if not can_afford(cost):
+		return false
+	active.money -= cost
+	write()
+	wallet_changed.emit()
+	return true
+
+func earn(amount: int) -> void:
+	if active == null:
+		return
+	active.money += amount
+	write()
+	wallet_changed.emit()
+
+func earn_cp(amount: int) -> void:
+	if active == null:
+		return
+	active.cp += amount
+	write()
+	wallet_changed.emit()
 
 ## Lightweight per-slot info for the slot-select screen (no full load). Always returns SLOTS entries.
 func summaries() -> Array:
