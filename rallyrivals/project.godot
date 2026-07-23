@@ -20,6 +20,9 @@ config/icon="res://icon.svg"
 
 DebugMenu="*res://scripts/tools/debug_menu.gd"
 Sfx="*res://scripts/audio/sfx.gd"
+Flow="*res://scripts/core/scene_flow.gd"
+Save="*res://scripts/core/save_system.gd"
+Settings="*res://scripts/core/settings.gd"
 
 [display]
 

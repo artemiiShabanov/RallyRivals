@@ -65,13 +65,14 @@ tasks:
 
   # ---------- code: core / race / ai / ui ----------
   - {id: code-core-camera, title: "Chase camera (promote from prototype)", type: code, group: core, size: default, status: done, blockers: [code-vehicle-controller]}
-  - {id: code-core-scene-flow, title: "Scene/flow manager + pause", type: code, group: core, size: default, status: todo, blockers: []}
-  - {id: code-core-save, title: "Save system", type: code, group: core, size: default, status: todo, blockers: [code-core-scene-flow]}
+  - {id: code-core-scene-flow, title: "Scene/flow manager + pause", type: code, group: core, size: default, status: done, blockers: []}
+  - {id: code-core-save, title: "Save system", type: code, group: core, size: default, status: done, blockers: [code-core-scene-flow]}
   - {id: code-core-pooling, title: "Pooling / perf helpers (perf-first rule)", type: code, group: core, size: default, status: todo, blockers: []}
-  - {id: code-core-settings-apply, title: "Apply graphics/audio/control settings", type: code, group: core, size: small, status: todo, blockers: [code-core-scene-flow]}
+  - {id: code-core-settings-apply, title: "Apply graphics/audio/control settings", type: code, group: core, size: small, status: done, blockers: [code-core-scene-flow]}
   - {id: code-race-defs, title: "RaceDef resource (track, type, culture, conditions, reward pools)", type: code, group: race, size: default, status: done, blockers: []}
   - {id: code-race-timing, title: "Lap/stage timing", type: code, group: race, size: default, status: done, blockers: [code-track-checkpoints]}
-  - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: todo, blockers: [code-race-timing]}
+  - {id: code-race-director, title: "Race lifecycle director (grid -> 3-2-1-GO countdown -> run -> finish -> freeze -> hand to results)", type: code, group: race, size: big, status: todo, blockers: [code-core-scene-flow, code-race-timing]}
+  - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: todo, blockers: [code-race-timing, code-race-director]}
   - {id: code-race-types, title: "Race types: sprint + circuit", type: code, group: race, size: big, status: todo, blockers: [code-race-timing]}
   - {id: code-race-timetrial, title: "Race type: time trial vs clock", type: code, group: race, size: small, status: todo, blockers: [code-race-timing]}
   - {id: code-race-endurance, title: "Race type: endurance / attrition", type: code, group: race, size: default, status: todo, blockers: [code-race-types]}
@@ -82,10 +83,13 @@ tasks:
   - {id: code-ai-boss, title: "Boss-rival duel behavior", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
   - {id: code-ui-statbars, title: "Five stat bars display widget", type: code, group: ui, size: small, status: todo, blockers: []}
   - {id: code-ui-hud, title: "Basic HUD (speed / position / timer)", type: code, group: ui, size: default, status: done, blockers: [code-race-timing]}
-  - {id: code-ui-menus, title: "Menus + settings + input remap", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow]}
+  - {id: code-ui-title, title: "Title / main menu (New / Continue / Settings / Quit)", type: code, group: ui, size: small, status: done, blockers: [code-core-scene-flow]}
+  - {id: code-ui-settings, title: "Settings + input remap screen", type: code, group: ui, size: default, status: done, blockers: [code-core-scene-flow]}
+  - {id: code-ui-save-slots, title: "Save-slot select screen (3 slots: new/continue/delete)", type: code, group: ui, size: default, status: done, blockers: [code-core-save, code-ui-title]}
+  - {id: code-ui-career-hub, title: "Career hub shell (stub tiles Map/Shop/Garage + live RACE tile)", type: code, group: ui, size: default, status: todo, blockers: [code-core-scene-flow, code-core-save]}
   - {id: code-ui-loading, title: "Loading screen (async scene load)", type: code, group: ui, size: small, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-ui-prerace, title: "Pre-race info screen", type: code, group: ui, size: default, status: todo, blockers: [code-ui-statbars, code-race-defs]}
-  - {id: code-ui-results, title: "Post-race results + rewards screen", type: code, group: ui, size: default, status: todo, blockers: [code-race-result, code-meta-economy]}
+  - {id: code-ui-results, title: "Post-race results + rewards screen (reward line stubbed until economy)", type: code, group: ui, size: default, status: todo, blockers: [code-race-result]}
   - {id: code-ui-career-map, title: "Region map of races + CP/boss progress", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow, code-meta-chapters, code-race-defs]}
   - {id: code-ui-shop, title: "Car shop screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-shop]}
   - {id: code-ui-garage, title: "Garage / car-select screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-garage]}
@@ -150,6 +154,7 @@ tasks:
   - {id: art-vfx-nitro, title: "Nitro/boost FX", type: art, group: vfx, size: small, status: todo, blockers: [code-vehicle-brand-features]}
   - {id: art-ui-hud-gfx, title: "HUD scorebug graphics (telemetry-style)", type: art, group: ui-art, size: default, status: todo, blockers: []}
   - {id: art-ui-theme, title: "VHS UI theme (white-on-blue OSD) + font", type: art, group: ui-art, size: big, status: todo, blockers: []}
+  - {id: art-ui-transition, title: "Stylized VHS scene transition (channel-change / tracking-glitch wipe)", type: art, group: ui-art, size: default, status: todo, blockers: [code-core-scene-flow, art-shader-vhs]}
   - {id: art-ui-paint-skins, title: "Paint-skin set", type: art, group: ui-art, size: default, status: todo, blockers: [art-voxel-car-kerb]}
   - {id: art-world-terrain-tex, title: "Terrain splat textures", type: art, group: world, size: big, status: todo, blockers: [code-track-generator]}
   - {id: art-world-palette, title: "Master colour palette (voxel + terrain ramps, ADR-003)", type: art, group: world, size: small, status: done, blockers: []}
