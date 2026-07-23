@@ -18,7 +18,7 @@ var _pausable := false       # does the active scene accept the pause action?
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	set_transition(FadeTransition.new())
+	set_transition(VHSTransition.new())
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _pausable and not _busy and event.is_action_pressed("pause"):
