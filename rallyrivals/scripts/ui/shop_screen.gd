@@ -10,46 +10,49 @@ var _bars: StatBars
 var _name: Label
 var _sub: Label
 var _wallet: Label
-var _list: HBoxContainer
+var _list: VBoxContainer
 var _shown: CarDef
 
 func _build(col: VBoxContainer) -> void:
-	# Header: title + wallet left, BACK right — keeping BACK up here leaves the car strip as the
-	# bottom-most row so it always stays on frame.
+	# Header: title + wallet left, BACK right.
 	var hb := header_bar("CAR SHOP", _wallet_line(), func() -> void: Flow.goto(Routes.CAREER_HUB))
 	col.add_child(hb[0])
 	_wallet = hb[1]
 	Save.wallet_changed.connect(_on_wallet)   # auto-disconnects when this screen frees
 
 	col.add_child(spacer(14))
-	_name = heading("")
-	col.add_child(_name)
-	_sub = heading("", "OsdDim")
-	col.add_child(_sub)
-	col.add_child(spacer(8))
+	var body := HBoxContainer.new()
+	body.add_theme_constant_override("separation", 44)
+	col.add_child(body)
 
-	var detail := HBoxContainer.new()
-	detail.add_theme_constant_override("separation", 30)
-	col.add_child(detail)
+	# left — vertical stock list (cheapest class first)
+	var sc := ScrollContainer.new()
+	sc.custom_minimum_size = Vector2(260, 340)
+	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	sc.follow_focus = true
+	body.add_child(sc)
+	_list = VBoxContainer.new()
+	_list.add_theme_constant_override("separation", 6)
+	sc.add_child(_list)
+
+	# right — name / class·brand·price, then preview beside the stat bars
+	var detail := VBoxContainer.new()
+	detail.add_theme_constant_override("separation", 6)
+	body.add_child(detail)
+	_name = heading("")
+	detail.add_child(_name)
+	_sub = heading("", "OsdDim")
+	detail.add_child(_sub)
+	detail.add_child(spacer(6))
+	var drow := HBoxContainer.new()
+	drow.add_theme_constant_override("separation", 28)
+	detail.add_child(drow)
 	_view = CarView.new()
-	_view.custom_minimum_size = Vector2(300, 210)
-	detail.add_child(_view)
+	_view.custom_minimum_size = Vector2(320, 240)
+	drow.add_child(_view)
 	_bars = StatBars.new()
 	_bars.size_flags_vertical = SIZE_SHRINK_CENTER
-	detail.add_child(_bars)
-
-	col.add_child(spacer(12))
-
-	# the car strip — horizontal, cheapest class first — stays the bottom-most row
-	var strip := ScrollContainer.new()
-	strip.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	strip.custom_minimum_size = Vector2(0, 48)
-	strip.size_flags_vertical = SIZE_SHRINK_CENTER
-	strip.follow_focus = true
-	col.add_child(strip)
-	_list = HBoxContainer.new()
-	_list.add_theme_constant_override("separation", 10)
-	strip.add_child(_list)
+	drow.add_child(_bars)
 
 	_rebuild_list()
 
