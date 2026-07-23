@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://clthu43p5rm3y"]
+
+[ext_resource type="Script" path="res://scripts/ui/pre_race_screen.gd" id="1"]
+
+[node name="PreRace" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+script = ExtResource("1")
