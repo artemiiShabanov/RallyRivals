@@ -30,6 +30,7 @@ func _ready() -> void:
 	_race = pending if pending != null else (fallback_race if fallback_race != null else load(SLICE_RACE) as RaceDef)
 	pending = null
 	_build()
+	Flow.pausable(true)     # the pause action works throughout the race (the pause menu reacts)
 	_run()
 
 func _build() -> void:
