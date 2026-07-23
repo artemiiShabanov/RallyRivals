@@ -34,9 +34,10 @@ func _build(col: VBoxContainer) -> void:
 	var car := _car()
 	var right := _column()
 	right.add_child(heading("YOUR CAR  —  " + (car.display_name.to_upper() if car != null else "NO CAR"), "OsdDim"))
-	var bars := StatBars.new()
-	bars.set_car(car)
-	right.add_child(bars)
+	var view := CarView.new()          # the 3D preview, in place of the stat bars
+	view.custom_minimum_size = Vector2(360, 240)
+	view.set_car(car)
+	right.add_child(view)
 	body.add_child(right)
 
 	col.add_child(spacer(20))

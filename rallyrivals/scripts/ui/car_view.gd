@@ -18,8 +18,12 @@ var _body: MeshInstance3D
 var _wheels: Array[MeshInstance3D] = []
 
 func _init() -> void:
-	stretch = true
+	# stretch OFF: the container takes the SubViewport's size (fixed). With stretch on, a
+	# SubViewport defaults to 512x512 and drives the container's minimum size — it balloons.
+	stretch = false
 	custom_minimum_size = Vector2(380, 260)
+	size_flags_horizontal = SIZE_SHRINK_CENTER
+	size_flags_vertical = SIZE_SHRINK_CENTER
 
 func _ready() -> void:
 	var vp := SubViewport.new()
@@ -27,6 +31,7 @@ func _ready() -> void:
 	vp.transparent_bg = true
 	vp.msaa_3d = Viewport.MSAA_4X
 	vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	vp.size = Vector2i(custom_minimum_size)   # render 1:1 at the size the caller asked for
 	add_child(vp)
 
 	var env := WorldEnvironment.new()

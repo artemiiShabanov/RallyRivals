@@ -22,15 +22,18 @@ func set_car(def: CarDef) -> void:
 
 func _row(label: String, value: int) -> HBoxContainer:
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 14)
+	row.add_theme_constant_override("separation", 12)
 
+	# Smaller label so a five-row block stays compact (DotGothic is tall at 720p); pips carry the read.
 	var l := Label.new()
 	l.text = label
-	l.custom_minimum_size.x = 120
+	l.custom_minimum_size = Vector2(110, 0)
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	row.add_child(l)
 
 	var pips := HBoxContainer.new()
 	pips.add_theme_constant_override("separation", 3)
+	pips.size_flags_vertical = SIZE_SHRINK_CENTER
 	for i in PIPS:
 		var cell := ColorRect.new()
 		cell.custom_minimum_size = Vector2(20, 18)

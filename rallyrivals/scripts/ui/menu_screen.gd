@@ -120,12 +120,15 @@ func play_cue(id: String) -> void:
 	if def != null:
 		Sfx.play(def)
 
-## Give any button the standard cue wiring: ui_move when focus lands, `cue` when pressed.
-func wire_button(b: Button, cue := "ui_confirm") -> Button:
+## Give any button the standard cue wiring: ui_move when focus lands, `cue` when pressed. hover_focus
+## makes the mouse grab focus on hover (the default for menu items); pass false for buttons inside a
+## follow_focus scroll list, where a hover-grab would yank the scroll around.
+func wire_button(b: Button, cue := "ui_confirm", hover_focus := true) -> Button:
 	b.focus_entered.connect(func() -> void: play_cue("ui_move"))
-	b.mouse_entered.connect(func() -> void:
-		if not b.disabled:
-			b.grab_focus())
+	if hover_focus:
+		b.mouse_entered.connect(func() -> void:
+			if not b.disabled:
+				b.grab_focus())
 	b.pressed.connect(func() -> void: play_cue(cue))
 	return b
 
@@ -139,15 +142,90 @@ func heading(text: String, variation := "OsdTitle") -> Label:
 	l.size_flags_horizontal = SIZE_SHRINK_BEGIN
 	return l
 
-func menu_button(text: String, cue := "ui_confirm") -> Button:
+func menu_button(text: String, cue := "ui_confirm", hover_focus := true) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.custom_minimum_size = Vector2(300, 0)
 	b.size_flags_horizontal = SIZE_SHRINK_BEGIN
-	return wire_button(b, cue)
+	return wire_button(b, cue, hover_focus)
+
+## A car-row button for the scroll lists: hugs its text (width = the name), previews on hover/focus,
+## acts on press. No hover-focus, so hovering doesn't jerk the scroll.
+func row_button(text: String, on_preview: Callable, on_act: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.size_flags_horizontal = SIZE_SHRINK_BEGIN     # width follows the label
+	wire_button(b, "ui_confirm", false)
+	b.focus_entered.connect(func() -> void: on_preview.call())
+	b.mouse_entered.connect(func() -> void: on_preview.call())
+	b.pressed.connect(func() -> void: on_act.call())
+	return b
 
 func spacer(height: int) -> Control:
 	var c := Control.new()
 	c.custom_minimum_size.y = height
 	return c
+
+## A header row: title + subtitle (e.g. the wallet line) on the left, BACK on the right. Keeping BACK
+## up here frees the bottom of content-heavy screens. Returns [header, subtitle_label] so the caller
+## can add the header and later update the subtitle.
+func header_bar(title: String, subtitle: String, on_back: Callable) -> Array:
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 20)
+	var titles := VBoxContainer.new()
+	titles.add_theme_constant_override("separation", 6)
+	header.add_child(titles)
+	titles.add_child(heading(title))
+	var sub := heading(subtitle, "OsdDim")
+	titles.add_child(sub)
+	var gap := Control.new()
+	gap.size_flags_horizontal = SIZE_EXPAND_FILL
+	header.add_child(gap)
+	var back := menu_button("BACK", "ui_click")
+	back.size_flags_vertical = SIZE_SHRINK_CENTER
+	back.pressed.connect(on_back)
+	header.add_child(back)
+	return [header, sub]
+
+## A themed yes/no modal over the screen. on_yes runs if confirmed; either choice dismisses it.
+func confirm(message: String, on_yes: Callable) -> void:
+	var overlay := Control.new()
+	overlay.set_anchors_preset(PRESET_FULL_RECT)
+	add_child(overlay)                              # above the content, under the VHS CanvasLayer
+	var dim := ColorRect.new()
+	dim.color = Color(0.02, 0.04, 0.10, 0.72)
+	dim.set_anchors_preset(PRESET_FULL_RECT)
+	dim.mouse_filter = MOUSE_FILTER_STOP            # swallow clicks to the list beneath
+	overlay.add_child(dim)
+	var center := CenterContainer.new()
+	center.set_anchors_preset(PRESET_FULL_RECT)
+	overlay.add_child(center)
+	var panel := PanelContainer.new()
+	center.add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 16)
+	panel.add_child(box)
+	var msg := Label.new()
+	msg.text = message
+	msg.theme_type_variation = "OsdTitle"
+	msg.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(msg)
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 12)
+	box.add_child(row)
+	var yes := menu_button("YES")
+	yes.custom_minimum_size.x = 150
+	yes.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	yes.pressed.connect(func() -> void:
+		overlay.queue_free()
+		on_yes.call())
+	row.add_child(yes)
+	var no := menu_button("NO", "ui_click")
+	no.custom_minimum_size.x = 150
+	no.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	no.pressed.connect(func() -> void: overlay.queue_free())
+	row.add_child(no)
+	yes.grab_focus()
