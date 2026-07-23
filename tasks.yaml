@@ -71,7 +71,7 @@ tasks:
   - {id: code-core-settings-apply, title: "Apply graphics/audio/control settings", type: code, group: core, size: small, status: done, blockers: [code-core-scene-flow]}
   - {id: code-race-defs, title: "RaceDef resource (track, type, culture, conditions, reward pools)", type: code, group: race, size: default, status: done, blockers: []}
   - {id: code-race-timing, title: "Lap/stage timing", type: code, group: race, size: default, status: done, blockers: [code-track-checkpoints]}
-  - {id: code-race-director, title: "Race lifecycle director (grid -> 3-2-1-GO countdown -> run -> finish -> freeze -> hand to results)", type: code, group: race, size: big, status: todo, blockers: [code-core-scene-flow, code-race-timing]}
+  - {id: code-race-director, title: "Race lifecycle director (grid -> 3-2-1-GO countdown -> run -> finish -> freeze -> hand to results)", type: code, group: race, size: big, status: done, blockers: [code-core-scene-flow, code-race-timing]}
   - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: todo, blockers: [code-race-timing, code-race-director]}
   - {id: code-race-types, title: "Race types: sprint + circuit", type: code, group: race, size: big, status: todo, blockers: [code-race-timing]}
   - {id: code-race-timetrial, title: "Race type: time trial vs clock", type: code, group: race, size: small, status: todo, blockers: [code-race-timing]}

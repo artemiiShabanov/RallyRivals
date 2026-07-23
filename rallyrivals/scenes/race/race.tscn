@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3 uid="uid://crace00000001"]
+
+[ext_resource type="Script" path="res://scripts/race/race_director.gd" id="1_dir"]
+[ext_resource type="Resource" path="res://assets/races/test_circuit.tres" id="2_race"]
+
+[node name="Race" type="Node3D"]
+script = ExtResource("1_dir")
+fallback_race = ExtResource("2_race")

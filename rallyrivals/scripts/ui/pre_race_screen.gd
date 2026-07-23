@@ -2,13 +2,11 @@ extends MenuScreen
 ## Pre-race preview (code-ui-prerace): the race's name, format and conditions, plus the car you're
 ## bringing and its five stat bars. START launches the race; BACK returns to the hub.
 ##
-## `race` + `race_scene` are set by the caller (career hub / map) before entering; both default to
-## the skeleton's slice race so the screen stands alone. The race scene is the existing track_demo
-## harness for that RaceDef — code-race-director will replace it with the countdown/finish/results
-## lifecycle, at which point START routes there instead.
+## `race` is set by the caller (career hub / map) before entering, defaulting to the skeleton's slice
+## race so the screen stands alone. START hands that RaceDef to the RaceDirector and enters the race
+## scene (countdown → run → finish lifecycle).
 
 static var race: RaceDef = null
-static var race_scene := "res://scenes/track/race_test_circuit.tscn"
 
 const SLICE_RACE := "res://assets/races/test_circuit.tres"
 
@@ -49,7 +47,9 @@ func _build(col: VBoxContainer) -> void:
 	col.add_child(actions)
 
 	var start := menu_button("START  ▸")
-	start.pressed.connect(func() -> void: Flow.goto(race_scene))
+	start.pressed.connect(func() -> void:
+		RaceDirector.pending = r      # hand the previewed RaceDef to the race
+		Flow.goto(Routes.RACE))
 	actions.add_child(start)
 
 	var back := menu_button("BACK", "ui_click")

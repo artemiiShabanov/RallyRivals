@@ -136,10 +136,18 @@ func _apply_models() -> void:
 func _bar(value: int, endpoints: Array) -> float:
 	return lerpf(endpoints[0], endpoints[1], (clampi(value, 1, 10) - 1) / 9.0)
 
+## Driver input gate. The race director sets this false to park the car (brake held, no throttle or
+## steer) at the grid, through the 3·2·1 countdown, and again at the finish.
+var input_enabled := true
+
 func _physics_process(delta: float) -> void:
-	var throttle := Input.get_action_strength("accelerate")
-	var reverse := Input.get_action_strength("brake_reverse")
-	var steer_input := Input.get_action_strength("steer_left") - Input.get_action_strength("steer_right")
+	var throttle := 0.0
+	var reverse := 0.0
+	var steer_input := 0.0
+	if input_enabled:
+		throttle = Input.get_action_strength("accelerate")
+		reverse = Input.get_action_strength("brake_reverse")
+		steer_input = Input.get_action_strength("steer_left") - Input.get_action_strength("steer_right")
 
 	# brake_reverse brakes while rolling forward, and reverses once nearly stopped.
 	if reverse > 0.0 and get_forward_speed() > 1.0:
@@ -151,8 +159,12 @@ func _physics_process(delta: float) -> void:
 		engine_force = max_engine_force * (throttle - reverse) * headroom
 		brake = 0.0
 
+	if not input_enabled:                # grid / countdown / finish — hold the car parked
+		engine_force = 0.0
+		brake = max_brake
+
 	# Grip layer: front stays grippy, rear grips less (drift), and much less on handbrake.
-	var handbraking := Input.is_action_pressed("handbrake")
+	var handbraking := input_enabled and Input.is_action_pressed("handbrake")
 	throttle_amount = throttle
 	is_braking = brake > 0.0
 	is_handbraking = handbraking
@@ -167,7 +179,7 @@ func _physics_process(delta: float) -> void:
 	# Ease steering toward the target so input isn't twitchy.
 	steering = move_toward(steering, max_steer * steer_input, steer_speed * delta)
 
-	if Input.is_action_just_pressed("reset_car"):
+	if input_enabled and Input.is_action_just_pressed("reset_car"):
 		reset()
 
 ## Per-wheel, SURFACE-RELATIVE grip. Each wheel reads the grip of whatever surface it's touching
