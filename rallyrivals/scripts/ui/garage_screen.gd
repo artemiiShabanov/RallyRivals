@@ -26,7 +26,7 @@ func _build(col: VBoxContainer) -> void:
 	var sc := ScrollContainer.new()
 	sc.custom_minimum_size = Vector2(230, 300)
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	sc.follow_focus = true
+	sc.follow_focus = false     # row_button scrolls on keyboard focus only — hover must not scroll
 	body.add_child(sc)
 	_list = VBoxContainer.new()
 	_list.add_theme_constant_override("separation", 6)

@@ -151,43 +151,55 @@ func menu_button(text: String, cue := "ui_confirm", hover_focus := true) -> Butt
 	return wire_button(b, cue, hover_focus)
 
 ## A car-row button for the scroll lists: hugs its text (width = the name), previews on hover/focus,
-## acts on press. No hover-focus, so hovering doesn't jerk the scroll.
+## acts on press. Hover neither grabs focus nor scrolls (the list ScrollContainer must have
+## follow_focus = false); only keyboard focus scrolls the row into view. This is what stops a hover
+## from snapping the scroll back to the focused (top) row when the preview rebuild triggers a layout.
 func row_button(text: String, on_preview: Callable, on_act: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.size_flags_horizontal = SIZE_SHRINK_BEGIN     # width follows the label
 	wire_button(b, "ui_confirm", false)
-	b.focus_entered.connect(func() -> void: on_preview.call())
+	b.focus_entered.connect(func() -> void:
+		on_preview.call()
+		_scroll_into_view(b))
 	b.mouse_entered.connect(func() -> void: on_preview.call())
 	b.pressed.connect(func() -> void: on_act.call())
 	return b
+
+func _scroll_into_view(c: Control) -> void:
+	var p := c.get_parent()
+	while p != null and not (p is ScrollContainer):
+		p = p.get_parent()
+	if p is ScrollContainer:
+		(p as ScrollContainer).ensure_control_visible(c)
 
 func spacer(height: int) -> Control:
 	var c := Control.new()
 	c.custom_minimum_size.y = height
 	return c
 
-## A header row: title + subtitle (e.g. the wallet line) on the left, BACK on the right. Keeping BACK
-## up here frees the bottom of content-heavy screens. Returns [header, subtitle_label] so the caller
-## can add the header and later update the subtitle.
+## Screen title + subtitle (e.g. the wallet line) as a left-aligned block for the content column, with
+## a BACK button pinned flush to the screen's top-right corner (constant position, not a flexible
+## header gap). Returns [titles, subtitle_label] — the caller adds `titles` to its column and may
+## update the subtitle later. BACK is parented to the screen itself, so it sits above the content.
 func header_bar(title: String, subtitle: String, on_back: Callable) -> Array:
-	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 20)
 	var titles := VBoxContainer.new()
 	titles.add_theme_constant_override("separation", 6)
-	header.add_child(titles)
 	titles.add_child(heading(title))
 	var sub := heading(subtitle, "OsdDim")
 	titles.add_child(sub)
-	var gap := Control.new()
-	gap.size_flags_horizontal = SIZE_EXPAND_FILL
-	header.add_child(gap)
+
 	var back := menu_button("BACK", "ui_click")
-	back.size_flags_vertical = SIZE_SHRINK_CENTER
+	back.custom_minimum_size = Vector2(0, 0)     # hug the label
+	back.set_anchors_preset(PRESET_TOP_RIGHT)
+	back.grow_horizontal = GROW_DIRECTION_BEGIN
+	back.grow_vertical = GROW_DIRECTION_END
+	back.offset_top = 0
+	back.offset_right = 0                          # flush to the top-right corner, 0 gap
 	back.pressed.connect(on_back)
-	header.add_child(back)
-	return [header, sub]
+	add_child(back)
+	return [titles, sub]
 
 ## A themed yes/no modal over the screen. on_yes runs if confirmed; either choice dismisses it.
 func confirm(message: String, on_yes: Callable) -> void:
