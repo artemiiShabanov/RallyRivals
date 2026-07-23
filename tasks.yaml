@@ -72,7 +72,7 @@ tasks:
   - {id: code-race-defs, title: "RaceDef resource (track, type, culture, conditions, reward pools)", type: code, group: race, size: default, status: done, blockers: []}
   - {id: code-race-timing, title: "Lap/stage timing", type: code, group: race, size: default, status: done, blockers: [code-track-checkpoints]}
   - {id: code-race-director, title: "Race lifecycle director (grid -> 3-2-1-GO countdown -> run -> finish -> freeze -> hand to results)", type: code, group: race, size: big, status: done, blockers: [code-core-scene-flow, code-race-timing]}
-  - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: todo, blockers: [code-race-timing, code-race-director]}
+  - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: done, blockers: [code-race-timing, code-race-director]}
   - {id: code-race-types, title: "Race types: sprint + circuit", type: code, group: race, size: big, status: todo, blockers: [code-race-timing]}
   - {id: code-race-timetrial, title: "Race type: time trial vs clock", type: code, group: race, size: small, status: todo, blockers: [code-race-timing]}
   - {id: code-race-endurance, title: "Race type: endurance / attrition", type: code, group: race, size: default, status: todo, blockers: [code-race-types]}
@@ -89,7 +89,7 @@ tasks:
   - {id: code-ui-career-hub, title: "Career hub shell (stub tiles Map/Shop/Garage + live RACE tile)", type: code, group: ui, size: default, status: done, blockers: [code-core-scene-flow, code-core-save]}
   - {id: code-ui-loading, title: "Loading screen (async scene load)", type: code, group: ui, size: small, status: todo, blockers: [code-core-scene-flow]}
   - {id: code-ui-prerace, title: "Pre-race info screen", type: code, group: ui, size: default, status: done, blockers: [code-ui-statbars, code-race-defs]}
-  - {id: code-ui-results, title: "Post-race results + rewards screen (reward line stubbed until economy)", type: code, group: ui, size: default, status: todo, blockers: [code-race-result]}
+  - {id: code-ui-results, title: "Post-race results + rewards screen (reward line stubbed until economy)", type: code, group: ui, size: default, status: done, blockers: [code-race-result]}
   - {id: code-ui-career-map, title: "Region map of races + CP/boss progress", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow, code-meta-chapters, code-race-defs]}
   - {id: code-ui-shop, title: "Car shop screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-shop]}
   - {id: code-ui-garage, title: "Garage / car-select screen", type: code, group: ui, size: default, status: todo, blockers: [code-meta-garage]}

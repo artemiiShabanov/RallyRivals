@@ -11,7 +11,7 @@ extends Node3D
 ## results screen into that handoff (reading last_result).
 
 static var pending: RaceDef = null      ## handoff from the pre-race screen
-static var last_result := {}            ## finish data for the results screen
+static var last_result: RaceResult = null   ## finish outcome for the results screen
 
 @export var fallback_race: RaceDef      ## used when launched directly (no pending)
 @export var car_scene: PackedScene = preload("res://scenes/vehicle/car.tscn")
@@ -147,21 +147,14 @@ func _finish() -> void:
 		return
 	_finished = true
 	_car.input_enabled = false          # coast to a parked stop
-	var total := _timing.total_time(_car)
-	last_result = {
-		"race_id": _race.id,
-		"total_time": total,
-		"laps": _timing.laps_of(_car).duplicate(),
-		"best_lap": _timing.best_lap(_car),
-	}
+	# Solo field in the skeleton — no rival times yet, so this places 1 / 1. code-ai-rival will pass
+	# the rivals' finish times to compute().
+	last_result = RaceResult.compute(_race.id, _timing.total_time(_car),
+		_timing.laps_of(_car).duplicate(), _timing.best_lap(_car))
 	Sfx.play(load("res://assets/audio/sfx/finish_win.tres") as SfxDef)
 	var ca := _car.get_node_or_null("CarAudio")
 	if ca != null and ca.has_method("shut_down"):
 		ca.shut_down()
-	_banner.text = "FINISH\n%s" % _fmt(total)
-	await get_tree().create_timer(3.0).timeout
-	Flow.goto(Routes.CAREER_HUB)        # code-ui-results will screen the result here first
-
-func _fmt(t: float) -> String:
-	var m := int(t) / 60
-	return "%d:%05.2f" % [m, t - m * 60]
+	_banner.text = "FINISH"
+	await get_tree().create_timer(1.5).timeout
+	Flow.goto(Routes.RESULTS)
