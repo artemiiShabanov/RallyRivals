@@ -24,21 +24,33 @@ var _car: VehicleController
 var _timing: RaceTiming
 var _cps: TrackCheckpoints
 var _finished := false
+var _built := false
 var _banner: Label
 
 func _ready() -> void:
 	_race = pending if pending != null else (fallback_race if fallback_race != null else load(SLICE_RACE) as RaceDef)
 	pending = null
-	_build()
+	_boot()
+
+## The baked track is the heavy load — pull it through Flow's async loader (loading screen) so it
+## streams in behind the transition's black instead of hitching the main thread.
+func _boot() -> void:
+	var track_ps := await Flow.load_async(_race.track_scene)
+	if track_ps == null:
+		push_error("RaceDirector: no baked track at %s" % _race.track_scene)
+		return
+	_build(track_ps)
+	_built = true
 	Flow.pausable(true)     # the pause action works throughout the race (the pause menu reacts)
 	_run()
 
-func _build() -> void:
-	var ps := load(_race.track_scene) as PackedScene
-	if ps == null:
-		push_error("RaceDirector: no baked track at %s" % _race.track_scene)
-		return
-	var track := ps.instantiate()
+## Flow holds the transition reveal until the track has finished loading and the scene is built.
+func ready_to_reveal() -> void:
+	while not _built:
+		await get_tree().process_frame
+
+func _build(track_ps: PackedScene) -> void:
+	var track := track_ps.instantiate()
 	add_child(track)
 
 	# Venue ambience + per-race conditions (time-of-day, weather) — same as the drive harness.

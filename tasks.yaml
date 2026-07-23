@@ -87,7 +87,7 @@ tasks:
   - {id: code-ui-settings, title: "Settings + input remap screen", type: code, group: ui, size: default, status: done, blockers: [code-core-scene-flow]}
   - {id: code-ui-save-slots, title: "Save-slot select screen (3 slots: new/continue/delete)", type: code, group: ui, size: default, status: done, blockers: [code-core-save, code-ui-title]}
   - {id: code-ui-career-hub, title: "Career hub shell (stub tiles Map/Shop/Garage + live RACE tile)", type: code, group: ui, size: default, status: done, blockers: [code-core-scene-flow, code-core-save]}
-  - {id: code-ui-loading, title: "Loading screen (async scene load)", type: code, group: ui, size: small, status: todo, blockers: [code-core-scene-flow]}
+  - {id: code-ui-loading, title: "Loading screen (async scene load)", type: code, group: ui, size: small, status: done, blockers: [code-core-scene-flow]}
   - {id: code-ui-prerace, title: "Pre-race info screen", type: code, group: ui, size: default, status: done, blockers: [code-ui-statbars, code-race-defs]}
   - {id: code-ui-results, title: "Post-race results + rewards screen (reward line stubbed until economy)", type: code, group: ui, size: default, status: done, blockers: [code-race-result]}
   - {id: code-ui-career-map, title: "Region map of races + CP/boss progress", type: code, group: ui, size: big, status: todo, blockers: [code-core-scene-flow, code-meta-chapters, code-race-defs]}
