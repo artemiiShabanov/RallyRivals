@@ -1,6 +1,6 @@
-[gd_resource type="Theme" load_steps=19 format=3]
+[gd_resource type="Theme" load_steps=19 format=3 uid="uid://bpin2bjwbeaof"]
 
-[ext_resource type="FontFile" path="res://assets/fonts/DotGothic16-Regular.ttf" id="1_6cha6"]
+[ext_resource type="FontFile" uid="uid://brsgo73pwruce" path="res://assets/fonts/DotGothic16-Regular.ttf" id="1_6cha6"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6cha6"]
 content_margin_left = 14.0
