@@ -16,7 +16,7 @@ const S := {
 	"dirt": {"rough": 1.0, "chunk": 0.55, "mark": [0.14, 0.09, 0.05, 0.55], "mbase": 0.26,
 		"damt": 360, "dcol": [0.30, 0.20, 0.11, 0.8], "dsize": 0.037, "dbase": 0.22, "drise": 2.2, "dgrav": -2.0, "dspread": 75.0, "dlife": 0.225, "dgrow": 1.0},
 	"sand": {"rough": 1.0, "chunk": 0.30, "mark": [0.50, 0.42, 0.27, 0.50], "mbase": 0.30,
-		"damt": 600, "dcol": [0.82, 0.74, 0.56, 0.06], "dsize": 0.13, "dbase": 0.26, "drise": 0.8, "dgrav": -0.05, "dspread": 110.0, "dlife": 1.6, "dgrow": 5.0},
+		"damt": 600, "dcol": [0.832, 0.708, 0.421, 0.06], "dsize": 0.13, "dbase": 0.26, "drise": 0.8, "dgrav": -0.05, "dspread": 110.0, "dlife": 1.6, "dgrow": 5.0},
 	"snow": {"rough": 0.88, "chunk": 0.22, "mark": [0.32, 0.38, 0.47, 0.55], "mbase": 0.32,
 		"damt": 384, "dcol": [0.95, 0.97, 1.0, 0.9], "dsize": 0.017, "dbase": 0.30, "drise": 2.6, "dgrav": -0.7, "dspread": 90.0, "dlife": 0.3, "dgrow": 1.0},
 	"ice": {"rough": 0.25, "chunk": 0.0, "mark": [0.60, 0.70, 0.82, 0.16], "mbase": 0.05,
