@@ -1,12 +1,13 @@
 shader_type sky;
 
 // VHS sky (art-world-skybox). A deliberately CHUNKY, retro sky: a posterised vertical
-// colour gradient (stepped bands, not a smooth ramp), banded drifting clouds, and a hard
-// low-res sun disk read from the scene's sun (DirectionalLight0).
+// colour gradient (stepped bands, not a smooth ramp) and a hard low-res sun disk read from
+// the scene's sun (DirectionalLight0). Deliberately CLOUDLESS — noise clouds read as mush
+// against the hard bands, so overcast is expressed by the gradient + haze instead.
 //
 // Two authors drive it, matching the design split:
-//   * WEATHER owns the look — zenith/horizon/ground band colours, cloud amount, sun
-//     visibility, horizon haze (WeatherFX.apply writes these). A rainy sky is grey here.
+//   * WEATHER owns the look — zenith/horizon/ground band colours, sun visibility, horizon
+//     haze (WeatherFX.apply writes these). A rainy sky is grey here.
 //   * TIME OF DAY only tints — sky_tint (mul) + sky_energy (day<->night darken) come from
 //     LightingPreset, and the sun disk inherits the sun light's colour/energy/angle. So the
 //     same weather reads grey at noon and dark-grey at night, with the sun where the hour
@@ -20,14 +21,6 @@ uniform vec3 horizon_color : source_color = vec3(0.78, 0.88, 0.95);
 uniform vec3 ground_color : source_color = vec3(0.34, 0.36, 0.42);
 uniform float bands : hint_range(2.0, 16.0) = 7.0;     // number of colour steps (chunky)
 uniform float gradient_curve : hint_range(0.3, 3.0) = 0.65;  // <1 packs bands near horizon
-
-group_uniforms Clouds;
-uniform sampler2D cloud_noise : hint_default_black;    // seamless fractal noise (from GDScript)
-uniform vec3 cloud_color : source_color = vec3(1.0, 1.0, 1.0);
-uniform float cloud_amount : hint_range(0.0, 1.0) = 0.25;
-uniform float cloud_scale : hint_range(0.2, 4.0) = 1.4;
-uniform vec2 cloud_drift = vec2(0.006, 0.0);
-uniform float cloud_steps : hint_range(1.0, 8.0) = 4.0;  // banded cloud edges
 
 group_uniforms Sun;
 uniform float sun_visibility : hint_range(0.0, 1.0) = 1.0;  // 0 = hidden (overcast/fog)
@@ -50,17 +43,6 @@ void sky() {
 	// crisp-ish horizon: sky above, flat ground colour just below
 	float above = smoothstep(-0.02, 0.01, el);
 	vec3 col = mix(ground_color, sky_col, above);
-
-	// --- clouds (upper hemisphere, banded, faded at the horizon) ---
-	if (cloud_amount > 0.001) {
-		vec2 uv = EYEDIR.xz / max(el, 0.12);
-		uv = uv * cloud_scale + TIME * cloud_drift;
-		float n = texture(cloud_noise, uv * 0.5).r;
-		float cover = smoothstep(1.0 - cloud_amount, 1.0 - cloud_amount * 0.35, n);
-		cover *= smoothstep(0.0, 0.22, el);          // don't smear at the horizon
-		cover = floor(cover * cloud_steps) / cloud_steps;   // chunky edges
-		col = mix(col, cloud_color, cover * above);
-	}
 
 	// --- horizon haze (fog / overcast whiteout) ---
 	float h = haze * (1.0 - smoothstep(0.0, 0.55, clamp(el, 0.0, 1.0)));

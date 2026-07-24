@@ -3,7 +3,7 @@ extends Resource
 ## One weather look (GDD 7: clear / rain / snow / thunder / fog — fixed per race, stacks with
 ## time-of-day). VISUALS ONLY here; grip_multiplier ships dormant and is consumed by
 ## code-track-weather-grip when it lands. Applied by WeatherFX: it OWNS the sky look (the VHS
-## sky gradient + clouds + sun visibility + haze), plus camera-following cube precipitation,
+## sky gradient + sun visibility + haze), plus camera-following cube precipitation,
 ## environment fog, and thunder flashes. Time-of-day only tints the sky on top (LightingPreset).
 ## Fog/haze stay moderate — low visibility must remain fair (telegraph corners).
 
@@ -22,8 +22,6 @@ extends Resource
 @export var sky_zenith := Color(0.20, 0.36, 0.50)   ## top band of the VHS sky gradient
 @export var sky_horizon := Color(0.78, 0.88, 0.95)  ## bottom band (meets the ground)
 @export var sky_ground := Color(0.34, 0.36, 0.42)   ## flat colour below the horizon line
-@export var cloud_cover := 0.0          ## 0..1 sky-cover intensity (0 = cloudless)
-@export var cloud_color := Color(1, 1, 1)
 @export var sun_visibility := 1.0       ## 0 hides the sun disk (overcast/fog), 1 = clear
 @export var haze := 0.0                 ## 0..1 horizon whiteout (fog/heavy overcast)
 @export_group("")

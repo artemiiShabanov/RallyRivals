@@ -1,7 +1,7 @@
 class_name WeatherFX
 extends Node3D
-## Applies a WeatherPreset to the scene: the VHS sky look (gradient + clouds + sun visibility +
-## haze, via VhsSky), cube precipitation (ADR-003 — every particle is a cube) in a camera-
+## Applies a WeatherPreset to the scene: the VHS sky look (gradient + sun visibility + haze,
+## via VhsSky), cube precipitation (ADR-003 — every particle is a cube) in a camera-
 ## following emitter box, exponential fog on the scene's WorldEnvironment, and thunder as
 ## randomized double-pulse flashes of the scene's sun. One node per scene; the debug menu and
 ## code-track-conditions call apply().
@@ -77,8 +77,8 @@ func _setup_fog() -> void:
 		_env.fog_density = _preset.fog_density
 		_env.fog_sky_affect = 0.5
 
-# Weather OWNS the sky look: it writes the gradient + cloud + sun uniforms onto the shared VHS
-# sky material. Time-of-day (LightingPreset) later multiplies its tint on top of these.
+# Weather OWNS the sky look: it writes the gradient + sun uniforms onto the shared VHS sky
+# material. Time-of-day (LightingPreset) later multiplies its tint on top of these.
 func _setup_sky() -> void:
 	var sky_mat := VhsSky.ensure(_env)
 	if sky_mat == null:
@@ -86,8 +86,6 @@ func _setup_sky() -> void:
 	sky_mat.set_shader_parameter("zenith_color", _preset.sky_zenith)
 	sky_mat.set_shader_parameter("horizon_color", _preset.sky_horizon)
 	sky_mat.set_shader_parameter("ground_color", _preset.sky_ground)
-	sky_mat.set_shader_parameter("cloud_amount", _preset.cloud_cover)
-	sky_mat.set_shader_parameter("cloud_color", _preset.cloud_color)
 	sky_mat.set_shader_parameter("sun_visibility", _preset.sun_visibility)
 	sky_mat.set_shader_parameter("haze", _preset.haze)
 
