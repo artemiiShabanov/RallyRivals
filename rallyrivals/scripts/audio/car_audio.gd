@@ -8,7 +8,8 @@ extends Node3D
 ##   roll     the tyre loop for whatever surface is under the rear wheels, crossfaded on change
 ##   skid     faded in by wheel slip; picks the tarmac squeal or the loose-surface slide
 ##   scrape   faded in while the body is dragging along something
-## plus one-shots: engine start/off, and impacts scaled by collision impulse.
+## plus impact one-shots scaled by collision impulse. (Engine start/off cues were removed — the
+## EngineDef still carries start_sfx/off_sfx fields, now unused.)
 ##
 ## Levels live in EngineDef and the exports below, never in the files — see docs/AUDIO.md §1.
 
@@ -58,18 +59,15 @@ func _ready() -> void:
 			_bands.append(p)
 			_band_rpm.append(pair[1])
 		_rpm = engine.idle_rpm
-		if engine.start_sfx != null:
-			Sfx.play_at(engine.start_sfx, global_position)
 
 	_roll_a = _make_player(null)
 	_roll_b = _make_player(null)
 	_skid = _make_player(null)
 	_scrape = _make_player(load(ROLL_DIR + "scrape.wav") as AudioStream)
 
-## Cut the engine — the wind-down cue, and every loop out. Call when a race ends.
+## Cut the engine — every loop out. Call when a race ends. (No start/off one-shots: they were cut
+## deliberately; the engine just comes in and goes out with the bands.)
 func shut_down() -> void:
-	if engine != null and engine.off_sfx != null:
-		Sfx.play_at(engine.off_sfx, global_position)
 	for p in _bands:
 		p.stop()
 	for p in [_roll_a, _roll_b, _skid, _scrape]:
