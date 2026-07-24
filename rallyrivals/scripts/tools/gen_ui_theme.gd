@@ -2,8 +2,10 @@ extends SceneTree
 ## Builds the shared UI theme (art-ui-theme): assets/ui/theme.tres, set as the project default.
 ## Ultra-simple white-on-blue VCR-OSD (GDD §9): flat blue fields, white text, NO borders. The
 ## selected menu item inverts to a white field with blue text — the OSD cursor. One accent: white.
-## The in-race TELEMETRY register (Hud* variations + HudPanel) stays clean white-on-dark, distinct
-## from the blue chrome, so the scorebug reads as broadcast graphics not a menu.
+## The in-race scorebug (Hud* variations, HudPanel/HudBar) now shares that SAME register rather
+## than sitting apart in white-on-dark telemetry: one language across sky, menus and HUD. It is the
+## recessed blue field at partial alpha so the road still shows through, with hard edges and a
+## bright top rule — broadcast furniture built out of the same blocks as the menus.
 ## Font: first .ttf/.otf in assets/fonts/ (README there), else the engine default.
 ## Run: godot --headless --script res://scripts/tools/gen_ui_theme.gd
 
@@ -17,8 +19,8 @@ const BLUE_DK := Color(0.05, 0.11, 0.60)   # recessed field (buttons/inputs/trac
 const WHITE := Color(0.95, 0.97, 1.0)
 const DIM := Color(0.62, 0.68, 0.92)       # disabled / secondary (a muted white-blue)
 const SEL_FG := Color(0.05, 0.10, 0.55)    # blue text on the white cursor
-# telemetry (scorebug)
-const TELE_DARK := Color(0.02, 0.02, 0.04, 0.68)
+# scorebug: the menus' recessed field, translucent so the road reads through it
+const HUD_FIELD := Color(0.05, 0.11, 0.60, 0.80)
 
 func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://assets/ui/"))
@@ -87,16 +89,23 @@ func _initialize() -> void:
 	_var(t, "OsdDim", 24, DIM, 3)
 
 	# telemetry / scorebug register (white-on-dark, kept distinct from the chrome)
-	_var(t, "HudValue", 68, WHITE, 8)
-	_var(t, "HudUnit", 20, WHITE, 5)
-	_var(t, "HudTimer", 44, WHITE, 7)
-	_var(t, "HudBest", 18, WHITE, 4)
-	_var(t, "HudTag", 28, WHITE, 6)
-	_var(t, "HudSplit", 32, WHITE, 7)
+	_var(t, "HudValue", 72, WHITE, 8)    # the speed numerals
+	_var(t, "HudUnit", 20, DIM, 5)
+	_var(t, "HudTimer", 46, WHITE, 7)    # dominant cell of the scorebug
+	_var(t, "HudBest", 22, DIM, 5)
+	_var(t, "HudTag", 26, WHITE, 6)
+	_var(t, "HudSplit", 34, WHITE, 7)
 	t.set_type_variation("HudPanel", "PanelContainer")
-	t.set_stylebox("panel", "HudPanel", _fill(TELE_DARK))
-	t.set_type_variation("HudPanelHot", "PanelContainer")
-	t.set_stylebox("panel", "HudPanelHot", _fill(TELE_DARK))
+	t.set_stylebox("panel", "HudPanel", _fill(HUD_FIELD))
+	# The scorebug bar carries a hard bright top rule — the one bit of broadcast furniture, and it
+	# separates the bar from the sky behind without needing a full border.
+	t.set_type_variation("HudBar", "PanelContainer")
+	var bar := _fill(HUD_FIELD)
+	bar.border_width_top = 3
+	bar.border_color = WHITE
+	bar.content_margin_left = 0
+	bar.content_margin_right = 0
+	t.set_stylebox("panel", "HudBar", bar)
 
 	ResourceSaver.save(t, OUT)
 	_set_project_default()
