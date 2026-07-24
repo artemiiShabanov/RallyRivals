@@ -152,6 +152,16 @@ func _configure_ground(e: GPUParticles3D, s: SurfaceType) -> void:
 	m.gravity = Vector3(0.0, s.dust_gravity, 0.0)
 	m.scale_min = 0.6
 	m.scale_max = 1.3
+	# Billowing surfaces swell as they drift (sand). The curve multiplies the spawn scale above, so
+	# particles still START at dust_size — only their growth changes.
+	if s.dust_growth > 1.001:
+		var g := Curve.new()
+		g.max_value = s.dust_growth
+		g.add_point(Vector2(0.0, 1.0))
+		g.add_point(Vector2(1.0, s.dust_growth))
+		var gt := CurveTexture.new()
+		gt.curve = g
+		m.scale_curve = gt
 	m.color = s.dust_color
 	m.color_ramp = _fade_ramp()     # alpha to 0 over life, so cubes dissolve rather than blink out
 	e.process_material = m

@@ -17,6 +17,7 @@ mark_baseline = 0.26
 dust_amount = 360
 dust_color = Color(0.3, 0.2, 0.11, 0.8)
 dust_size = 0.037
+dust_growth = 1.0
 dust_baseline = 0.22
 dust_rise = 2.2
 dust_gravity = -2.0

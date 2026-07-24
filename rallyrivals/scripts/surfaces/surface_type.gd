@@ -34,6 +34,10 @@ extends Resource
 @export var dust_amount := 0                       ## peak live cubes per wheel (0 = this surface throws none)
 @export var dust_color := Color(0.40, 0.35, 0.30, 0.8)  ## rgb tint, a = peak opacity (fades to 0 over life)
 @export var dust_size := 0.08                      ## cube edge (m) — big = chunky debris, small = fine mist
+## How far a particle SWELLS across its life, as a multiple of its spawn size. 1 = constant size
+## (thrown debris — a gravel chunk doesn't grow). Above 1 it billows outward as it drifts, which is
+## what turns a spray of cubes into a cloud. Spawn size is unaffected; only the growth changes.
+@export var dust_growth := 1.0
 @export_range(0.0, 1.0) var dust_baseline := 0.2   ## emission just rolling, up to full on a skid
 @export var dust_rise := 2.0                       ## initial upward speed (m/s)
 @export var dust_gravity := -3.0                   ## y accel; deeply negative = chunks fall, near 0 = dust floats
