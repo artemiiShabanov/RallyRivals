@@ -32,6 +32,9 @@ extends VehicleBody3D
 @export var front_grip_floor := 5.0     ## front never grips LESS than this — arcade cheat so the nose stays turnable even on ice (drift, not plow)
 @export var rear_grip_ratio := 0.85      ## rear grip vs surface (<1 = tail slides = drift-prone, not plow)
 @export var handbrake_rear_ratio := 0.2 ## rear grip while handbraking (instant drift)
+## Brake force applied while handbraking, as a fraction of max_brake. Deliberately not 1.0 — a
+## fully locked car stops rotating, and the handbrake exists to start a drift, not to park.
+@export var handbrake_brake_ratio := 0.5
 @export var grip_falloff_start := 8.0    ## speed (m/s) where grip begins dropping
 @export var grip_falloff_range := 12.0   ## m/s over which grip fades to the high-speed floor
 @export var front_high_speed_grip := 0.8 ## front grip fraction at speed (stays grippy -> nose turns in)
@@ -179,6 +182,11 @@ func _physics_process(delta: float) -> void:
 	throttle_amount = throttle
 	is_braking = brake > 0.0
 	is_handbraking = handbraking
+	# The handbrake cuts drive and drags. Without this it was only a grip modifier, so holding it
+	# with the throttle down kept accelerating — you could handbrake and still pull away.
+	if handbraking:
+		engine_force = 0.0
+		brake = maxf(brake, max_brake * handbrake_brake_ratio)
 	_impact_cool = maxf(0.0, _impact_cool - delta)
 	_track_landing(delta)
 	_update_taillights(brake > 0.0 or handbraking)
