@@ -78,6 +78,7 @@ tasks:
   - {id: code-race-endurance, title: "Race type: endurance / attrition", type: code, group: race, size: default, status: todo, blockers: [code-race-types]}
   - {id: code-race-grandprix, title: "Race type: grand prix (qualify + grid + class gate)", type: code, group: race, size: big, status: todo, blockers: [code-race-types, code-meta-classes]}
   - {id: code-race-contact, title: "Officials penalty vs Wilds ramming rules", type: code, group: race, size: default, status: todo, blockers: [code-race-result, code-race-defs]}
+  - {id: code-race-field, title: "Assemble the race field: class band + size by type, drawn from the chapter roster", type: code, group: race, size: default, status: todo, blockers: [code-race-defs, content-rivals-roster]}
   - {id: code-ai-rival, title: "AI rival driving a baked spline line", type: code, group: ai, size: huge, status: todo, blockers: [code-track-ai-line, code-vehicle-controller]}
   - {id: code-ai-difficulty, title: "Difficulty via opponents + track complexity", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
   - {id: code-ai-boss, title: "Boss-rival duel behavior", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
@@ -116,6 +117,7 @@ tasks:
   - {id: content-cars-manufacturers, title: "Define 3-4 manufacturers (identity + brand feature)", type: content, group: cars, size: default, status: done, blockers: []}
   - {id: content-rivals-defs, title: "Define 4 boss-rivals (brand + class per chapter)", type: content, group: rivals, size: default, status: todo, blockers: []}
   - {id: content-rivals-campaign, title: "4-chapter structure (class mixes, boss per chapter)", type: content, group: rivals, size: default, status: todo, blockers: [content-rivals-defs]}
+  - {id: content-rivals-roster, title: "Chapter driver rosters (9 per chapter: name, number, brand, behaviour)", type: content, group: rivals, size: default, status: todo, blockers: [content-rivals-campaign]}
   - {id: content-tracks-first, title: "First real track (heightmap/surface/markers images)", type: content, group: tracks, size: big, status: todo, blockers: [code-track-bake-tool]}
   # umbrella — split into per-track tasks once v1 scope (GDD 12) settles chapter/track counts
   - {id: content-tracks-campaign, title: "Campaign track set (v1 regions x races)", type: content, group: tracks, size: huge, status: todo, blockers: [content-tracks-first, content-rivals-campaign]}
@@ -193,7 +195,7 @@ tasks:
   # ---------- design ----------
   - {id: design-adr-voxel-pipeline, title: "ADR: voxel art pipeline (export/runtime, FX, coherence)", type: design, group: adr, size: default, status: done, blockers: []}
   - {id: design-gdd-adr-sync, title: "Sync GDD 4/7 with decided ADR-001/002", type: design, group: gdd, size: small, status: done, blockers: []}
-  - {id: design-spec-field-matching, title: "Spec: field-matching rule for open (non-GP) races", type: design, group: spec, size: small, status: todo, blockers: []}
+  - {id: design-spec-field-matching, title: "Spec: field-matching rule for open (non-GP) races", type: design, group: spec, size: small, status: done, blockers: []}
   - {id: design-spec-economy, title: "Spec: banked-best reward economy", type: design, group: spec, size: small, status: done, blockers: []}
   - {id: design-playtest-firstdrive, title: "Fun verdict: first drive (feel/flow)", type: design, group: playtest, size: default, status: done, blockers: [code-vehicle-controller, code-track-test-track, code-core-camera]}
   - {id: design-playtest-race, title: "Fun verdict: full race (tense + fair)", type: design, group: playtest, size: default, status: todo, blockers: [code-race-result, code-ai-rival]}

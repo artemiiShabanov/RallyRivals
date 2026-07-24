@@ -84,7 +84,10 @@ See [PILLARS.md](PILLARS.md). In short:
   - Ch1 **C+D** · Ch2 **D+B** · Ch3 **D+A** · Ch4 **A+S**. Boss sits at the chapter's top
     class (C → B → A → **S**). Low tiers (esp. D) persist for variety + budget options.
     4 boss-rivals total.
-  - **Open:** rival count if non-boss rivals are added.
+  - **Decided — see [spec](specs/field-matching.md):** each chapter owns **9 generated drivers**
+    (name, campaign-unique number 1–100, brand split 3/3/3, behaviour) plus the boss as a
+    separate 10th. Field size by type: **sprint 4 · circuit 6 · endurance 8**, time trial none;
+    the boss race fields all 11.
 
 ## 7. Tracks & environments
 - **Generation (Decided — ADR-002):** tracks = **spline (race) + images (world)**, baked
@@ -129,8 +132,11 @@ See [PILLARS.md](PILLARS.md). In short:
 - **Classes S/A/B/C/D:** one at-a-glance rank bundling the 5 stats. Shop price ↔ class;
   rivals escalate D/C → S; pink-slips climb it. **Decided:** **only Grand Prix is
   class-gated** (bring a car of the event's class — the "serious" event, tied to the
-  chapter's class range); **all other types are open** (run what you brought, field matched
-  to your car). **Open:** field-matching/scaling rule for open races.
+  chapter's class range); **all other types are open** (run what you brought). **Decided —
+  see [spec](specs/field-matching.md):** an open race authors a **class band** and its field is
+  drawn from that band, **ignoring the player's car** — so out-classing an event is a legitimate
+  reward for having earned the car, and under-classing it is allowed, unblocked, and still pays.
+  Never rubber-banding: the field resolves before the lights and does not react mid-race.
 - **Manufacturers (Decided: 3), implicit identities (Borderlands-style):** each brand leans
   a racing style + shares a visual family; styles **never stated** — learned through play.
   Coverage: ≥1 car per class S–D per brand (≥15 cars). **Decided (v1): no brand features** —

@@ -11,7 +11,7 @@ extends CanvasLayer
 ## Greys, not the menus' electric blue: the road has to stay the loudest thing on screen. Hard
 ## corners and the pixel font keep it in the same family as the rest of the UI.
 ##
-## The order panel is built for TEN drivers even though only the player exists until code-ai-rival
+## The order panel is built for ELEVEN drivers even though only the player exists until code-ai-rival
 ## lands: fixed width so it never reflows as names and gaps change, height following the row count,
 ## and the player's row highlighted so you find yourself instantly in a full field. Feed it with
 ## set_standings(); with no rivals it shows the player alone.
@@ -23,7 +23,8 @@ const ICONS := "res://assets/ui/"
 const SAGE := Color(0.62, 0.88, 0.62)      # faster split
 const CARMINE := Color(0.92, 0.42, 0.48)   # slower split
 const CREAM := Color(0.95, 0.97, 1.0)
-const MAX_ROWS := 10                       # the field the order panel is designed to hold
+const MAX_ROWS := 11                       # the biggest field: a boss race is 9 regulars +
+										   # the boss + you (docs/specs/field-matching.md)
 const ORDER_W := 252                       # fixed width — rows must not reflow as gaps change
 const EDGE := 22                           # screen margin
 const SPEED_W := 84                        # room for THREE digits, so the meter never shifts as
