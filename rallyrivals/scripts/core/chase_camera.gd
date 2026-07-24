@@ -16,9 +16,12 @@ extends Camera3D
 @export var follow_speed := 5.0
 
 @export_group("Juice")
-## Speed tremor band (art-vfx-juice). Below `rumble_from` the view is dead still.
-@export var rumble_from := 22.0          ## m/s where the speed tremor starts
-@export var rumble_full := 55.0          ## m/s where it reaches full amplitude
+## Speed tremor band (art-vfx-juice), in km/h to match how the cars are specced
+## (VehicleController.SPEED_KMH tops out between 110 and 210). Below `rumble_from_kmh` the view is
+## dead still — note that a slow car whose top speed is under it simply never rumbles, which is
+## deliberate: the tremor is a reward for genuinely fast machinery.
+@export var rumble_from_kmh := 130.0     ## km/h where the speed tremor starts
+@export var rumble_full_kmh := 200.0     ## km/h where it reaches full amplitude
 
 @export_group("Free look")
 @export var mouse_sensitivity := 0.004   ## rad per mouse pixel
@@ -87,8 +90,8 @@ func _physics_process(delta: float) -> void:
 	look_at(t.origin + Vector3.UP * look_height, Vector3.UP)
 
 	# --- juice, applied AFTER look_at (which would otherwise cancel any offset) ---
-	var speed := _car.linear_velocity.length() if _car != null else 0.0
-	ScreenJuice.set_rumble(clampf((speed - rumble_from) / maxf(1.0, rumble_full - rumble_from), 0.0, 1.0))
+	var kmh := (_car.linear_velocity.length() * 3.6) if _car != null else 0.0
+	ScreenJuice.set_rumble(clampf((kmh - rumble_from_kmh) / maxf(1.0, rumble_full_kmh - rumble_from_kmh), 0.0, 1.0))
 	ScreenJuice.advance(delta)
 	var jo := ScreenJuice.offset()
 	if jo != Vector3.ZERO:
