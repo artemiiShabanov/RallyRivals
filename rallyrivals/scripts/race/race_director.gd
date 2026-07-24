@@ -111,7 +111,7 @@ func _build(track_ps: PackedScene) -> void:
 		var hud := RaceHud.new()
 		hud.name = "RaceHud"
 		add_child(hud)
-		hud.bind(_car, _timing, _cps, _race.laps, _race.race_type)
+		hud.bind(_car, _timing, _cps, _race.laps, _race.race_type, _race.tt_targets())
 
 	_banner = _make_banner()
 
@@ -162,10 +162,16 @@ func _finish() -> void:
 		return
 	_finished = true
 	_car.input_enabled = false          # coast to a parked stop
-	# Solo field in the skeleton — no rival times yet, so this places 1 / 1. code-ai-rival will pass
-	# the rivals' finish times to compute().
-	last_result = RaceResult.compute(_race.id, _timing.total_time(_car),
-		_timing.laps_of(_car).duplicate(), _timing.best_lap(_car))
+	var total := _timing.total_time(_car)
+	var laps := _timing.laps_of(_car).duplicate()
+	var best := _timing.best_lap(_car)
+	if _race.race_type == "time_trial":
+		# No field: your time becomes a place via the medal targets (code-race-timetrial).
+		last_result = RaceResult.compute_time_trial(_race.id, total, laps, best, _race.tt_targets())
+	else:
+		# Solo field in the skeleton — no rival times yet, so this places 1 / 1. code-ai-rival will
+		# pass the rivals' finish times to compute().
+		last_result = RaceResult.compute(_race.id, total, laps, best)
 	Sfx.play(load("res://assets/audio/sfx/finish_win.tres") as SfxDef)
 	var ca := _car.get_node_or_null("CarAudio")
 	if ca != null and ca.has_method("shut_down"):

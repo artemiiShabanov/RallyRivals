@@ -28,5 +28,18 @@ func _initialize() -> void:
 	storm.weather = load("res://assets/weather/thunder.tres")
 	ResourceSaver.save(storm, dir + "night_thunder.tres")
 
-	print("race defs: 2")
+	var trial := RaceDef.new()
+	trial.id = "test_timetrial"
+	trial.display_name = "Test Circuit — Time Trial"
+	trial.track_scene = "res://assets/tracks/test/baked_track.tscn"
+	trial.race_type = "time_trial"
+	trial.laps = 2
+	trial.lighting = load("res://assets/lighting/day.tres")
+	trial.weather = load("res://assets/weather/clear.tres")
+	trial.tt_gold = 62.0        # placeholder targets until balance sets real ones
+	trial.tt_silver = 72.0
+	trial.tt_bronze = 85.0
+	ResourceSaver.save(trial, dir + "test_timetrial.tres")
+
+	print("race defs: 3")
 	quit()

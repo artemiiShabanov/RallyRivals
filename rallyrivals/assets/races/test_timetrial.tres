@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="RaceDef" load_steps=4 format=3]
+
+[ext_resource type="Resource" path="res://assets/lighting/day.tres" id="1_dpmqd"]
+[ext_resource type="Script" path="res://scripts/race/race_def.gd" id="2_r2vw1"]
+[ext_resource type="Resource" path="res://assets/weather/clear.tres" id="3_i12ru"]
+
+[resource]
+script = ExtResource("2_r2vw1")
+id = "test_timetrial"
+display_name = "Test Circuit — Time Trial"
+track_scene = "res://assets/tracks/test/baked_track.tscn"
+race_type = "time_trial"
+laps = 2
+culture = "officials"
+car_class = ""
+lighting = ExtResource("1_dpmqd")
+weather = ExtResource("3_i12ru")
+season = "summer"
+tt_gold = 62.0
+tt_silver = 72.0
+tt_bronze = 85.0
+money_pool = 0
+cp_pool = 0

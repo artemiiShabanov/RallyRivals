@@ -51,9 +51,12 @@ var _order: VBoxContainer
 var _gate_best := {}
 var _bar: SpeedBar
 var _type_icon: TextureRect
+var _tt_targets: Array = []           # time-trial: [gold, silver, bronze] seconds, best-first
+var _tt_rows: Array[PanelContainer] = []   # the medal rows, so the live one can be re-highlighted
+var _tt_on := -1                      # which medal row is currently highlighted (-1 = none)
 
 func bind(car: VehicleController, timing: RaceTiming, cps: TrackCheckpoints, laps_total: int,
-		race_type := "circuit") -> void:
+		race_type := "circuit", tt_targets: Array = []) -> void:
 	_car = car
 	_timing = timing
 	_is_loop = cps.loop
@@ -65,7 +68,35 @@ func bind(car: VehicleController, timing: RaceTiming, cps: TrackCheckpoints, lap
 	var icon := "res://assets/ui/race_%s.png" % race_type
 	if ResourceLoader.exists(icon):
 		_type_icon.texture = load(icon)
-	set_standings([{"name": "YOU", "time": "", "player": true}])
+	# A time trial has no field — the order panel lists the MEDAL TARGETS instead, and _process
+	# highlights whichever one your current time is still beating.
+	if race_type == "time_trial" and not tt_targets.is_empty():
+		_set_time_trial(tt_targets)
+	else:
+		set_standings([{"name": "YOU", "time": "", "player": true}])
+
+## Populate the order panel with the medal targets (best-first). Rows are stored so the live one
+## can be re-highlighted each frame without a rebuild.
+func _set_time_trial(targets: Array) -> void:
+	_tt_targets = targets
+	_tt_rows = []
+	_tt_on = -1
+	for c in _order.get_children():
+		c.queue_free()
+	var medals := ["GOLD", "SILVER", "BRONZE"]
+	for i in targets.size():
+		var row := PanelContainer.new()
+		row.theme_type_variation = "HudRowPlain"
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var line := HBoxContainer.new()
+		line.add_theme_constant_override("separation", 8)
+		row.add_child(line)
+		var name_l := _label(medals[i] if i < medals.size() else "TIER %d" % (i + 1), "HudRow")
+		name_l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		line.add_child(name_l)
+		line.add_child(_label(_fmt(float(targets[i])), "HudRow"))
+		_order.add_child(row)
+		_tt_rows.append(row)
 
 ## Replace the running order. Each row: {name: String, time: String, player: bool}. Positions are
 ## implied by array order. Rows beyond MAX_ROWS are dropped rather than silently overflowing the
@@ -233,11 +264,27 @@ func _process(dt: float) -> void:
 		if _is_loop:
 			var done: int = (_timing.laps_of(_car) as Array).size()
 			_lap.text = "LAP %d/%d" % [mini(done + 1, _laps_total), _laps_total]
+		if not _tt_targets.is_empty():
+			_update_tt(_timing.current_time(_car))
 	if _strip_ttl > 0.0:
 		_strip_ttl -= dt
 		_strip.modulate.a = clampf(_strip_ttl / 0.6, 0.0, 1.0)
 		if _strip_ttl <= 0.0:
 			_strip.visible = false
+
+## Highlight the fastest medal the current time still beats — so the marker starts on GOLD and
+## drops down the list as the clock passes each target. -1 once you're slower than the last medal.
+func _update_tt(cur: float) -> void:
+	var on := -1
+	for i in _tt_targets.size():
+		if cur <= float(_tt_targets[i]):
+			on = i
+			break
+	if on == _tt_on:
+		return
+	_tt_on = on
+	for i in _tt_rows.size():
+		_tt_rows[i].theme_type_variation = "HudRowHot" if i == on else "HudRowPlain"
 
 ## Put a message on the bottom strip. It shows itself, holds, then fades out — the strip is only
 ## ever on screen while it is carrying something.

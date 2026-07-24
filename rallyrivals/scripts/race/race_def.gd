@@ -21,6 +21,24 @@ extends Resource
 @export var season := "summer"           ## visual set (code-track-seasons)
 @export var ambience: AmbientDef         ## venue bed ("world" layer); weather brings its own
 
+@export_group("Time trial")
+## Medal target times in seconds, authored gold < silver < bronze (0 = unset). A time trial has no
+## field, so these ARE the field: your time maps to the fastest medal it beats, and that medal is
+## your "place" for the banked-best economy (code-race-timetrial). Ignored by every other type.
+@export var tt_gold := 0.0
+@export var tt_silver := 0.0
+@export var tt_bronze := 0.0
+
 @export_group("Reward pools (banked-best)")
 @export var money_pool := 0
 @export var cp_pool := 0
+
+## The set medal targets, best-first, dropping any left at 0. [] means a time trial with no medals —
+## it still finishes and pays the completion slice, it just has nothing to chase.
+func tt_targets() -> Array:
+	var out: Array = []
+	for t in [tt_gold, tt_silver, tt_bronze]:
+		if t > 0.0:
+			out.append(t)
+	out.sort()
+	return out
