@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="EngineDef" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="EngineDef" load_steps=5 format=3 uid="uid://dc5hxcxnd8gib"]
 
-[ext_resource type="AudioStream" path="res://assets/audio/loops/engine_high.wav" id="1_sxkg5"]
-[ext_resource type="AudioStream" path="res://assets/audio/loops/engine_low.wav" id="2_yc8mf"]
-[ext_resource type="AudioStream" path="res://assets/audio/loops/engine_mid.wav" id="3_s7fqi"]
-[ext_resource type="Script" path="res://scripts/audio/engine_def.gd" id="5_u6sfv"]
+[ext_resource type="AudioStream" uid="uid://hxwghufsdv2f" path="res://assets/audio/loops/engine_high.wav" id="1_sxkg5"]
+[ext_resource type="AudioStream" uid="uid://dye6biqqlvpwu" path="res://assets/audio/loops/engine_low.wav" id="2_yc8mf"]
+[ext_resource type="AudioStream" uid="uid://by76xmakpoclk" path="res://assets/audio/loops/engine_mid.wav" id="3_s7fqi"]
+[ext_resource type="Script" uid="uid://b0bvc6l7xuxh7" path="res://scripts/audio/engine_def.gd" id="5_u6sfv"]
 
 [resource]
 script = ExtResource("5_u6sfv")
