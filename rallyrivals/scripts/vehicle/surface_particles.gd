@@ -6,9 +6,10 @@ extends Node3D
 ## own thing — gravel chunks, dirt billows, sand a fine kick, snow a soft float, tarmac/ice nothing.
 ## A wet surface (the rr_wetness weather global) adds a spray rooster-tail on top of the dry effect.
 ##
-## Two ground emitters (one per rear wheel) reconfigured when the surface under them changes, plus
-## one wet emitter behind the axle. All follow the car; particles live in world space (local_coords
-## off), so each puff stays put and the car trails settling dust. GPU-side, so it's cheap.
+## Per rear wheel: one ground emitter (reconfigured when the surface under it changes) and one wet
+## emitter, both parked at that wheel's own contact point — spray throws off the tyres, not from
+## under the car's belly. All follow the car; particles live in world space (local_coords off), so
+## each puff stays put and the car trails settling dust. GPU-side, so it's cheap.
 
 const REACH := 0.45             # m below the wheel the ground ray looks
 const LIFT := 0.06              # spawn just above the ground
@@ -20,7 +21,7 @@ var _car: VehicleController
 var _space: PhysicsDirectSpaceState3D
 var _ground: Array[GPUParticles3D] = []
 var _ground_surface: Array[String] = []
-var _wet: GPUParticles3D
+var _wet: Array[GPUParticles3D] = []
 
 func _ready() -> void:
 	_car = get_parent() as VehicleController
@@ -28,10 +29,6 @@ func _ready() -> void:
 		push_warning("SurfaceParticles expects a VehicleController parent")
 		set_physics_process(false)
 		return
-	_wet = _make_emitter()
-	_wet.process_material = _wet_material()
-	_wet.draw_pass_1 = _cube(0.045)
-	_wet.amount = 90
 
 func _make_emitter() -> GPUParticles3D:
 	var p := GPUParticles3D.new()
@@ -51,9 +48,13 @@ func _physics_process(_dt: float) -> void:
 	# Rear wheels aren't known until the controller's _ready (runs after ours), so build lazily.
 	if _ground.is_empty():
 		for _w in _car.rear_wheels():
-			var e := _make_emitter()
-			_ground.append(e)
+			_ground.append(_make_emitter())
 			_ground_surface.append("")
+			var we := _make_emitter()     # this wheel's own spray
+			we.process_material = _wet_material()
+			we.draw_pass_1 = _cube(0.045)
+			we.amount = 90
+			_wet.append(we)
 		if _ground.is_empty():
 			return
 	_space = get_world_3d().direct_space_state
@@ -62,9 +63,7 @@ func _physics_process(_dt: float) -> void:
 	var speed_f := clampf((speed - 1.0) / FULL_SPEED, 0.0, 1.0)
 	var skid := _car.skid_intensity()
 	var wheels := _car.rear_wheels()
-	var wet := WeatherFX.current_wetness
-	var wet_mid := Vector3.ZERO
-	var wet_hits := 0
+	var wet_i := WeatherFX.current_wetness * speed_f
 	# Cone aimed opposite the car's motion, THROW_ANGLE above horizontal — the cubes fly out behind
 	# the wheels. Emitters keep an identity basis (only their position is moved), so this world
 	# vector goes straight into ParticleProcessMaterial.direction.
@@ -75,12 +74,23 @@ func _physics_process(_dt: float) -> void:
 			break
 		var hit := _ground_hit(wheels[i])
 		var e := _ground[i]
+		var we := _wet[i]
 		if hit.is_empty():
 			e.emitting = false
+			we.emitting = false
 			continue
 		var point: Vector3 = hit["point"]
-		wet_mid += point
-		wet_hits += 1
+
+		# Wet rooster-tail off THIS wheel. Independent of the dry effect — wet tarmac throws
+		# spray even though it has no dust — so it's handled before the dust_amount bail-out.
+		if wet_i > MIN_INTENSITY:
+			we.global_position = point + Vector3.UP * LIFT
+			we.amount_ratio = clampf(wet_i, 0.0, 1.0)
+			we.emitting = true
+			(we.process_material as ParticleProcessMaterial).direction = _throw
+		else:
+			we.emitting = false
+
 		var surf: SurfaceType = hit["surface"]
 		if surf == null or surf.dust_amount <= 0:
 			e.emitting = false
@@ -96,16 +106,6 @@ func _physics_process(_dt: float) -> void:
 		var pm := e.process_material as ParticleProcessMaterial
 		if pm != null:
 			pm.direction = _throw
-
-	# Wet rooster-tail behind the axle, independent of the dry surface effect.
-	var wet_i := wet * speed_f
-	if wet_hits > 0 and wet_i > MIN_INTENSITY:
-		_wet.global_position = wet_mid / wet_hits + Vector3.UP * LIFT
-		_wet.amount_ratio = clampf(wet_i, 0.0, 1.0)
-		_wet.emitting = true
-		(_wet.process_material as ParticleProcessMaterial).direction = _throw
-	else:
-		_wet.emitting = false
 
 ## Unit vector opposite the car's motion, tilted THROW_ANGLE above horizontal. Falls back to the
 ## car's backward axis when nearly stopped (velocity too small to give a heading).
@@ -187,6 +187,6 @@ func clear() -> void:
 	for e in _ground:
 		e.restart()
 		e.emitting = false
-	if _wet != null:
-		_wet.restart()
-		_wet.emitting = false
+	for w in _wet:
+		w.restart()
+		w.emitting = false
