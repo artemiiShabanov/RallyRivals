@@ -2,10 +2,9 @@ extends SceneTree
 ## Builds the shared UI theme (art-ui-theme): assets/ui/theme.tres, set as the project default.
 ## Ultra-simple white-on-blue VCR-OSD (GDD §9): flat blue fields, white text, NO borders. The
 ## selected menu item inverts to a white field with blue text — the OSD cursor. One accent: white.
-## The in-race scorebug (Hud* variations, HudPanel/HudBar) now shares that SAME register rather
-## than sitting apart in white-on-dark telemetry: one language across sky, menus and HUD. It is the
-## recessed blue field at partial alpha so the road still shows through, with hard edges and a
-## bright top rule — broadcast furniture built out of the same blocks as the menus.
+## The in-race HUD (Hud* variations) uses NEUTRAL TRANSLUCENT GREY rather than the blue chrome:
+## it is broadcast furniture laid over a live picture, so it must not compete with the road. Same
+## hard corners and pixel font as the menus, just a quieter field.
 ## Font: first .ttf/.otf in assets/fonts/ (README there), else the engine default.
 ## Run: godot --headless --script res://scripts/tools/gen_ui_theme.gd
 
@@ -19,8 +18,11 @@ const BLUE_DK := Color(0.05, 0.11, 0.60)   # recessed field (buttons/inputs/trac
 const WHITE := Color(0.95, 0.97, 1.0)
 const DIM := Color(0.62, 0.68, 0.92)       # disabled / secondary (a muted white-blue)
 const SEL_FG := Color(0.05, 0.10, 0.55)    # blue text on the white cursor
-# scorebug: the menus' recessed field, translucent so the road reads through it
-const HUD_FIELD := Color(0.05, 0.11, 0.60, 0.80)
+# HUD: neutral translucent greys, so the readouts sit OVER the world instead of competing with it.
+# (The menus keep the electric blue; the race screen wants the road to stay the loudest thing.)
+const HUD_GRAY := Color(0.07, 0.08, 0.10, 0.55)     # race-details panel
+const HUD_STRIP := Color(0.07, 0.08, 0.10, 0.72)    # bottom info strip, slightly firmer to carry text
+const HUD_ROW_HOT := Color(0.95, 0.97, 1.0, 0.18)   # the player's own leaderboard row
 
 func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://assets/ui/"))
@@ -89,23 +91,44 @@ func _initialize() -> void:
 	_var(t, "OsdDim", 24, DIM, 3)
 
 	# telemetry / scorebug register (white-on-dark, kept distinct from the chrome)
-	_var(t, "HudValue", 72, WHITE, 8)    # the speed numerals
-	_var(t, "HudUnit", 20, DIM, 5)
-	_var(t, "HudTimer", 46, WHITE, 7)    # dominant cell of the scorebug
-	_var(t, "HudBest", 22, DIM, 5)
-	_var(t, "HudTag", 26, WHITE, 6)
-	_var(t, "HudSplit", 34, WHITE, 7)
+	_var(t, "HudValue", 46, WHITE, 6)    # speed numerals — the one big number
+	_var(t, "HudUnit", 16, DIM, 4)
+	_var(t, "HudTimer", 30, WHITE, 5)    # total race time
+	_var(t, "HudBest", 16, DIM, 4)
+	_var(t, "HudTag", 20, WHITE, 4)      # lap counter
+	_var(t, "HudRow", 18, WHITE, 4)      # a leaderboard line
+	_var(t, "HudSplit", 20, WHITE, 4)    # the bottom strip's message
+
+	# Race details: flat translucent grey, hard corners, tight margins.
 	t.set_type_variation("HudPanel", "PanelContainer")
-	t.set_stylebox("panel", "HudPanel", _fill(HUD_FIELD))
-	# The scorebug bar carries a hard bright top rule — the one bit of broadcast furniture, and it
-	# separates the bar from the sky behind without needing a full border.
-	t.set_type_variation("HudBar", "PanelContainer")
-	var bar := _fill(HUD_FIELD)
-	bar.border_width_top = 3
-	bar.border_color = WHITE
-	bar.content_margin_left = 0
-	bar.content_margin_right = 0
-	t.set_stylebox("panel", "HudBar", bar)
+	var race_panel := _fill(HUD_GRAY)
+	race_panel.content_margin_left = 12
+	race_panel.content_margin_right = 12
+	race_panel.content_margin_top = 8
+	race_panel.content_margin_bottom = 8
+	t.set_stylebox("panel", "HudPanel", race_panel)
+
+	# The player's own row, lifted out of the field so you find yourself instantly in a 10-car list.
+	t.set_type_variation("HudRowHot", "PanelContainer")
+	var hot := _fill(HUD_ROW_HOT)
+	hot.content_margin_left = 6
+	hot.content_margin_right = 6
+	hot.content_margin_top = 2
+	hot.content_margin_bottom = 2
+	t.set_stylebox("panel", "HudRowHot", hot)
+
+	# Every other row: same metrics, no fill, so rows line up whether highlighted or not.
+	t.set_type_variation("HudRowPlain", "PanelContainer")
+	var plain := _fill(Color(0, 0, 0, 0))
+	plain.content_margin_left = 6
+	plain.content_margin_right = 6
+	plain.content_margin_top = 2
+	plain.content_margin_bottom = 2
+	t.set_stylebox("panel", "HudRowPlain", plain)
+
+	# Bottom info strip — full width, only on screen when it has something to say.
+	t.set_type_variation("HudStrip", "Panel")
+	t.set_stylebox("panel", "HudStrip", _fill(HUD_STRIP))
 
 	ResourceSaver.save(t, OUT)
 	_set_project_default()

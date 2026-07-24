@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=17 format=3]
+[gd_resource type="Theme" load_steps=19 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/DotGothic16-Regular.ttf" id="1_6cha6"]
 
@@ -39,69 +39,81 @@ content_margin_bottom = 5.0
 bg_color = Color(0.05, 0.11, 0.6, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7h6bm"]
-content_margin_left = 0.0
-content_margin_top = 7.0
-content_margin_right = 0.0
-content_margin_bottom = 7.0
-bg_color = Color(0.05, 0.11, 0.6, 0.8)
-border_width_top = 3
-border_color = Color(0.95, 0.97, 1, 1)
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.07, 0.08, 0.1, 0.55)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_86uey"]
-content_margin_left = 14.0
-content_margin_top = 7.0
-content_margin_right = 14.0
-content_margin_bottom = 7.0
-bg_color = Color(0.05, 0.11, 0.6, 0.8)
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+bg_color = Color(0.95, 0.97, 1, 0.18)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5jbdf"]
-content_margin_left = 14.0
-content_margin_top = 7.0
-content_margin_right = 14.0
-content_margin_bottom = 7.0
-bg_color = Color(0.164, 0.2168, 0.648, 1)
+content_margin_left = 6.0
+content_margin_top = 2.0
+content_margin_right = 6.0
+content_margin_bottom = 2.0
+bg_color = Color(0, 0, 0, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_unkgg"]
 content_margin_left = 14.0
 content_margin_top = 7.0
 content_margin_right = 14.0
 content_margin_bottom = 7.0
-bg_color = Color(0.05, 0.11, 0.6, 1)
+bg_color = Color(0.07, 0.08, 0.1, 0.72)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_66ixa"]
 content_margin_left = 14.0
 content_margin_top = 7.0
 content_margin_right = 14.0
 content_margin_bottom = 7.0
-bg_color = Color(0.1, 0.22, 0.95, 1)
+bg_color = Color(0.164, 0.2168, 0.648, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yda6c"]
 content_margin_left = 14.0
 content_margin_top = 7.0
 content_margin_right = 14.0
 content_margin_bottom = 7.0
-bg_color = Color(0.1, 0.22, 0.95, 1)
+bg_color = Color(0.05, 0.11, 0.6, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_thv0v"]
 content_margin_left = 14.0
 content_margin_top = 7.0
 content_margin_right = 14.0
 content_margin_bottom = 7.0
-bg_color = Color(0.05, 0.11, 0.6, 1)
+bg_color = Color(0.1, 0.22, 0.95, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_urds4"]
 content_margin_left = 14.0
 content_margin_top = 7.0
 content_margin_right = 14.0
 content_margin_bottom = 7.0
+bg_color = Color(0.1, 0.22, 0.95, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ek3dl"]
+content_margin_left = 14.0
+content_margin_top = 7.0
+content_margin_right = 14.0
+content_margin_bottom = 7.0
+bg_color = Color(0.05, 0.11, 0.6, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5qnlr"]
+content_margin_left = 14.0
+content_margin_top = 7.0
+content_margin_right = 14.0
+content_margin_bottom = 7.0
 bg_color = Color(0.95, 0.97, 1, 1)
 
-[sub_resource type="FontVariation" id="FontVariation_ek3dl"]
+[sub_resource type="FontVariation" id="FontVariation_s0eex"]
 base_font = ExtResource("1_6cha6")
 variation_embolden = 0.35
 
 [resource]
-default_font = SubResource("FontVariation_ek3dl")
+default_font = SubResource("FontVariation_s0eex")
 default_font_size = 24
 Button/colors/font_color = Color(0.95, 0.97, 1, 1)
 Button/colors/font_disabled_color = Color(0.62, 0.68, 0.92, 1)
@@ -121,40 +133,49 @@ CheckBox/colors/font_pressed_color = Color(0.95, 0.97, 1, 1)
 HSlider/styles/grabber_area = SubResource("StyleBoxFlat_omlnh")
 HSlider/styles/grabber_area_highlight = SubResource("StyleBoxFlat_lvrds")
 HSlider/styles/slider = SubResource("StyleBoxFlat_im0sm")
-HudBar/base_type = &"PanelContainer"
-HudBar/styles/panel = SubResource("StyleBoxFlat_7h6bm")
 HudBest/base_type = &"Label"
 HudBest/colors/font_color = Color(0.62, 0.68, 0.92, 1)
 HudBest/colors/font_outline_color = Color(0, 0, 0, 0.6)
-HudBest/constants/outline_size = 5
-HudBest/font_sizes/font_size = 22
+HudBest/constants/outline_size = 4
+HudBest/font_sizes/font_size = 16
 HudPanel/base_type = &"PanelContainer"
-HudPanel/styles/panel = SubResource("StyleBoxFlat_86uey")
+HudPanel/styles/panel = SubResource("StyleBoxFlat_7h6bm")
+HudRow/base_type = &"Label"
+HudRow/colors/font_color = Color(0.95, 0.97, 1, 1)
+HudRow/colors/font_outline_color = Color(0, 0, 0, 0.6)
+HudRow/constants/outline_size = 4
+HudRow/font_sizes/font_size = 18
+HudRowHot/base_type = &"PanelContainer"
+HudRowHot/styles/panel = SubResource("StyleBoxFlat_86uey")
+HudRowPlain/base_type = &"PanelContainer"
+HudRowPlain/styles/panel = SubResource("StyleBoxFlat_5jbdf")
 HudSplit/base_type = &"Label"
 HudSplit/colors/font_color = Color(0.95, 0.97, 1, 1)
 HudSplit/colors/font_outline_color = Color(0, 0, 0, 0.6)
-HudSplit/constants/outline_size = 7
-HudSplit/font_sizes/font_size = 34
+HudSplit/constants/outline_size = 4
+HudSplit/font_sizes/font_size = 20
+HudStrip/base_type = &"Panel"
+HudStrip/styles/panel = SubResource("StyleBoxFlat_unkgg")
 HudTag/base_type = &"Label"
 HudTag/colors/font_color = Color(0.95, 0.97, 1, 1)
 HudTag/colors/font_outline_color = Color(0, 0, 0, 0.6)
-HudTag/constants/outline_size = 6
-HudTag/font_sizes/font_size = 26
+HudTag/constants/outline_size = 4
+HudTag/font_sizes/font_size = 20
 HudTimer/base_type = &"Label"
 HudTimer/colors/font_color = Color(0.95, 0.97, 1, 1)
 HudTimer/colors/font_outline_color = Color(0, 0, 0, 0.6)
-HudTimer/constants/outline_size = 7
-HudTimer/font_sizes/font_size = 46
+HudTimer/constants/outline_size = 5
+HudTimer/font_sizes/font_size = 30
 HudUnit/base_type = &"Label"
 HudUnit/colors/font_color = Color(0.62, 0.68, 0.92, 1)
 HudUnit/colors/font_outline_color = Color(0, 0, 0, 0.6)
-HudUnit/constants/outline_size = 5
-HudUnit/font_sizes/font_size = 20
+HudUnit/constants/outline_size = 4
+HudUnit/font_sizes/font_size = 16
 HudValue/base_type = &"Label"
 HudValue/colors/font_color = Color(0.95, 0.97, 1, 1)
 HudValue/colors/font_outline_color = Color(0, 0, 0, 0.6)
-HudValue/constants/outline_size = 8
-HudValue/font_sizes/font_size = 72
+HudValue/constants/outline_size = 6
+HudValue/font_sizes/font_size = 46
 Label/colors/font_color = Color(0.95, 0.97, 1, 1)
 Label/colors/font_outline_color = Color(0, 0, 0, 0.5)
 Label/constants/outline_size = 3
@@ -162,8 +183,8 @@ LineEdit/colors/caret_color = Color(0.95, 0.97, 1, 1)
 LineEdit/colors/font_color = Color(0.95, 0.97, 1, 1)
 LineEdit/colors/font_placeholder_color = Color(0.62, 0.68, 0.92, 1)
 LineEdit/colors/selection_color = Color(1, 1, 1, 0.3)
-LineEdit/styles/focus = SubResource("StyleBoxFlat_5jbdf")
-LineEdit/styles/normal = SubResource("StyleBoxFlat_unkgg")
+LineEdit/styles/focus = SubResource("StyleBoxFlat_66ixa")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_yda6c")
 OptionButton/colors/font_color = Color(0.95, 0.97, 1, 1)
 OptionButton/colors/font_hover_color = Color(0.05, 0.1, 0.55, 1)
 OptionButton/styles/disabled = SubResource("StyleBoxFlat_6cha6")
@@ -186,8 +207,8 @@ OsdTitle/colors/font_color = Color(0.95, 0.97, 1, 1)
 OsdTitle/colors/font_outline_color = Color(0, 0, 0, 0.6)
 OsdTitle/constants/outline_size = 3
 OsdTitle/font_sizes/font_size = 24
-Panel/styles/panel = SubResource("StyleBoxFlat_66ixa")
-PanelContainer/styles/panel = SubResource("StyleBoxFlat_yda6c")
+Panel/styles/panel = SubResource("StyleBoxFlat_thv0v")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_urds4")
 ProgressBar/colors/font_color = Color(0.95, 0.97, 1, 1)
-ProgressBar/styles/background = SubResource("StyleBoxFlat_thv0v")
-ProgressBar/styles/fill = SubResource("StyleBoxFlat_urds4")
+ProgressBar/styles/background = SubResource("StyleBoxFlat_ek3dl")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_5qnlr")
