@@ -9,6 +9,11 @@ extends Camera3D
 ##
 ## Convention: the car drives toward LOCAL +Z (vehicle_controller.gd), so "behind" is -Z.
 
+## Fraction of the smoothing lag cancelled out, so the camera doesn't sit progressively further
+## back the faster you drive. 0 = the old behaviour (full drift), 1 = the view holds its distance
+## exactly. Half keeps some sense of speed without the car shrinking away.
+const LAG_COMPENSATION := 0.5
+
 @export var target_path: NodePath
 @export var distance := 7.0
 @export var height := 3.0
@@ -81,6 +86,13 @@ func _physics_process(delta: float) -> void:
 	var pitch := clampf(atan2(height, distance) + _pitch, -0.15, 1.35)
 	var radius := Vector2(distance, height).length()
 	var desired := t.origin + (behind * cos(pitch) + Vector3.UP * sin(pitch)) * radius
+	# Exponential smoothing settles a constant v/follow_speed BEHIND the target, so the faster you
+	# go the further out the view sits. Push the goal forward by half that lag to halve the effect,
+	# rather than raising follow_speed — that would fix the distance by making the rig rigid and
+	# killing the float through corners.
+	if _car != null:
+		desired += _car.linear_velocity * (LAG_COMPENSATION / follow_speed)
+
 	var weight := 1.0 - exp(-follow_speed * delta)  # frame-rate-independent smoothing
 	if not _has_base:
 		_base = desired            # first frame: snap, don't ease in from the origin
