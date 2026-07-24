@@ -22,6 +22,7 @@ var _space: PhysicsDirectSpaceState3D
 var _ground: Array[GPUParticles3D] = []
 var _ground_surface: Array[String] = []
 var _wet: Array[GPUParticles3D] = []
+var _burst := 0.0                # seconds of forced full kick-up left after a landing
 
 func _ready() -> void:
 	_car = get_parent() as VehicleController
@@ -29,6 +30,13 @@ func _ready() -> void:
 		push_warning("SurfaceParticles expects a VehicleController parent")
 		set_physics_process(false)
 		return
+	_car.landed.connect(_on_landed)
+
+## A touchdown throws up a puff whatever the speed (art-vfx-juice) — the existing emitters already
+## carry the right colour and cube size for the surface landed on, so this just forces them to full
+## for a moment instead of adding a second set of particles.
+func _on_landed(strength: float) -> void:
+	_burst = maxf(_burst, 0.10 + 0.16 * clampf(strength, 0.0, 1.0))
 
 func _make_emitter() -> GPUParticles3D:
 	var p := GPUParticles3D.new()
@@ -44,7 +52,8 @@ func _make_emitter() -> GPUParticles3D:
 	add_child(p)
 	return p
 
-func _physics_process(_dt: float) -> void:
+func _physics_process(dt: float) -> void:
+	_burst = maxf(0.0, _burst - dt)
 	# Rear wheels aren't known until the controller's _ready (runs after ours), so build lazily.
 	if _ground.is_empty():
 		for _w in _car.rear_wheels():
@@ -100,6 +109,8 @@ func _physics_process(_dt: float) -> void:
 			_ground_surface[i] = surf.id
 		var frac: float = clampf(surf.dust_baseline + (1.0 - surf.dust_baseline) * skid, 0.0, 1.0)
 		var intensity := frac * speed_f
+		if _burst > 0.0:
+			intensity = maxf(intensity, 0.9)   # a landing puffs even from a standstill
 		e.global_position = point + Vector3.UP * LIFT
 		e.amount_ratio = clampf(intensity, 0.0, 1.0)
 		e.emitting = intensity > MIN_INTENSITY

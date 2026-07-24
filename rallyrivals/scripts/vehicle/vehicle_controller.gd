@@ -69,6 +69,17 @@ const IMPACT_COOLDOWN := 0.12            # s — one contact spans several physi
 var _impact_cool := 0.0
 var _touching := 0                       # bodies in contact right now (scrape source)
 
+## Touchdown after every wheel left the ground. `strength` is 0..1, from how fast the car was
+## FALLING — a long float onto a downslope should thump less than a short drop off a ledge.
+## Consumed by ScreenJuice (camera dip) and SurfaceParticles (dust burst).
+## This is only as much air detection as the landing FX need; code-vehicle-airborne owns real air
+## CONTROL, and when it lands it should drive this signal rather than add a second detector.
+signal landed(strength: float)
+const AIR_MIN := 0.18                    # s off the ground before a touchdown counts as a landing
+const LANDING_FULL := 12.0               # m/s of descent that makes the hardest thump
+var _air := 0.0                          # seconds with no wheel touching
+var _fall := 0.0                         # fastest descent seen during this flight (negative)
+
 var _spawn_transform: Transform3D
 var _wheels: Array[VehicleWheel3D] = []
 var _base_stiffness := {}                # wheel -> scene-authored suspension baseline (REF_MASS)
@@ -169,6 +180,7 @@ func _physics_process(delta: float) -> void:
 	is_braking = brake > 0.0
 	is_handbraking = handbraking
 	_impact_cool = maxf(0.0, _impact_cool - delta)
+	_track_landing(delta)
 	_update_taillights(brake > 0.0 or handbraking)
 	_apply_grip(handbraking)
 	# Anti-spin cap only while NOT braking: braking into a corner (esp. handbrake) is a
@@ -282,6 +294,18 @@ func skid_amount() -> float:
 		if w.is_in_contact():
 			worst = minf(worst, w.get_skidinfo())
 	return 1.0 - worst
+
+## Airborne -> touchdown. Strength comes from peak descent speed rather than air time, so a gentle
+## crest that lifts the wheels for a moment doesn't thump like a real drop.
+func _track_landing(delta: float) -> void:
+	if wheels_on_ground() == 0:
+		_air += delta
+		_fall = minf(_fall, linear_velocity.y)
+		return
+	if _air > AIR_MIN:
+		landed.emit(clampf(absf(_fall) / LANDING_FULL, 0.0, 1.0))
+	_air = 0.0
+	_fall = 0.0
 
 func wheels_on_ground() -> int:
 	var n := 0

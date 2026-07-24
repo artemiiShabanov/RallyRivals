@@ -3,7 +3,7 @@ extends Node
 ## (code-core-settings-apply). Backed by user://settings.cfg, loaded and applied once on boot so the
 ## game always starts in the configured state. Three groups:
 ##   audio  — per-bus linear volume (Master/Music/SFX/UI) -> Sfx.set_bus_volume
-##   video  — VHS filter intensity (0 = the off switch, GDD §9 accessibility) + fullscreen
+##   video  — VHS filter intensity + screen shake (both have 0 = off, GDD §9) + fullscreen
 ##   input  — remapped actions, serialised with var_to_str (same shape project.godot uses)
 ## Kept separate from Save: settings are global, career progress is per-slot.
 
@@ -12,6 +12,7 @@ const BUSES := ["Master", "Music", "SFX", "UI"]
 const REMAPPABLE := ["accelerate", "brake_reverse", "steer_left", "steer_right",
 	"handbrake", "reset_car", "pause"]
 const DEF_VHS := 0.75
+const DEF_SHAKE := 1.0
 
 var _cfg := ConfigFile.new()
 var _dirty := false
@@ -32,6 +33,7 @@ func apply_all() -> void:
 	for b in BUSES:
 		Sfx.set_bus_volume(b, get_bus(b))
 	VHSFilter.intensity = get_vhs()
+	ScreenJuice.scale = get_shake()
 	_apply_fullscreen(get_fullscreen())
 	_apply_input()
 
@@ -60,6 +62,16 @@ func set_vhs(v: float) -> void:
 	_cfg.set_value("video", "vhs_intensity", v)
 	_dirty = true
 	VHSFilter.intensity = v
+
+## Screen-shake amount (0 = the off switch — camera juice can trigger motion sickness, and the
+## "Glance to Read" pillar wants the view legible). The VHS glitch spike is unaffected.
+func get_shake() -> float:
+	return float(_cfg.get_value("video", "screen_shake", DEF_SHAKE))
+
+func set_shake(v: float) -> void:
+	_cfg.set_value("video", "screen_shake", v)
+	_dirty = true
+	ScreenJuice.scale = v
 
 func get_fullscreen() -> bool:
 	return bool(_cfg.get_value("video", "fullscreen", false))

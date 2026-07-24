@@ -135,6 +135,8 @@ func _render_main() -> void:
 		func(on: bool) -> void: Settings.set_fullscreen(on)))
 	_col.add_child(_slider_row("VHS FILTER", Settings.get_vhs() * 100.0,
 		func(v: float) -> void: Settings.set_vhs(v / 100.0)))
+	_col.add_child(_slider_row("SCREEN SHAKE", Settings.get_shake() * 100.0,
+		func(v: float) -> void: Settings.set_shake(v / 100.0)))
 	
 	_col.add_child(spacer(10))
 

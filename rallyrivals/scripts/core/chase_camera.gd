@@ -15,6 +15,11 @@ extends Camera3D
 @export var look_height := 1.0
 @export var follow_speed := 5.0
 
+@export_group("Juice")
+## Speed tremor band (art-vfx-juice). Below `rumble_from` the view is dead still.
+@export var rumble_from := 22.0          ## m/s where the speed tremor starts
+@export var rumble_full := 55.0          ## m/s where it reaches full amplitude
+
 @export_group("Free look")
 @export var mouse_sensitivity := 0.004   ## rad per mouse pixel
 @export var stick_look_speed := 2.5      ## rad/s at full stick deflection
@@ -22,12 +27,23 @@ extends Camera3D
 @export var return_speed := 4.0          ## how fast the view eases back behind the car
 
 var _target: Node3D
+var _car: VehicleController   # the target when it's a car — the source of juice events
 var _yaw := 0.0          # look-around offsets around the car (0 = straight behind)
 var _pitch := 0.0
 var _idle := 0.0         # seconds since the last look input
+# The un-shaken camera position. Shake is added on top when writing global_position, never folded
+# back in — otherwise each frame's smoothing would chase the previous frame's shake and the whole
+# rig would wander.
+var _base := Vector3.ZERO
+var _has_base := false
 
 func _ready() -> void:
 	_target = get_node_or_null(target_path) as Node3D
+	ScreenJuice.reset()          # a hit must never ring on from the previous scene
+	_car = _target as VehicleController
+	if _car != null:
+		_car.impacted.connect(ScreenJuice.impact)
+		_car.landed.connect(ScreenJuice.landing)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
@@ -63,5 +79,20 @@ func _physics_process(delta: float) -> void:
 	var radius := Vector2(distance, height).length()
 	var desired := t.origin + (behind * cos(pitch) + Vector3.UP * sin(pitch)) * radius
 	var weight := 1.0 - exp(-follow_speed * delta)  # frame-rate-independent smoothing
-	global_position = global_position.lerp(desired, weight)
+	if not _has_base:
+		_base = desired            # first frame: snap, don't ease in from the origin
+		_has_base = true
+	_base = _base.lerp(desired, weight)
+	global_position = _base
 	look_at(t.origin + Vector3.UP * look_height, Vector3.UP)
+
+	# --- juice, applied AFTER look_at (which would otherwise cancel any offset) ---
+	var speed := _car.linear_velocity.length() if _car != null else 0.0
+	ScreenJuice.set_rumble(clampf((speed - rumble_from) / maxf(1.0, rumble_full - rumble_from), 0.0, 1.0))
+	ScreenJuice.advance(delta)
+	var jo := ScreenJuice.offset()
+	if jo != Vector3.ZERO:
+		global_position = _base + global_transform.basis * jo   # offset in VIEW space
+	var jr := ScreenJuice.roll()
+	if jr != 0.0:
+		rotate_object_local(Vector3.FORWARD, jr)

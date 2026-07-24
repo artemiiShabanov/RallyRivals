@@ -33,5 +33,8 @@ func _ready() -> void:
 
 func _process(_dt: float) -> void:
 	_mat.set_shader_parameter("intensity", intensity)
-	_mat.set_shader_parameter("glitch", glitch)
+	# Impacts and landings spike the tape on top of whatever this filter was authored with
+	# (art-vfx-juice). Additive, so a menu's steady glitch is untouched — ScreenJuice sits at 0
+	# unless something just hit.
+	_mat.set_shader_parameter("glitch", minf(1.0, glitch + ScreenJuice.glitch_boost()))
 	_rect.visible = intensity > 0.001   # true off — no draw, no back-buffer copy, no cost

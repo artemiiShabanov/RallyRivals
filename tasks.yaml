@@ -148,7 +148,7 @@ tasks:
   - {id: art-voxel-wheel-apex, title: "Voxel wheel: Apex Cartel rim", type: art, group: voxel, size: small, status: todo, blockers: [art-voxel-brand-families]}
   - {id: art-voxel-wheel-wreck, title: "Voxel wheel: Wreckhouse rim", type: art, group: voxel, size: small, status: todo, blockers: [art-voxel-brand-families]}
   - {id: art-voxel-wheel-mayfly, title: "Voxel wheel: Mayfly Speedworks rim", type: art, group: voxel, size: small, status: todo, blockers: [art-voxel-brand-families]}
-  - {id: art-vfx-juice, title: "Screen shake + landing thump", type: art, group: vfx, size: micro, status: todo, blockers: [code-vehicle-controller]}
+  - {id: art-vfx-juice, title: "Screen shake + landing thump (+ VHS glitch spike)", type: art, group: vfx, size: micro, status: done, blockers: [code-vehicle-controller]}
   - {id: art-vfx-surface-particles, title: "Per-surface particles (dust/snow/spray)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-surface-grip]}
   - {id: art-vfx-skidmarks, title: "Tyre skid marks (per-surface ribbon under sliding wheels)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-surface-grip]}
   - {id: art-vfx-slipstream, title: "Slipstream speed-lines/wind FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-slipstream]}
@@ -159,7 +159,6 @@ tasks:
   - {id: art-ui-theme, title: "VHS UI theme (white-on-blue OSD) + font", type: art, group: ui-art, size: big, status: done, blockers: []}
   - {id: art-ui-transition, title: "Stylized VHS scene transition (channel-change / tracking-glitch wipe)", type: art, group: ui-art, size: default, status: done, blockers: [code-core-scene-flow, art-shader-vhs]}
   - {id: art-ui-paint-skins, title: "Paint-skin set", type: art, group: ui-art, size: default, status: todo, blockers: [art-voxel-car-kerb]}
-  - {id: art-world-terrain-tex, title: "Terrain splat textures", type: art, group: world, size: big, status: todo, blockers: [code-track-generator]}
   - {id: art-world-palette, title: "Master colour palette (voxel + terrain ramps, ADR-003)", type: art, group: world, size: small, status: done, blockers: []}
   - {id: art-world-skybox, title: "Weather-driven sky sets (VHS banded sky shader)", type: art, group: world, size: default, status: done, blockers: [art-vfx-weather]}
   - {id: art-world-lighting, title: "Time-of-day lighting presets", type: art, group: world, size: default, status: done, blockers: []}
