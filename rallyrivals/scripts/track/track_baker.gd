@@ -26,6 +26,9 @@ var off_road_surface: SurfaceType = null ## surface for everything off the road 
 var gate_height := 8.0                  ## checkpoint box height (catches airborne cars)
 var gate_depth := 4.0                   ## checkpoint box thickness along travel (no tunnelling at speed)
 var path_points := 24                   ## TrackPath control points after decimation (more = closer hand-tune fit on long tracks)
+var scatter_budget := 30000             ## hard cap on scatter cubes; densities scale down together if exceeded (logged)
+var scatter_seed := 5                   ## bakes must be reproducible — same images in, same scatter out
+var scatter_max_slope := 0.62           ## skip cliffs: min ground normal.y that still gets debris
 
 # Race colours (semantic dots in race.png). A dot is any small blob; its centroid is what counts.
 # Pairs of dots straddle the road: start pair = the start line (gate 0), each gate pair = one
@@ -69,6 +72,7 @@ func bake() -> Error:
 	root.name = "Track"
 	_add_environment(root)
 	var counts := _add_ground(root)
+	var nscatter := _add_scatter(root)
 	var spline_pts := _extract_spline(race["start_mid"], race["dir"], Vector2.INF if is_loop else race["finish_mid"])
 	var curve := _add_path(root, spline_pts, is_loop)
 	var ngates := _add_checkpoints(root, race, curve, is_loop)
@@ -83,7 +87,7 @@ func bake() -> Error:
 	var packed := PackedScene.new()
 	packed.pack(root)
 	var err := ResourceSaver.save(packed, out_scene)
-	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " gates=", ngates, " loop=", is_loop, " surfaces=", counts, " save_err=", err)
+	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " gates=", ngates, " loop=", is_loop, " surfaces=", counts, " scatter=", nscatter, " save_err=", err)
 	return err
 
 # ---------- world / image helpers ----------
@@ -513,6 +517,103 @@ func _prop(box_size: Vector3, col: Color, px: int, py: int) -> MeshInstance3D:
 	mi.material_override = mat
 	mi.position = _world(px, py) + Vector3.UP * box_size.y * 0.5
 	return mi
+
+# ---------- scatter (the ground's volume) ----------
+# Loose cubes strewn over the loose surfaces. The terrain shader's chunkiness is lighting-only, so
+# this is the only thing that gives the ground a real silhouette and self-shadowing. ONE MultiMesh
+# for the whole track (single draw call, per-instance colour carries all six surfaces) and NO
+# collider — volume you can see but never catch a wheel on, so the drivable surface stays honest.
+#
+# Placement walks a jittered grid at the densest surface's spacing and rejection-samples each point
+# against its own surface's density, so one pass yields correct per-surface densities. Cubes sink
+# ~30% so they read as embedded in the ground rather than resting on a plane.
+func _add_scatter(root: Node3D) -> int:
+	var densest := 0.0
+	for s in _all_surfaces():
+		densest = maxf(densest, s.scatter_density)
+	if densest <= 0.0:
+		return 0
+
+	var rng := RandomNumberGenerator.new()
+	rng.seed = scatter_seed
+	var spacing := 1.0 / sqrt(densest)          # grid pitch that satisfies the densest surface
+	var steps := int(floor(_size * mpp / spacing))
+
+	# Collect at the authored densities first, then subsample only if we genuinely overshoot —
+	# guessing the accept rate up front just throws away density we were allowed to keep.
+	var xforms: Array[Transform3D] = []
+	var colors: Array[Color] = []
+	for iy in steps:
+		for ix in steps:
+			# jitter inside the cell so the grid never reads as rows
+			var fx := (ix + rng.randf()) * spacing / mpp
+			var fy := (iy + rng.randf()) * spacing / mpp
+			if fx >= _size - 1 or fy >= _size - 1:
+				continue
+			var surf := _surface_of(fx, fy)
+			if surf == null or surf.scatter_density <= 0.0:
+				continue
+			if rng.randf() > surf.scatter_density / densest:
+				continue
+			if _normalf(fx, fy).y < scatter_max_slope:
+				continue                          # no debris clinging to cliff faces
+			var e := surf.scatter_size * rng.randf_range(0.65, 1.4)
+			var pos := _worldf(fx, fy)
+			pos.y += e * 0.2                      # sunk ~30% of its height into the ground
+			var basis := Basis(Vector3.UP, rng.randf() * TAU)
+			basis = basis.rotated(Vector3.RIGHT, rng.randf_range(-0.25, 0.25))
+			basis = basis.rotated(Vector3.FORWARD, rng.randf_range(-0.25, 0.25))
+			xforms.append(Transform3D(basis.scaled(Vector3(e, e, e)), pos))
+			var j := rng.randf_range(0.82, 1.18)  # per-cube brightness so it isn't one flat mass
+			colors.append(Color(surf.scatter_color.r * j, surf.scatter_color.g * j, surf.scatter_color.b * j))
+	if xforms.is_empty():
+		return 0
+
+	var wanted := xforms.size()
+	if wanted > scatter_budget:
+		var keep := float(scatter_budget) / float(wanted)
+		var kx: Array[Transform3D] = []
+		var kc: Array[Color] = []
+		for i in wanted:
+			if rng.randf() < keep:
+				kx.append(xforms[i])
+				kc.append(colors[i])
+		xforms = kx
+		colors = kc
+		print("bake: scatter over budget — kept %d of %d cubes" % [xforms.size(), wanted])
+
+	var cube := BoxMesh.new()
+	cube.size = Vector3.ONE                       # per-instance scale carries the real size
+	var mat := StandardMaterial3D.new()
+	mat.vertex_color_use_as_albedo = true         # instance colour drives albedo
+	mat.roughness = 1.0
+	mat.specular = 0.05                           # loose debris must catch no highlight (see SurfaceType)
+	cube.material = mat
+
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true                          # must be set BEFORE instance_count allocates buffers
+	mm.mesh = cube
+	mm.instance_count = xforms.size()
+	for i in xforms.size():
+		mm.set_instance_transform(i, xforms[i])
+		mm.set_instance_color(i, colors[i])
+	ResourceSaver.save(mm, _out_dir.path_join("ground_scatter.res"))
+	mm.take_over_path(_out_dir.path_join("ground_scatter.res"))
+
+	var mmi := MultiMeshInstance3D.new()
+	mmi.name = "SurfaceScatter"
+	mmi.multimesh = mm
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON   # the shadows ARE the volume
+	root.add_child(mmi)
+	return xforms.size()
+
+## Road palette + off-road, the same list the weights are indexed by.
+func _all_surfaces() -> Array:
+	var a := surfaces.duplicate()
+	if off_road_surface != null and not a.has(off_road_surface):
+		a.append(off_road_surface)
+	return a
 
 # ---------- environment ----------
 func _add_environment(root: Node3D) -> void:
