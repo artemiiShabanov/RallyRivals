@@ -518,9 +518,8 @@ func _prop(box_size: Vector3, col: Color, px: int, py: int) -> MeshInstance3D:
 func _add_environment(root: Node3D) -> void:
 	var we := WorldEnvironment.new(); we.name = "WorldEnvironment"
 	var env := Environment.new()
-	var sky := Sky.new(); sky.sky_material = ProceduralSkyMaterial.new()
 	env.background_mode = Environment.BG_SKY
-	env.sky = sky
+	VhsSky.ensure(env)   # bake the custom VHS sky; conditions retune its uniforms at runtime
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
 	env.ambient_light_energy = 0.5
 	we.environment = env

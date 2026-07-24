@@ -14,8 +14,13 @@ func _initialize() -> void:
 
 	var clear := WeatherPreset.new()
 	clear.id = "clear"
-	clear.cloud_cover = 0.3
+	clear.sky_zenith = Color("2b5578")
+	clear.sky_horizon = Color("c7e0f2")
+	clear.sky_ground = Color("6b7180")
+	clear.cloud_cover = 0.22
 	clear.cloud_color = Color("f2ebd9")
+	clear.sun_visibility = 1.0
+	clear.haze = 0.05
 	clear.ambient = _amb("wind_light")
 	presets.append(clear)
 
@@ -30,8 +35,13 @@ func _initialize() -> void:
 	rain.fog_enabled = true
 	rain.fog_density = 0.006
 	rain.fog_color = Color("738fb1")
-	rain.cloud_cover = 0.85
+	rain.sky_zenith = Color("5f7085")
+	rain.sky_horizon = Color("94a8c2")
+	rain.sky_ground = Color("3f4652")
+	rain.cloud_cover = 0.9
 	rain.cloud_color = Color("8fa6c5")
+	rain.sun_visibility = 0.12
+	rain.haze = 0.28
 	rain.grip_multiplier = 0.85
 	rain.wetness = 0.8
 	rain.ambient = _amb("rain")
@@ -49,8 +59,13 @@ func _initialize() -> void:
 	snow.fog_enabled = true
 	snow.fog_density = 0.008
 	snow.fog_color = Color("afbfd8")
-	snow.cloud_cover = 0.85
+	snow.sky_zenith = Color("9fb0c5")
+	snow.sky_horizon = Color("dfe6ef")
+	snow.sky_ground = Color("8a929e")
+	snow.cloud_cover = 0.9
 	snow.cloud_color = Color("ebf0f7")
+	snow.sun_visibility = 0.25
+	snow.haze = 0.4
 	snow.grip_multiplier = 0.75
 	snow.wetness = 0.15
 	snow.ambient = _amb("snow_wind")
@@ -67,8 +82,13 @@ func _initialize() -> void:
 	thunder.fog_enabled = true
 	thunder.fog_density = 0.012
 	thunder.fog_color = Color("597a9e")
+	thunder.sky_zenith = Color("2f3d52")
+	thunder.sky_horizon = Color("597a9e")
+	thunder.sky_ground = Color("20262f")
 	thunder.cloud_cover = 1.0
-	thunder.cloud_color = Color("597a9e")
+	thunder.cloud_color = Color("46617f")
+	thunder.sun_visibility = 0.0
+	thunder.haze = 0.18
 	thunder.thunder = true
 	thunder.grip_multiplier = 0.8
 	thunder.wetness = 1.0
@@ -82,8 +102,13 @@ func _initialize() -> void:
 	fog.fog_enabled = true
 	fog.fog_density = 0.028   # moderate: corners must still telegraph (GDD fairness)
 	fog.fog_color = Color("b8b8ad")
+	fog.sky_zenith = Color("b8b8ad")
+	fog.sky_horizon = Color("cbcbc1")
+	fog.sky_ground = Color("a8a89e")
 	fog.cloud_cover = 0.95
 	fog.cloud_color = Color("b8b8ad")
+	fog.sun_visibility = 0.0
+	fog.haze = 0.6
 	fog.wetness = 0.25
 	fog.ambient = _amb("wind_low")
 	presets.append(fog)

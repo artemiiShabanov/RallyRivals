@@ -1,9 +1,10 @@
 class_name WeatherFX
 extends Node3D
-## Applies a WeatherPreset to the scene: cube precipitation (ADR-003 — every particle is a
-## cube) in a camera-following emitter box, exponential fog on the scene's WorldEnvironment,
-## and thunder as randomized double-pulse flashes of the scene's sun. One node per scene;
-## the debug menu (and later code-track-conditions) calls apply().
+## Applies a WeatherPreset to the scene: the VHS sky look (gradient + clouds + sun visibility +
+## haze, via VhsSky), cube precipitation (ADR-003 — every particle is a cube) in a camera-
+## following emitter box, exponential fog on the scene's WorldEnvironment, and thunder as
+## randomized double-pulse flashes of the scene's sun. One node per scene; the debug menu and
+## code-track-conditions call apply().
 
 const BOX_EXTENTS := Vector3(18.0, 6.0, 18.0)
 const EMITTER_AHEAD := 8.0    # metres ahead of the camera (fills the view, not the mirror)
@@ -19,10 +20,6 @@ var _flash_base := 1.0
 var _bed: AmbientBed
 var _boom_in := -1.0          # seconds until the pending thunder crack is heard (see _thunder)
 
-# One shared cloud panorama for all presets (seamless fractal noise, gradient-thresholded
-# into clumps); per-weather look comes from sky_cover_modulate colour + alpha.
-static var _cloud_tex: NoiseTexture2D
-
 ## The active weather's grip multiplier (GDD 7: weather grip stacks on surface grip).
 ## VehicleController folds this into every wheel's grip product. Resets with the effect.
 static var current_grip_multiplier := 1.0
@@ -35,7 +32,7 @@ func apply(preset: WeatherPreset) -> void:
 	_preset = preset
 	_find_scene_nodes()
 	_setup_fog()
-	_setup_clouds()
+	_setup_sky()
 	_setup_particles()
 	_setup_ambience()
 	_flash_elapsed = -1.0
@@ -80,32 +77,19 @@ func _setup_fog() -> void:
 		_env.fog_density = _preset.fog_density
 		_env.fog_sky_affect = 0.5
 
-func _setup_clouds() -> void:
-	if _env == null or _env.sky == null:
-		return
-	var sky_mat := _env.sky.sky_material as ProceduralSkyMaterial
+# Weather OWNS the sky look: it writes the gradient + cloud + sun uniforms onto the shared VHS
+# sky material. Time-of-day (LightingPreset) later multiplies its tint on top of these.
+func _setup_sky() -> void:
+	var sky_mat := VhsSky.ensure(_env)
 	if sky_mat == null:
 		return
-	if _preset.cloud_cover <= 0.0:
-		sky_mat.sky_cover = null
-		return
-	if _cloud_tex == null:
-		var noise := FastNoiseLite.new()
-		noise.seed = 7
-		noise.frequency = 0.012
-		noise.fractal_octaves = 4
-		var grad := Gradient.new()
-		grad.offsets = PackedFloat32Array([0.5, 0.72])
-		grad.colors = PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 1)])
-		var tex := NoiseTexture2D.new()
-		tex.width = 512
-		tex.height = 256
-		tex.seamless = true
-		tex.noise = noise
-		tex.color_ramp = grad
-		_cloud_tex = tex
-	sky_mat.sky_cover = _cloud_tex
-	sky_mat.sky_cover_modulate = Color(_preset.cloud_color.r, _preset.cloud_color.g, _preset.cloud_color.b, _preset.cloud_cover)
+	sky_mat.set_shader_parameter("zenith_color", _preset.sky_zenith)
+	sky_mat.set_shader_parameter("horizon_color", _preset.sky_horizon)
+	sky_mat.set_shader_parameter("ground_color", _preset.sky_ground)
+	sky_mat.set_shader_parameter("cloud_amount", _preset.cloud_cover)
+	sky_mat.set_shader_parameter("cloud_color", _preset.cloud_color)
+	sky_mat.set_shader_parameter("sun_visibility", _preset.sun_visibility)
+	sky_mat.set_shader_parameter("haze", _preset.haze)
 
 func _setup_particles() -> void:
 	if _particles == null:
