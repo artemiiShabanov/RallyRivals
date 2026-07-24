@@ -135,7 +135,6 @@ func _run() -> void:
 	if _finished:
 		return
 	_car.input_enabled = true
-	Sfx.play(load("res://assets/audio/sfx/engine_start.tres") as SfxDef)
 	_timing.begin()
 	_banner.text = ""
 

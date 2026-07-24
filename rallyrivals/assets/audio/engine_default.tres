@@ -1,11 +1,9 @@
-[gd_resource type="Resource" script_class="EngineDef" load_steps=7 format=3]
+[gd_resource type="Resource" script_class="EngineDef" load_steps=5 format=3]
 
 [ext_resource type="AudioStream" path="res://assets/audio/loops/engine_high.wav" id="1_sxkg5"]
 [ext_resource type="AudioStream" path="res://assets/audio/loops/engine_low.wav" id="2_yc8mf"]
 [ext_resource type="AudioStream" path="res://assets/audio/loops/engine_mid.wav" id="3_s7fqi"]
-[ext_resource type="Resource" path="res://assets/audio/sfx/engine_off.tres" id="4_yea2r"]
 [ext_resource type="Script" path="res://scripts/audio/engine_def.gd" id="5_u6sfv"]
-[ext_resource type="Resource" path="res://assets/audio/sfx/engine_start.tres" id="6_31soi"]
 
 [resource]
 script = ExtResource("5_u6sfv")
@@ -22,5 +20,3 @@ volume_db = -14.0
 idle_volume_db = -22.0
 pitch_min = 0.85
 pitch_max = 1.3
-start_sfx = ExtResource("6_31soi")
-off_sfx = ExtResource("4_yea2r")

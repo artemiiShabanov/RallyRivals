@@ -71,8 +71,6 @@ const ONESHOTS := [
 	["impact_light", 3, "SFX", -5.0, 0.12, "impact_light"],
 	["impact_heavy", 3, "SFX", -2.0, 0.10, "impact_heavy"],
 	["debris_cubes", 3, "SFX", -8.0, 0.18, "debris"],
-	["engine_start", 1, "SFX", -6.0, 0.04, "engine_start"],
-	["engine_off", 1, "SFX", -8.0, 0.04, "engine_off"],
 	["thunder", 2, "SFX", -3.0, 0.12, "thunder"],
 ]
 
@@ -282,8 +280,6 @@ func _oneshot(recipe: String, variant: int) -> PackedFloat32Array:
 		"impact_light": return _hit(0.13, 0.20, 3.0, 120.0, 0.45)
 		"impact_heavy": return _hit(0.34, 0.13, 1.6, 62.0, 0.75)
 		"debris": return _debris(variant)
-		"engine_start": return _engine_start()
-		"engine_off": return _engine_off()
 		"thunder": return _thunder(2.6 + variant * 0.7, 0.6 + variant * 0.25)
 	return PackedFloat32Array()
 
@@ -346,41 +342,6 @@ func _debris(variant: int) -> PackedFloat32Array:
 		for i in piece.size():
 			if start + i < out.size():
 				out[start + i] += piece[i] * 0.55
-	return out
-
-## Starter motor chugs, then the engine catches and settles.
-func _engine_start() -> PackedFloat32Array:
-	var out := PackedFloat32Array()
-	var crank := int(0.9 * RATE)
-	out.resize(crank)
-	var lp := 0.0
-	for i in crank:
-		var t := float(i) / RATE
-		lp += ((_rng.randf() * 2.0 - 1.0) - lp) * 0.25
-		var chug := 0.5 + 0.5 * sin(TAU * 8.0 * t)   # the starter turning over
-		out[i] = (lp * 1.2 + sin(TAU * 42.0 * t) * 0.4) * chug * 0.5
-	var catch_n := int(0.8 * RATE)
-	for i in catch_n:
-		var t := float(i) / RATE
-		var rpm := lerpf(120.0, 55.0, minf(t / 0.6, 1.0))   # flares, then drops to idle
-		var v := 0.0
-		for k in range(1, 10):
-			v += sin(TAU * rpm * k * t) / float(k)
-		out.append(v * 0.28 * minf(t / 0.05, 1.0))
-	return out
-
-func _engine_off() -> PackedFloat32Array:
-	var n := int(1.1 * RATE)
-	var out := PackedFloat32Array()
-	out.resize(n)
-	for i in n:
-		var t := float(i) / RATE
-		var p := float(i) / n
-		var rpm := lerpf(55.0, 18.0, p * p)      # winds down, then dies
-		var v := 0.0
-		for k in range(1, 8):
-			v += sin(TAU * rpm * k * t) / float(k)
-		out[i] = v * 0.28 * (1.0 - p) * (1.0 - p)
 	return out
 
 ## Crack (bright transient) over a long lowpassed rumble that swells and rolls off.

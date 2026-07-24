@@ -31,7 +31,3 @@ extends Resource
 ## Pitch is clamped per band so a sample never stretches far enough to sound artificial.
 @export var pitch_min := 0.85
 @export var pitch_max := 1.30
-
-@export_group("Cues")
-@export var start_sfx: SfxDef
-@export var off_sfx: SfxDef

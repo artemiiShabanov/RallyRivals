@@ -8,8 +8,8 @@ extends Node3D
 ##   roll     the tyre loop for whatever surface is under the rear wheels, crossfaded on change
 ##   skid     faded in by wheel slip; picks the tarmac squeal or the loose-surface slide
 ##   scrape   faded in while the body is dragging along something
-## plus impact one-shots scaled by collision impulse. (Engine start/off cues were removed — the
-## EngineDef still carries start_sfx/off_sfx fields, now unused.)
+## plus impact one-shots scaled by collision impulse. (There are deliberately no engine start/off
+## cues — the engine just comes in and goes out with its RPM bands.)
 ##
 ## Levels live in EngineDef and the exports below, never in the files — see docs/AUDIO.md §1.
 
