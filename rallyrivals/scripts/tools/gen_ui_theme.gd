@@ -91,11 +91,13 @@ func _initialize() -> void:
 	_var(t, "OsdDim", 24, DIM, 3)
 
 	# telemetry / scorebug register (white-on-dark, kept distinct from the chrome)
-	_var(t, "HudValue", 46, WHITE, 6)    # speed numerals — the one big number
+	_var(t, "HudValue", 32, WHITE, 5)    # speed numerals (was 46 — 30% down)
 	_var(t, "HudUnit", 16, DIM, 4)
-	_var(t, "HudTimer", 30, WHITE, 5)    # total race time
+	# Lap and clock share ONE face and sit on one line, so the top row reads as a single statement
+	# rather than two competing readouts.
+	_var(t, "HudTimer", 21, WHITE, 4)
 	_var(t, "HudBest", 16, DIM, 4)
-	_var(t, "HudTag", 20, WHITE, 4)      # lap counter
+	_var(t, "HudTag", 21, WHITE, 4)      # lap counter — same size as HudTimer by design
 	_var(t, "HudRow", 18, WHITE, 4)      # a leaderboard line
 	_var(t, "HudSplit", 20, WHITE, 4)    # the bottom strip's message
 

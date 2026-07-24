@@ -24,14 +24,11 @@ const SAGE := Color(0.62, 0.88, 0.62)      # faster split
 const CARMINE := Color(0.92, 0.42, 0.48)   # slower split
 const CREAM := Color(0.95, 0.97, 1.0)
 const MAX_ROWS := 10                       # the field the order panel is designed to hold
-const ORDER_W := 232                       # fixed width — rows must not reflow as gaps change
+const ORDER_W := 252                       # fixed width — rows must not reflow as gaps change
 const EDGE := 22                           # screen margin
-const PIPS := 14
-const PIP_W := 9
-const PIP_MIN_H := 5                       # leftmost bar height...
-const PIP_MAX_H := 20                      # ...rising to this at the right, so the bar ramps up
-const PIP_FILLED := Color(0.95, 0.97, 1.0)
-const PIP_EMPTY := Color(0.95, 0.97, 1.0, 0.16)
+const SPEED_W := 84                        # room for THREE digits, so the meter never shifts as
+										   # speed crosses 99 -> 100
+const RULE_RED := Color(0.85, 0.18, 0.24)  # divides race state from the running order
 const FALLBACK_TOP := 55.0                 # m/s assumed top speed when the car has no CarDef
 const STRIP_HOLD := 2.0                    # s the bottom strip stays up after a message
 const STRIP_H := 40                        # EXACT strip height; the driver block clears it
@@ -51,9 +48,11 @@ var _strip_label: Label
 var _strip_ttl := 0.0
 var _order: VBoxContainer
 var _gate_best := {}
-var _pips: Array[ColorRect] = []
+var _bar: SpeedBar
+var _type_icon: TextureRect
 
-func bind(car: VehicleController, timing: RaceTiming, cps: TrackCheckpoints, laps_total: int) -> void:
+func bind(car: VehicleController, timing: RaceTiming, cps: TrackCheckpoints, laps_total: int,
+		race_type := "circuit") -> void:
 	_car = car
 	_timing = timing
 	_is_loop = cps.loop
@@ -62,6 +61,9 @@ func bind(car: VehicleController, timing: RaceTiming, cps: TrackCheckpoints, lap
 		timing.gate_crossed.connect(_on_gate)
 		timing.lap_completed.connect(_on_lap)
 	_lap.visible = _is_loop     # a lap counter is meaningless on a point-to-point sprint
+	var icon := "res://assets/ui/race_%s.png" % race_type
+	if ResourceLoader.exists(icon):
+		_type_icon.texture = load(icon)
 	set_standings([{"name": "YOU", "time": "", "player": true}])
 
 ## Replace the running order. Each row: {name: String, time: String, player: bool}. Positions are
@@ -105,13 +107,36 @@ func _ready() -> void:
 	root.add_child(race)
 
 	var rcol := VBoxContainer.new()
-	rcol.add_theme_constant_override("separation", 2)
+	rcol.add_theme_constant_override("separation", 6)
 	race.add_child(rcol)
+
+	# One line: format badge, lap, then the clock pushed to the far edge. Lap and clock share a face
+	# (HudTag/HudTimer are the same size) so the row reads as one statement.
+	var line := HBoxContainer.new()
+	line.add_theme_constant_override("separation", 8)
+	rcol.add_child(line)
+	_type_icon = TextureRect.new()
+	_type_icon.custom_minimum_size = Vector2(22, 22)
+	_type_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_type_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_type_icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_type_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	line.add_child(_type_icon)
 	_lap = _label("LAP 1/3", "HudTag")
-	rcol.add_child(_lap)
+	line.add_child(_lap)
+	var push := Control.new()
+	push.size_flags_horizontal = Control.SIZE_EXPAND_FILL   # justifies the clock to the right edge
+	push.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	line.add_child(push)
 	_time = _label("0:00.00", "HudTimer")
-	rcol.add_child(_time)
-	rcol.add_child(_gap(6))
+	line.add_child(_time)
+
+	var rule := ColorRect.new()
+	rule.color = RULE_RED
+	rule.custom_minimum_size.y = 2
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rcol.add_child(rule)
+
 	_order = VBoxContainer.new()
 	_order.add_theme_constant_override("separation", 1)
 	rcol.add_child(_order)
@@ -142,42 +167,40 @@ func _ready() -> void:
 	driver.offset_bottom = -(EDGE + STRIP_H)   # clear of the strip's reserved band
 	root.add_child(driver)
 
+	# Avatar, numerals and unit all sit on ONE baseline — SHRINK_END on each, so the row bottom-
+	# aligns regardless of their wildly different heights.
 	var drow := HBoxContainer.new()
 	drow.alignment = BoxContainer.ALIGNMENT_END
 	drow.add_theme_constant_override("separation", 10)
 	driver.add_child(drow)
 	var avatar := TextureRect.new()
 	avatar.texture = load(ICONS + "avatar_default.png")
-	avatar.custom_minimum_size = Vector2(44, 44)
+	avatar.custom_minimum_size = Vector2(38, 38)
 	avatar.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	avatar.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	avatar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	avatar.size_flags_vertical = Control.SIZE_SHRINK_END
 	drow.add_child(avatar)
 	_speed = _label("0", "HudValue")
 	_speed.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_speed.custom_minimum_size.x = SPEED_W     # fixed 3-digit width: nothing shifts at 99 -> 100
+	_speed.size_flags_vertical = Control.SIZE_SHRINK_END
 	drow.add_child(_speed)
 	var unit := _label("KM/H", "HudUnit")
 	unit.size_flags_vertical = Control.SIZE_SHRINK_END
 	drow.add_child(unit)
 
-	# Rising bar: each segment taller than the last, so the ramp itself reads as "faster" even
-	# before the fill does. Bottom-aligned, so they grow upward from a common baseline.
-	var barrow := HBoxContainer.new()
-	barrow.add_theme_constant_override("separation", 3)
-	barrow.alignment = BoxContainer.ALIGNMENT_END
-	driver.add_child(barrow)
-	for i in PIPS:
-		var t := float(i) / float(PIPS - 1)
-		var pip := ColorRect.new()
-		pip.custom_minimum_size = Vector2(PIP_W, lerpf(PIP_MIN_H, PIP_MAX_H, t))
-		pip.color = PIP_EMPTY
-		pip.size_flags_vertical = Control.SIZE_SHRINK_END
-		barrow.add_child(pip)
-		_pips.append(pip)
-
+	# Meter column: the bar sets the width, and BEST centres itself across that same width.
+	var meter := VBoxContainer.new()
+	meter.add_theme_constant_override("separation", 2)
+	meter.size_flags_horizontal = Control.SIZE_SHRINK_END
+	meter.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	driver.add_child(meter)
+	_bar = SpeedBar.new()
+	meter.add_child(_bar)
 	_best = _label("BEST --:--", "HudBest")
-	_best.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	driver.add_child(_best)
+	_best.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_best.size_flags_horizontal = Control.SIZE_FILL
+	meter.add_child(_best)
 
 	# ---- bottom: full-width strip, hidden until it has something to say ----
 	# A Panel, not a PanelContainer: the container sized itself to the font's line metrics and came
@@ -201,9 +224,7 @@ func _process(dt: float) -> void:
 	if _car != null:
 		_speed.text = str(roundi(absf(_car.get_forward_speed()) * 3.6))
 		var top: float = _car.max_speed if _car.max_speed < INF else FALLBACK_TOP
-		var lit := int(round(clampf(absf(_car.get_forward_speed()) / top, 0.0, 1.0) * PIPS))
-		for i in _pips.size():
-			_pips[i].color = PIP_FILLED if i < lit else PIP_EMPTY
+		_bar.value = absf(_car.get_forward_speed()) / top
 	if _timing != null and _car != null:
 		_time.text = _fmt(_timing.current_time(_car))
 		var b := _timing.best_lap(_car)

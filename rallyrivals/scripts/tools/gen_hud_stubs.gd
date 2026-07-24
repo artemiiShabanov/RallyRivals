@@ -12,8 +12,58 @@ func _initialize() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT))
 	_logo().save_png(ProjectSettings.globalize_path(OUT + "channel_logo.png"))
 	_avatar().save_png(ProjectSettings.globalize_path(OUT + "avatar_default.png"))
-	print("hud stubs -> channel_logo.png, avatar_default.png")
+	# One glyph per RaceDef.race_type, so the HUD can name the format at a glance.
+	for id in ["circuit", "sprint", "time_trial", "endurance", "grand_prix"]:
+		_race_icon(id).save_png(ProjectSettings.globalize_path(OUT + "race_%s.png" % id))
+	print("hud stubs -> logo, avatar, 5 race-type icons")
 	quit()
+
+## Race-format glyphs, 24px, flat white. Each has to be told apart from the others at ~22px on the
+## HUD, so they differ in SHAPE not detail: ring, arrow, clock, hourglass, podium.
+func _race_icon(id: String) -> Image:
+	var s := 24
+	var img := Image.create(s, s, false, Image.FORMAT_RGBA8)
+	img.fill(CLEAR)
+	match id:
+		"circuit":                                   # closed loop
+			_ring(img, 12.0, 12.0, 10.0, 6.0, s)
+		"sprint":                                    # arrow into a finish post
+			for y in range(6, 18):
+				var d: int = absi(y - 12)
+				for x in range(4 + d, 4 + d + 3):
+					img.set_pixel(x, y, WHITE)
+			for y in range(3, 21):
+				for x in range(17, 20):
+					img.set_pixel(x, y, WHITE)
+		"time_trial":                                # clock: ring + two hands
+			_ring(img, 12.0, 12.0, 10.0, 7.0, s)
+			for y in range(6, 13):
+				img.set_pixel(12, y, WHITE)
+			for x in range(12, 18):
+				img.set_pixel(x, 12, WHITE)
+		"endurance":                                 # hourglass
+			for y in range(4, 20):
+				var k: int = 8 - absi(y - 12) if y != 12 else 1
+				for x in range(12 - k, 12 + k):
+					if y < 11 or y > 13 or absi(x - 12) < 2:
+						img.set_pixel(x, y, WHITE)
+		"grand_prix":                                # podium: 2nd, 1st, 3rd
+			_bar(img, 3, 11, 6, 20, s)
+			_bar(img, 10, 6, 6, 20, s)
+			_bar(img, 17, 14, 5, 20, s)
+	return img
+
+func _ring(img: Image, cx: float, cy: float, r_out: float, r_in: float, s: int) -> void:
+	for y in s:
+		for x in s:
+			var d := Vector2(x - cx, y - cy).length()
+			if d <= r_out and d >= r_in:
+				img.set_pixel(x, y, WHITE)
+
+func _bar(img: Image, x0: int, y0: int, w: int, y1: int, s: int) -> void:
+	for y in range(y0, mini(y1, s)):
+		for x in range(x0, mini(x0 + w, s)):
+			img.set_pixel(x, y, WHITE)
 
 ## Channel bug: a play chevron with two trailing speed bars. Abstract on purpose — it should read
 ## as "a broadcaster's logo goes here", not as final branding.

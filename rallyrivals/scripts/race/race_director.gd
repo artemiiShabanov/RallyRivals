@@ -111,7 +111,7 @@ func _build(track_ps: PackedScene) -> void:
 		var hud := RaceHud.new()
 		hud.name = "RaceHud"
 		add_child(hud)
-		hud.bind(_car, _timing, _cps, _race.laps)
+		hud.bind(_car, _timing, _cps, _race.laps, _race.race_type)
 
 	_banner = _make_banner()
 
