@@ -26,10 +26,6 @@ var off_road_surface: SurfaceType = null ## surface for everything off the road 
 var gate_height := 8.0                  ## checkpoint box height (catches airborne cars)
 var gate_depth := 4.0                   ## checkpoint box thickness along travel (no tunnelling at speed)
 var path_points := 24                   ## TrackPath control points after decimation (more = closer hand-tune fit on long tracks)
-var scatter_budget := 30000             ## hard cap on scatter cubes; densities scale down together if exceeded (logged)
-var scatter_seed := 5                   ## bakes must be reproducible — same images in, same scatter out
-var scatter_max_slope := 0.62           ## skip cliffs: min ground normal.y that still gets debris
-var terrace_step := 0.6                 ## off-road slab height in metres (0 = smooth, no terracing)
 
 # Race colours (semantic dots in race.png). A dot is any small blob; its centroid is what counts.
 # Pairs of dots straddle the road: start pair = the start line (gate 0), each gate pair = one
@@ -73,7 +69,6 @@ func bake() -> Error:
 	root.name = "Track"
 	_add_environment(root)
 	var counts := _add_ground(root)
-	var nscatter := _add_scatter(root)
 	var spline_pts := _extract_spline(race["start_mid"], race["dir"], Vector2.INF if is_loop else race["finish_mid"])
 	var curve := _add_path(root, spline_pts, is_loop)
 	var ngates := _add_checkpoints(root, race, curve, is_loop)
@@ -88,7 +83,7 @@ func bake() -> Error:
 	var packed := PackedScene.new()
 	packed.pack(root)
 	var err := ResourceSaver.save(packed, out_scene)
-	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " gates=", ngates, " loop=", is_loop, " surfaces=", counts, " scatter=", nscatter, " save_err=", err)
+	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " gates=", ngates, " loop=", is_loop, " surfaces=", counts, " save_err=", err)
 	return err
 
 # ---------- world / image helpers ----------
@@ -133,24 +128,6 @@ func _cdist(a: Color, b: Color) -> float:
 # at runtime, so bake-time buckets and drive-time grip agree exactly).
 func _surface_of(fx: float, fy: float) -> SurfaceType:
 	return SurfaceMap.classify(_surface_colour(int(round(fx)), int(round(fy))), surfaces, off_road_surface)
-
-## Top of the terrace slab covering this point. Quantises the height at the CELL CENTRE (not at the
-## point), which is what makes a whole cell one flat tread. round(), not floor(), so the slab
-## straddles the true surface — that halves how far the visual ground can sit from the collision the
-## wheels actually ride. Shared by the mesher and by anything placed on top (scatter), so the two
-## can never disagree about where the ground is.
-func _slab_top(fx: float, fy: float) -> float:
-	var stepf := mesh_res / mpp
-	var cx := (floorf(fx / stepf) + 0.5) * stepf
-	var cy := (floorf(fy / stepf) + 0.5) * stepf
-	return roundf(_height_bilinear(cx, cy) / terrace_step) * terrace_step
-
-## Where the VISUAL ground actually is: the slab top off-road, the true surface on the smooth road
-## ribbon. (Collision always follows the true surface — see _add_ground.)
-func _visual_height(fx: float, fy: float) -> float:
-	if terrace_step <= 0.0 or _surface_of(fx, fy) != off_road_surface:
-		return _height_bilinear(fx, fy)
-	return _slab_top(fx, fy)
 
 func _is_road(p: Vector2) -> bool:
 	var x := int(round(p.x)); var y := int(round(p.y))
@@ -248,61 +225,22 @@ func _add_ground(root: Node3D) -> Dictionary:
 	terrain_mat.set_shader_parameter("world_size", _size * mpp)
 
 	# --- visual: per-surface bucketed meshes (no collision) ---
-	# OFF-ROAD GROUND IS TERRACED: each cell becomes a flat slab at a quantised height with vertical
-	# risers down to lower neighbours, so the elevation already present in the heightmap finally
-	# READS as 3-D form. (A smooth slope under matte, flat-shaded lighting produces almost no shading
-	# gradient, which is why real hills looked like a flat plane.) The drivable ribbon stays smooth —
-	# stairs across a race track would look wrong and would not line up with the wheels. Collision is
-	# untouched either way: it is the smooth heightfield above, so terracing is purely something you
-	# see, and the driving feel is exactly as it was.
 	var buckets := {}   # id -> {surface, st, tris}
 	var stepf := mesh_res / mpp
 	var cells := int((_size - 1) / stepf)
-
-	# Pass 1 — per-cell slab height. INF marks a cell left smooth (the road ribbon, or terracing off).
-	var slab := PackedFloat32Array()
-	slab.resize(cells * cells)
-	for r in cells:
-		for c in cells:
-			var cx := (c + 0.5) * stepf
-			var cy := (r + 0.5) * stepf
-			slab[r * cells + c] = _slab_top(cx, cy) \
-				if terrace_step > 0.0 and _surface_of(cx, cy) == off_road_surface else INF
-
-	# Pass 2 — emit treads + risers (or the original smooth pair for un-terraced cells).
 	for r in cells:
 		for c in cells:
 			var fx0 := c * stepf; var fx1 := (c + 1) * stepf
 			var fy0 := r * stepf; var fy1 := (r + 1) * stepf
 			var v00 := _worldf(fx0, fy0); var v10 := _worldf(fx1, fy0)
 			var v01 := _worldf(fx0, fy1); var v11 := _worldf(fx1, fy1)
-			var h := slab[r * cells + c]
-
-			if is_inf(h):
-				var c00 := _surface_bilinear(fx0, fy0); var c10 := _surface_bilinear(fx1, fy0)
-				var c01 := _surface_bilinear(fx0, fy1); var c11 := _surface_bilinear(fx1, fy1)
-				var n00 := _normalf(fx0, fy0); var n10 := _normalf(fx1, fy0)
-				var n01 := _normalf(fx0, fy1); var n11 := _normalf(fx1, fy1)
-				# Bucket each triangle by the surface at its centroid pixel.
-				_emit(buckets, _surface_of((fx0 + fx0 + fx1) / 3.0, (fy0 + fy1 + fy1) / 3.0), v00, c00, n00, v01, c01, n01, v11, c11, n11)
-				_emit(buckets, _surface_of((fx0 + fx1 + fx1) / 3.0, (fy0 + fy1 + fy0) / 3.0), v00, c00, n00, v11, c11, n11, v10, c10, n10)
-				continue
-
-			var mx := (fx0 + fx1) * 0.5; var my := (fy0 + fy1) * 0.5
-			var s := _surface_of(mx, my)
-			var col := _surface_bilinear(mx, my)
-			var a := Vector3(v00.x, h, v00.z); var b := Vector3(v01.x, h, v01.z)
-			var d := Vector3(v11.x, h, v11.z); var e := Vector3(v10.x, h, v10.z)
-			_emit(buckets, s, a, col, Vector3.UP, b, col, Vector3.UP, d, col, Vector3.UP)
-			_emit(buckets, s, a, col, Vector3.UP, d, col, Vector3.UP, e, col, Vector3.UP)
-
-			# Risers. A slab neighbour only gets one when it sits LOWER (so the higher cell owns the
-			# wall and it is never drawn twice); a smooth neighbour always gets one, which is what
-			# seals the step where terraced land meets the road ribbon.
-			_edge_riser(buckets, s, col, slab, cells, r - 1, c, h, v00, v10)
-			_edge_riser(buckets, s, col, slab, cells, r + 1, c, h, v01, v11)
-			_edge_riser(buckets, s, col, slab, cells, r, c - 1, h, v00, v01)
-			_edge_riser(buckets, s, col, slab, cells, r, c + 1, h, v10, v11)
+			var c00 := _surface_bilinear(fx0, fy0); var c10 := _surface_bilinear(fx1, fy0)
+			var c01 := _surface_bilinear(fx0, fy1); var c11 := _surface_bilinear(fx1, fy1)
+			var n00 := _normalf(fx0, fy0); var n10 := _normalf(fx1, fy0)
+			var n01 := _normalf(fx0, fy1); var n11 := _normalf(fx1, fy1)
+			# Bucket each triangle by the surface at its centroid pixel.
+			_emit(buckets, _surface_of((fx0 + fx0 + fx1) / 3.0, (fy0 + fy1 + fy1) / 3.0), v00, c00, n00, v01, c01, n01, v11, c11, n11)
+			_emit(buckets, _surface_of((fx0 + fx1 + fx1) / 3.0, (fy0 + fy1 + fy0) / 3.0), v00, c00, n00, v11, c11, n11, v10, c10, n10)
 
 	var counts := {}
 	for id in buckets:
@@ -318,33 +256,6 @@ func _add_ground(root: Node3D) -> Dictionary:
 
 	root.add_child(ground)
 	return counts
-
-# One terrace riser: the vertical quad between this slab's edge (both ends at `h`) and whatever the
-# neighbour presents along that edge — a flat slab height, or the true sloped ground when the
-# neighbour is a smooth (road) cell. Nothing is emitted toward a slab that is level or higher, so
-# each wall has exactly one owner. Off-map edges are skipped. The terrain material is cull_disabled,
-# so winding does not matter here.
-func _edge_riser(buckets: Dictionary, s: SurfaceType, col: Color, slab: PackedFloat32Array,
-		cells: int, nr: int, nc: int, h: float, p0: Vector3, p1: Vector3) -> void:
-	if nr < 0 or nc < 0 or nr >= cells or nc >= cells:
-		return
-	var hn := slab[nr * cells + nc]
-	var y0 := p0.y
-	var y1 := p1.y
-	if not is_inf(hn):
-		if hn >= h:
-			return          # the neighbour is level or higher — it owns that wall, not us
-		y0 = hn
-		y1 = hn
-	var dir := p1 - p0
-	dir.y = 0.0
-	var n := dir.cross(Vector3.UP).normalized() if dir.length() > 0.0001 else Vector3.FORWARD
-	var a := Vector3(p0.x, h, p0.z)
-	var b := Vector3(p1.x, h, p1.z)
-	var an := Vector3(p0.x, y0, p0.z)
-	var bn := Vector3(p1.x, y1, p1.z)
-	_emit(buckets, s, a, col, n, an, col, n, bn, col, n)
-	_emit(buckets, s, a, col, n, bn, col, n, b, col, n)
 
 # Append one triangle to its surface bucket's mesh (collision is the shared heightfield, so we only
 # track a triangle count per bucket, not the geometry).
@@ -602,104 +513,6 @@ func _prop(box_size: Vector3, col: Color, px: int, py: int) -> MeshInstance3D:
 	mi.material_override = mat
 	mi.position = _world(px, py) + Vector3.UP * box_size.y * 0.5
 	return mi
-
-# ---------- scatter (the ground's volume) ----------
-# Loose cubes strewn over the loose surfaces. The terrain shader's chunkiness is lighting-only, so
-# this is the only thing that gives the ground a real silhouette and self-shadowing. ONE MultiMesh
-# for the whole track (single draw call, per-instance colour carries all six surfaces) and NO
-# collider — volume you can see but never catch a wheel on, so the drivable surface stays honest.
-#
-# Placement walks a jittered grid at the densest surface's spacing and rejection-samples each point
-# against its own surface's density, so one pass yields correct per-surface densities. Cubes sink
-# ~30% so they read as embedded in the ground rather than resting on a plane.
-func _add_scatter(root: Node3D) -> int:
-	var densest := 0.0
-	for s in _all_surfaces():
-		densest = maxf(densest, s.scatter_density)
-	if densest <= 0.0:
-		return 0
-
-	var rng := RandomNumberGenerator.new()
-	rng.seed = scatter_seed
-	var spacing := 1.0 / sqrt(densest)          # grid pitch that satisfies the densest surface
-	var steps := int(floor(_size * mpp / spacing))
-
-	# Collect at the authored densities first, then subsample only if we genuinely overshoot —
-	# guessing the accept rate up front just throws away density we were allowed to keep.
-	var xforms: Array[Transform3D] = []
-	var colors: Array[Color] = []
-	for iy in steps:
-		for ix in steps:
-			# jitter inside the cell so the grid never reads as rows
-			var fx := (ix + rng.randf()) * spacing / mpp
-			var fy := (iy + rng.randf()) * spacing / mpp
-			if fx >= _size - 1 or fy >= _size - 1:
-				continue
-			var surf := _surface_of(fx, fy)
-			if surf == null or surf.scatter_density <= 0.0:
-				continue
-			if rng.randf() > surf.scatter_density / densest:
-				continue
-			if _normalf(fx, fy).y < scatter_max_slope:
-				continue                          # no debris clinging to cliff faces
-			var e := surf.scatter_size * rng.randf_range(0.65, 1.4)
-			var pos := _worldf(fx, fy)
-			pos.y = _visual_height(fx, fy)        # sit on the terrace, not the smooth height under it
-			pos.y += e * 0.2                      # sunk ~30% of its height into the ground
-			var basis := Basis(Vector3.UP, rng.randf() * TAU)
-			basis = basis.rotated(Vector3.RIGHT, rng.randf_range(-0.25, 0.25))
-			basis = basis.rotated(Vector3.FORWARD, rng.randf_range(-0.25, 0.25))
-			xforms.append(Transform3D(basis.scaled(Vector3(e, e, e)), pos))
-			var j := rng.randf_range(0.82, 1.18)  # per-cube brightness so it isn't one flat mass
-			colors.append(Color(surf.scatter_color.r * j, surf.scatter_color.g * j, surf.scatter_color.b * j))
-	if xforms.is_empty():
-		return 0
-
-	var wanted := xforms.size()
-	if wanted > scatter_budget:
-		var keep := float(scatter_budget) / float(wanted)
-		var kx: Array[Transform3D] = []
-		var kc: Array[Color] = []
-		for i in wanted:
-			if rng.randf() < keep:
-				kx.append(xforms[i])
-				kc.append(colors[i])
-		xforms = kx
-		colors = kc
-		print("bake: scatter over budget — kept %d of %d cubes" % [xforms.size(), wanted])
-
-	var cube := BoxMesh.new()
-	cube.size = Vector3.ONE                       # per-instance scale carries the real size
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true         # instance colour drives albedo
-	mat.roughness = 1.0
-	mat.specular = 0.05                           # loose debris must catch no highlight (see SurfaceType)
-	cube.material = mat
-
-	var mm := MultiMesh.new()
-	mm.transform_format = MultiMesh.TRANSFORM_3D
-	mm.use_colors = true                          # must be set BEFORE instance_count allocates buffers
-	mm.mesh = cube
-	mm.instance_count = xforms.size()
-	for i in xforms.size():
-		mm.set_instance_transform(i, xforms[i])
-		mm.set_instance_color(i, colors[i])
-	ResourceSaver.save(mm, _out_dir.path_join("ground_scatter.res"))
-	mm.take_over_path(_out_dir.path_join("ground_scatter.res"))
-
-	var mmi := MultiMeshInstance3D.new()
-	mmi.name = "SurfaceScatter"
-	mmi.multimesh = mm
-	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON   # the shadows ARE the volume
-	root.add_child(mmi)
-	return xforms.size()
-
-## Road palette + off-road, the same list the weights are indexed by.
-func _all_surfaces() -> Array:
-	var a := surfaces.duplicate()
-	if off_road_surface != null and not a.has(off_road_surface):
-		a.append(off_road_surface)
-	return a
 
 # ---------- environment ----------
 func _add_environment(root: Node3D) -> void:

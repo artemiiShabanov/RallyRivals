@@ -26,11 +26,6 @@ uniform float world_size = 512.0;
 uniform float cell_size = 0.1;      // tint cell — one voxel
 uniform float chunk_size = 0.3;     // relief cell — a few voxels, so chunks read as stones not grain
 
-// Cavity AO in the gaps between chunk cells. (There is deliberately NO darkening at the seam
-// between two surfaces — it drew a dirty outline around every patch and bought nothing.)
-uniform float cavity_ao : hint_range(0.0, 1.0) = 0.5;       // darkening in the gaps between chunks
-uniform float ao_albedo : hint_range(0.0, 1.0) = 0.55;      // how much AO also bites albedo, not just ambient
-
 varying vec3 world_pos;
 
 void vertex() {
@@ -82,16 +77,6 @@ void fragment() {
 		face_normal = normalize(face_normal + tilt * amt);
 	}
 	NORMAL = face_normal;
-
-	// --- cavity AO ---
-	// Crevices between the fake chunks: a second hash picks which cells are gaps rather than stones,
-	// scaled by chunkiness so smooth surfaces (tarmac, ice) get none. Surface BOUNDARIES are left
-	// alone on purpose — darkening them outlined every patch and read as grime.
-	float cav = smoothstep(0.55, 0.0, cell_hash(floor(world_pos.xz / chunk_size) + 91.0));
-	float ao = clamp(1.0 - cav * cavity_ao * chunkiness, 0.0, 1.0);
-	AO = ao;
-	AO_LIGHT_AFFECT = 0.5;   // let it bite direct light too, or lit ground shows no contact at all
-	albedo *= mix(1.0, ao, ao_albedo);
 
 	// Wet ground darkens and tightens its highlight. Specular follows roughness instead of being a
 	// flat constant — a fully matte surface then gets essentially none, which is what stops gravel

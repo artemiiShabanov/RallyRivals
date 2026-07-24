@@ -27,16 +27,6 @@ extends Resource
 ## opacity on top, up to the full alpha above.
 @export_range(0.0, 1.0) var mark_baseline := 0.0
 
-@export_group("Scatter")
-## Loose debris strewn ON this surface (ADR-003: it's cubes). This is the ground's only real
-## volume — the terrain shader's chunkiness is lighting-only, so scatter is what gives the
-## surface a silhouette. Baked into one MultiMesh with NO collider: you can see it but never
-## catch a wheel on it, which keeps the drivable surface honest (and the racing fair).
-## 0 for anything you drive on cleanly — tarmac and ice are swept.
-@export var scatter_density := 0.0                      ## cubes per m² (0 = none)
-@export var scatter_size := 0.18                        ## base cube edge (m) before per-instance jitter
-@export var scatter_color := Color(0.5, 0.5, 0.52)      ## tint; bake jitters brightness per instance
-
 @export_group("Kick-up")
 ## Cubes a wheel throws off this surface (ADR-003: every particle is a cube). 0 = none — tarmac and
 ## ice don't kick dust. Like the marks, emission is baseline while rolling and rises to full on a
