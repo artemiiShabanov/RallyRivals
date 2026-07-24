@@ -39,7 +39,12 @@ func _ready() -> void:
 		return
 
 	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# LIT, not unshaded: unshaded marks ignore the scene light entirely, so they read correctly only
+	# at full daylight and glow at dusk/night as if lit from nowhere. Lit means they darken with the
+	# ground they're drawn on. (The ribbon has to supply normals for this — see _tri.)
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	mat.roughness = 1.0             # scuffed rubber and displaced dirt catch no highlight
+	mat.metallic_specular = 0.0
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.vertex_color_use_as_albedo = true
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
@@ -151,9 +156,16 @@ func _rebuild() -> void:
 	_im.surface_end()
 
 func _tri(p0: Vector3, p1: Vector3, p2: Vector3, c: Color) -> void:
-	_im.surface_set_color(c); _im.surface_add_vertex(p0)
-	_im.surface_set_color(c); _im.surface_add_vertex(p1)
-	_im.surface_set_color(c); _im.surface_add_vertex(p2)
+	# The ribbon is lit now, so every vertex needs a normal. Use the face normal rather than a flat
+	# UP so marks stay correctly lit on cambered and banked ground; flip it upward because the
+	# ribbon is drawn double-sided and winding alternates along the strip.
+	var n := (p1 - p0).cross(p2 - p0)
+	n = Vector3.UP if n.length() < 0.0001 else n.normalized()
+	if n.y < 0.0:
+		n = -n
+	_im.surface_set_normal(n); _im.surface_set_color(c); _im.surface_add_vertex(p0)
+	_im.surface_set_normal(n); _im.surface_set_color(c); _im.surface_add_vertex(p1)
+	_im.surface_set_normal(n); _im.surface_set_color(c); _im.surface_add_vertex(p2)
 
 ## Wipe every mark (respawn/reset), so a trail doesn't streak from the old spot to the new one.
 func clear() -> void:
