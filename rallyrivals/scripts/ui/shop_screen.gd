@@ -14,13 +14,12 @@ var _list: VBoxContainer
 var _shown: CarDef
 
 func _build(col: VBoxContainer) -> void:
-	# Header: title + wallet left, BACK right.
-	var hb := header_bar("CAR SHOP", _wallet_line(), func() -> void: Flow.goto(Routes.CAREER_HUB))
-	col.add_child(hb[0])
-	_wallet = hb[1]
+	col.add_child(heading("CAR SHOP"))
+	_wallet = heading(_wallet_line(), "OsdDim")
+	col.add_child(_wallet)
+	col.add_child(spacer(12))
 	Save.wallet_changed.connect(_on_wallet)   # auto-disconnects when this screen frees
 
-	col.add_child(spacer(14))
 	var body := HBoxContainer.new()
 	body.add_theme_constant_override("separation", 44)
 	col.add_child(body)
@@ -53,6 +52,11 @@ func _build(col: VBoxContainer) -> void:
 	_bars = StatBars.new()
 	_bars.size_flags_vertical = SIZE_SHRINK_CENTER
 	drow.add_child(_bars)
+
+	col.add_child(spacer(14))
+	var back := menu_button("BACK", "ui_click")
+	back.pressed.connect(func() -> void: Flow.goto(Routes.CAREER_HUB))
+	col.add_child(back)
 
 	_rebuild_list()
 

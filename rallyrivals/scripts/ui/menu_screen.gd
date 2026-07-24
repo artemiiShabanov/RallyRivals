@@ -179,28 +179,6 @@ func spacer(height: int) -> Control:
 	c.custom_minimum_size.y = height
 	return c
 
-## Screen title + subtitle (e.g. the wallet line) as a left-aligned block for the content column, with
-## a BACK button pinned flush to the screen's top-right corner (constant position, not a flexible
-## header gap). Returns [titles, subtitle_label] — the caller adds `titles` to its column and may
-## update the subtitle later. BACK is parented to the screen itself, so it sits above the content.
-func header_bar(title: String, subtitle: String, on_back: Callable) -> Array:
-	var titles := VBoxContainer.new()
-	titles.add_theme_constant_override("separation", 6)
-	titles.add_child(heading(title))
-	var sub := heading(subtitle, "OsdDim")
-	titles.add_child(sub)
-
-	var back := menu_button("BACK", "ui_click")
-	back.custom_minimum_size = Vector2(0, 0)     # hug the label
-	back.set_anchors_preset(PRESET_TOP_RIGHT)
-	back.grow_horizontal = GROW_DIRECTION_BEGIN
-	back.grow_vertical = GROW_DIRECTION_END
-	back.offset_top = 0
-	back.offset_right = 0                          # flush to the top-right corner, 0 gap
-	back.pressed.connect(on_back)
-	add_child(back)
-	return [titles, sub]
-
 ## A themed yes/no modal over the screen. on_yes runs if confirmed; either choice dismisses it.
 func confirm(message: String, on_yes: Callable) -> void:
 	var overlay := Control.new()

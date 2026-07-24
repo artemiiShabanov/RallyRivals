@@ -16,8 +16,9 @@ var _buttons: Dictionary = {}    # car id -> its list Button (for focus)
 var _shown: CarDef               # the car in the detail panel
 
 func _build(col: VBoxContainer) -> void:
-	col.add_child(header_bar("GARAGE", _wallet_line(), _leave)[0])
-	col.add_child(spacer(14))
+	col.add_child(heading("GARAGE"))
+	col.add_child(heading(_wallet_line(), "OsdDim"))
+	col.add_child(spacer(12))
 
 	var body := HBoxContainer.new()
 	body.add_theme_constant_override("separation", 44)
@@ -49,6 +50,11 @@ func _build(col: VBoxContainer) -> void:
 	_bars = StatBars.new()
 	_bars.size_flags_vertical = SIZE_SHRINK_CENTER
 	row.add_child(_bars)
+
+	col.add_child(spacer(14))
+	var back := menu_button("BACK", "ui_click")
+	back.pressed.connect(_leave)
+	col.add_child(back)
 
 	_rebuild_list()
 	var start := Cars.by_id(Save.active.current_car)
