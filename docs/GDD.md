@@ -87,7 +87,7 @@ See [PILLARS.md](PILLARS.md). In short:
   - **Decided — see [spec](specs/field-matching.md):** each chapter owns **9 generated drivers**
     (name, campaign-unique number 1–100, brand split 3/3/3, behaviour) plus the boss as a
     separate 10th. Field size by type: **sprint 4 · circuit 6 · endurance 8**, time trial none;
-    the boss race fields all 11.
+    the boss race is a 1v1 sprint duel (player vs boss), not a field (see CAMPAIGN.md).
 
 ## 7. Tracks & environments
 - **Generation (Decided — ADR-002):** tracks = **spline (race) + images (world)**, baked

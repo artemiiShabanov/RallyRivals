@@ -74,9 +74,10 @@ rival in a car you cannot buy is aspirational: you are looking at a prize before
 **Time trial fields no rivals at all** — it is you against the clock by definition (GDD §5).
 
 ### 5. Boss race
-The boss race is the chapter's finale and ignores the per-type field size: **all 9 regulars + the
-boss + the player = 11 cars.** The boss runs their signature `pink_slip_only` car at the
-chapter's top class — the car the win pink-slips.
+The boss race is a **1-on-1 sprint duel** — player + boss, point-to-point, no field (see
+[CAMPAIGN.md](../CAMPAIGN.md)). The boss runs their signature `pink_slip_only` car at the chapter's
+top class — the car the win pink-slips. Not class-gated; the boss being top-class is the real
+prerequisite. (This replaces an earlier 11-car boss race.)
 
 ## Acceptance criteria
 - [ ] A race authors a class band; the field is drawn from it and is unaffected by the player's car.
@@ -86,7 +87,7 @@ chapter's top class — the car the win pink-slips.
 - [ ] Each chapter generates 9 drivers with unique campaign-wide numbers and a 3/3/3 brand split.
 - [ ] The same save always regenerates the same roster (generated once, persisted).
 - [ ] A rival's car is exactly `lookup(brand, assigned_class)`, pink-slip cars included.
-- [ ] The boss is not among the 9 and appears only in the boss race, which fields 11 cars.
+- [ ] The boss is not among the 9 and appears only in the boss race, which is a 1v1 sprint (player + boss).
 - [ ] No rival's car or pace changes in response to the player's position mid-race.
 
 ## Feel criteria
@@ -109,8 +110,8 @@ chapter's top class — the car the win pink-slips.
   anchored to the race's band and explicitly ignores the player's car. §8's *"Open:
   field-matching/scaling rule for open races"* and §6's *"Open: rival count"* are both closed by
   this spec.
-- **Consequence for the HUD:** the race leaderboard was built for 10 rows (9 + player). The boss
-  race needs **11**.
+- **Consequence for the HUD:** with the boss race now a 1v1 duel, the leaderboard's largest field
+  is endurance — 8 rivals + player = **9**, so `MAX_ROWS` is 9.
 - **Open — random selection has no memory.** Entrants are drawn fresh per race, so a rival you
   beat may be absent next time and there is no running pecking order. This was chosen for
   simplicity; if a chapter ends up feeling like interchangeable strangers, the smallest fix is to

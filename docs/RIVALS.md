@@ -9,7 +9,7 @@ finale: beat them to pink-slip their car and advance to the next region (GDD §5
   cuts all narrative (GDD §6, §12). A boss's identity is a name, a number, and *how they drive*.
 - **A separate 10th driver.** The 9 generated chapter regulars (`content-rivals-roster`) race all
   chapter long; the boss appears **only in the boss race** (spec: [field-matching](specs/field-matching.md)).
-  The boss race fields all 11 (9 + boss + you).
+  The boss race is a **1v1 sprint duel** — just you and the boss (see [CAMPAIGN.md](CAMPAIGN.md)).
 - **Brand + class + car are already fixed** by GDD §8 and the roster's `pink_slip_only` cars — the
   boss drives the very car you win. This doc authors the rest: name, number, driving manner.
 - **AI never rams the player**, even in a Wilds boss race (GDD §6). Boss aggression is positional

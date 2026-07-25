@@ -23,8 +23,8 @@ const ICONS := "res://assets/ui/"
 const SAGE := Color(0.62, 0.88, 0.62)      # faster split
 const CARMINE := Color(0.92, 0.42, 0.48)   # slower split
 const CREAM := Color(0.95, 0.97, 1.0)
-const MAX_ROWS := 11                       # the biggest field: a boss race is 9 regulars +
-										   # the boss + you (docs/specs/field-matching.md)
+const MAX_ROWS := 9                         # biggest field: endurance = 8 rivals + you. The boss
+										   # race is a 1v1 duel (docs/CAMPAIGN.md), not a pack.
 const ORDER_W := 252                       # fixed width — rows must not reflow as gaps change
 const EDGE := 22                           # screen margin
 const SPEED_W := 84                        # room for THREE digits, so the meter never shifts as
