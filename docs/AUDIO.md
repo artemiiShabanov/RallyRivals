@@ -86,7 +86,7 @@ downsampled file *up* exposes its missing bandwidth immediately. If you need the
 
 ## 2. Sound manifest
 
-**All 37 sounds have placeholders** — synthesized filtered noise and harmonic stacks from
+**All 35 sounds have placeholders** — synthesized filtered noise and harmonic stacks from
 `scripts/tools/gen_placeholder_audio.gd`, CC0 by construction, seeded so regeneration is
 byte-identical. None are production sounds; replace freely. Columns below track what each is
 *for* and which system owns it — **⬜ = still a placeholder, ✅ = real sound sourced.**
@@ -110,7 +110,6 @@ be ticked off without editing this doc.
 |---|---|---|
 | `engine_mid` | driven loop | the one that matters — pitch-driven from throttle/speed. **Start here** |
 | `engine_low` / `engine_high` | driven loop | RPM layers to crossfade — richer than pitching one loop ±2 octaves |
-| `engine_start` / `engine_off` | one-shot | race start / results |
 
 Three brands (Apex/Wreckhouse/Mayfly) eventually want distinct engine character — one loop each
 is the cheap version; don't source three until the one-loop version feels right.
@@ -150,7 +149,7 @@ brief is **§7 (Music direction & sourcing)**; in short: a **city-pop** house so
 variety, one finished loop per context. **~6 tracks** — 1 menu + 5 race-type; the boss duel is a
 hotter mix of the sprint track, not a separate source.
 
-**37 sound files + ~6 music tracks** for the full game. Ambience and UI are the two cheapest groups;
+**35 sound files + ~6 music tracks** for the full game. Ambience and UI are the two cheapest groups;
 engine and tyres are the two that actually sell the driving.
 
 ## 3. Where to get sounds for free
