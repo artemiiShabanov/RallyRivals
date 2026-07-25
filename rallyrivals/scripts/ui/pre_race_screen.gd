@@ -8,7 +8,7 @@ extends MenuScreen
 
 static var race: RaceDef = null
 
-const SLICE_RACE := "res://assets/races/test_circuit.tres"
+const SLICE_RACE := "res://assets/races/test_timetrial.tres"
 
 # Two columns (race info | car + bars) keep the screen short enough to centre with START always on
 # frame — a single column ran the stat bars past the bottom edge.

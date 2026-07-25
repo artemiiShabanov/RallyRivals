@@ -16,7 +16,7 @@ static var last_result: RaceResult = null   ## finish outcome for the results sc
 @export var fallback_race: RaceDef      ## used when launched directly (no pending)
 @export var car_scene: PackedScene = preload("res://scenes/vehicle/car.tscn")
 
-const SLICE_RACE := "res://assets/races/test_circuit.tres"
+const SLICE_RACE := "res://assets/races/test_timetrial.tres"
 const COUNT_FROM := 3
 
 var _race: RaceDef
