@@ -61,7 +61,6 @@ tasks:
   - {id: code-vehicle-slipstream, title: "Slipstream (player-only) + FX", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller, code-ai-rival]}
   - {id: code-vehicle-stats, title: "Drive handling from the 5 stat bars", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-brand-features, title: "Baked-in brand abilities (nitro etc.)", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
-  - {id: code-vehicle-airborne, title: "Airborne handling (jumps: air control + landing)", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
 
   # ---------- code: core / race / ai / ui ----------
   - {id: code-core-camera, title: "Chase camera (promote from prototype)", type: code, group: core, size: default, status: done, blockers: [code-vehicle-controller]}
@@ -108,7 +107,7 @@ tasks:
   - {id: code-meta-shop, title: "Always-open price-gated car shop", type: code, group: meta, size: default, status: done, blockers: [code-meta-currencies, code-meta-car-catalog]}
   - {id: code-meta-garage, title: "Owned-cars garage + selection", type: code, group: meta, size: default, status: done, blockers: [code-meta-currencies, code-meta-car-catalog]}
   - {id: code-meta-pinkslip, title: "Beat rival -> win their car (pink-slip)", type: code, group: meta, size: default, status: todo, blockers: [code-meta-garage, code-ai-boss]}
-  - {id: code-meta-achievements, title: "Achievements -> paint skins", type: code, group: meta, size: default, status: todo, blockers: [code-meta-currencies]}
+  - {id: code-meta-achievements, title: "Steam achievements (event-triggered, no in-game unlocks)", type: code, group: meta, size: default, status: todo, blockers: [setup-build-export]}
   - {id: code-meta-chapters, title: "Chapter CP gate (~70%) + advance on boss win", type: code, group: meta, size: big, status: todo, blockers: [code-meta-economy, code-ai-boss]}
 
   # ---------- content ----------

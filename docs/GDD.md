@@ -25,7 +25,7 @@ See [PILLARS.md](PILLARS.md). In short:
   hold the line.
 - **Race:** enter an Officials or Wilds race (varied types) → place (no win required) →
   earn **money** + **campaign points (CP)**.
-- **Meta:** spend money at the always-open **car shop**; earn achievement paint skins (§8);
+- **Meta:** spend money at the always-open **car shop**;
   bank CP toward the chapter boss.
 - **Chapter (= 1 region):** at ≈70% chapter CP the **boss race** unlocks → beat the boss →
   **pink-slip their car** → next region.
@@ -133,8 +133,9 @@ See [PILLARS.md](PILLARS.md). In short:
   desirable + distinct. Garage growth is the reward for advancing.
 - **Garage / car selection:** your owned cars + the pick-a-car screen; the 5 stat bars shown for
   instant comparison.
-- **Achievements → paint skins (cosmetic only):** achievements unlock **paint skins** —
-  purely visual, **never** stats/class, off the money/CP economies. A light collect-loop.
+- **Achievements (Steam, external):** platform achievements fired by gameplay events (first win,
+  a class climbed, each boss beaten, …). **No in-game unlocks** — badges only, off the money/CP
+  economies. Paint-skin unlocks are **cut**.
 - **Car shop:** always open, gated by **price**; parallel to pink-slips. ⚠️ Keep pink-slip cars
   special vs buyable. **Decided:** money comes **solely from race payouts** (per-race, banked-best
   money pool) — one clean source, mirroring CP.

@@ -75,8 +75,8 @@ var _touching := 0                       # bodies in contact right now (scrape s
 ## Touchdown after every wheel left the ground. `strength` is 0..1, from how fast the car was
 ## FALLING — a long float onto a downslope should thump less than a short drop off a ledge.
 ## Consumed by ScreenJuice (camera dip) and SurfaceParticles (dust burst).
-## This is only as much air detection as the landing FX need; code-vehicle-airborne owns real air
-## CONTROL, and when it lands it should drive this signal rather than add a second detector.
+## This is only the air detection the landing FX need; the base controller's own jump handling
+## (GDD §4) is considered sufficient, so there is no separate air-control task.
 signal landed(strength: float)
 const AIR_MIN := 0.18                    # s off the ground before a touchdown counts as a landing
 const LANDING_FULL := 12.0               # m/s of descent that makes the hardest thump
