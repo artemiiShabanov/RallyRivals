@@ -146,10 +146,9 @@ cheapest whole-task win on this page.
 ### Music — `audio-music-*`
 **No placeholders on purpose** — a synthesized stand-in would anchor the direction badly. The full
 brief is **§7 (Music direction & sourcing)**; in short: a **city-pop** house sound with per-race-type
-variety, one finished loop per context. **~6 tracks** — 1 menu + 5 race-type; the boss duel is a
-hotter mix of the sprint track, not a separate source.
+variety, one finished loop per context. **7 tracks** — 1 menu + 5 race-type + a distinct boss track.
 
-**35 sound files + ~6 music tracks** for the full game. Ambience and UI are the two cheapest groups;
+**35 sound files + 7 music tracks** for the full game. Ambience and UI are the two cheapest groups;
 engine and tyres are the two that actually sell the driving.
 
 ## 3. Where to get sounds for free
@@ -537,10 +536,11 @@ and expect free results. Target its **free-reachable cousins**, which get you 90
 | **Sprint** | punchy, fast, urgent (short point-to-point) | future funk / boogie |
 | **Endurance** | long-form, hypnotic, doesn't fatigue | deep funk / vaporwave groove |
 | **Grand prix** | biggest, most 'produced', a little dramatic | lush city pop (the serious event) |
-| **Boss duel** | the sprint track, **hotter + faster mix** | — (reuse, not sourced) |
+| **Boss duel** | its own darker, faster theme | dedicated boss track |
 
-The boss duel is a 1v1 *sprint* ([CAMPAIGN.md](CAMPAIGN.md)), so it reuses the **sprint** track with
-a hotter/faster mix rather than a bespoke boss theme — cheapest, and cohesive with the moment.
+The boss duel has its **own** track (`boss.ogg`) — a distinct, harder theme. (It doesn't auto-play
+yet: the race director picks music by `race_type`, and a boss race is a `sprint`, so wiring the boss
+race to `Music.play("boss")` waits until boss races are actually built.)
 
 ### Sourcing plan
 
@@ -560,6 +560,15 @@ Source in this order, matched to what's playable now:
 1. **Time trial** — the vertical-slice race is a time trial (the slot runs `test_timetrial`), so this
    is the first track the game actually needs.
 2. **Menu / career** — heard before every race.
-3. **Circuit + sprint** — the campaign staples (and sprint feeds the boss mix).
+3. **Circuit + sprint** — the campaign staples.
 4. **Endurance + grand prix** — campaign fills.
 5. **Boss** — a mix of the sprint track; do last, needs nothing new sourced.
+
+
+### Status — tracks in (2026-07-25)
+
+All 7 tracks are sourced (AI-generated), converted to looping 44.1 kHz stereo `.ogg` (loudnorm
+-16 LUFS), wired, and verified playing. WAV masters live in `assets/audio/music/_masters/`
+(git-ignored). **Two open items before ship:** (1) confirm the AI service's commercial licence and
+fill the `SOURCES.md` rows — unknown licence = do not ship (§6); (2) loop seams and per-track levels
+(`volume_db`, currently -6) are ear-unverified — I can't audition, so that pass is yours.

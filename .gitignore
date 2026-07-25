@@ -32,3 +32,6 @@ rallyrivals/assets/audio/_incoming/*
 
 # font candidates: comparison-only, not shipped
 rallyrivals/assets/fonts/candidates/
+
+# music WAV masters — the .ogg is what ships
+rallyrivals/assets/audio/music/_masters/

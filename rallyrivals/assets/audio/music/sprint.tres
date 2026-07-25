@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="MusicDef" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/music_def.gd" id="1_def"]
+[ext_resource type="AudioStream" path="res://assets/audio/music/sprint.ogg" id="2_ogg"]
+
+[resource]
+script = ExtResource("1_def")
+id = "sprint"
+stream = ExtResource("2_ogg")
+volume_db = -6.0
+fade = 1.5

@@ -179,9 +179,9 @@ tasks:
   - {id: audio-sfx-ui, title: "UI clicks/confirms (wired in debug menu; real menus reuse)", type: audio, group: sfx, size: small, status: done, blockers: [audio-sfx-core]}
   - {id: audio-sfx-ambient, title: "Ambient beds: festival crowd + per-weather (rain/snow/wind/fog) + thunder", type: audio, group: sfx, size: default, status: done, blockers: [audio-sfx-core]}
   - {id: audio-music-direction, title: "Music direction + sourcing plan", type: audio, group: music, size: big, status: done, blockers: []}
-  - {id: audio-music-menu, title: "Menu/career music track (breezy city pop)", type: audio, group: music, size: default, status: todo, blockers: [audio-music-direction]}
-  - {id: audio-music-race, title: "Race music set: one loop per race type (city-pop palette, CC0/CC-BY)", type: audio, group: music, size: big, status: todo, blockers: [audio-music-direction]}
-  - {id: audio-music-boss, title: "Boss-duel music: hotter/faster mix of the sprint track", type: audio, group: music, size: small, status: todo, blockers: [audio-music-direction]}
+  - {id: audio-music-menu, title: "Menu/career music track (breezy city pop)", type: audio, group: music, size: default, status: done, blockers: [audio-music-direction]}
+  - {id: audio-music-race, title: "Race music set: one loop per race type (city-pop palette, CC0/CC-BY)", type: audio, group: music, size: big, status: done, blockers: [audio-music-direction]}
+  - {id: audio-music-boss, title: "Boss-duel music (distinct track)", type: audio, group: music, size: small, status: done, blockers: [audio-music-direction]}
 
   # ---------- balance ----------
   - {id: balance-handling-feel, title: "Tune car feel constants (buttery pass)", type: balance, group: handling, size: big, status: todo, blockers: [code-vehicle-grip]}

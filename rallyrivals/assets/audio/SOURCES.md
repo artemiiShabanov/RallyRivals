@@ -32,3 +32,10 @@ with a real recording beside it.
 Example of what a filled row looks like:
 
 | `loops/engine_mid.ogg` | https://freesound.org/s/123456/ | CC0 1.0 | username | 2026-08-01 |
+| `music/menu.ogg` | AI-generated (⚠️ tool: CONFIRM) | ⚠️ **CONFIRM** the service's commercial terms before ship (§6) | — | 2026-07-25 |
+| `music/time_trial.ogg` | AI-generated (⚠️ tool: CONFIRM) | ⚠️ **CONFIRM** the service's commercial terms before ship (§6) | — | 2026-07-25 |
+| `music/circuit.ogg` | AI-generated (⚠️ tool: CONFIRM) | ⚠️ **CONFIRM** the service's commercial terms before ship (§6) | — | 2026-07-25 |
+| `music/sprint.ogg` | AI-generated (⚠️ tool: CONFIRM) | ⚠️ **CONFIRM** the service's commercial terms before ship (§6) | — | 2026-07-25 |
+| `music/endurance.ogg` | AI-generated (⚠️ tool: CONFIRM) | ⚠️ **CONFIRM** the service's commercial terms before ship (§6) | — | 2026-07-25 |
+| `music/grand_prix.ogg` | AI-generated (⚠️ tool: CONFIRM) | ⚠️ **CONFIRM** the service's commercial terms before ship (§6) | — | 2026-07-25 |
+| `music/boss.ogg` | AI-generated (⚠️ tool: CONFIRM) | ⚠️ **CONFIRM** the service's commercial terms before ship (§6) | — | 2026-07-25 |
