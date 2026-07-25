@@ -106,16 +106,25 @@ See [PILLARS.md](PILLARS.md). In short:
   (physics materials don't affect wheels) + per-surface particle/audio. **Decided:** instant
   grip only — surface sets grip while you're on it,
   **no lingering state** (clean, readable, cheap; fits clarity + performance pillars).
-- **Seasons (visual only):** 4 seasons swap models/FX, no gameplay effect (decoupled from
-  grip). **Decided:** **author-picked per race** — coherent aesthetics, and you only build
-  the seasonal sets a track uses (caps the 4× dressing cost).
 - **Time + weather (combinable, fixed per race):** time → visibility/aesthetics
   (morning/day/golden hour/night); weather → grip, stacks on surface
   (clear/rain·snow/thunder/fog). Keep combined grip readable. ⚠️ Low-visibility must stay
   fair (telegraph corners). Does **not** escalate for boss/late races — variety, not
   difficulty.
-- **Regions:** ⚠️ a region is an **aesthetic/cultural theme, not a surface biome** — every
-  region still mixes surfaces per race. Travel changes the *look*, not the surface set.
+- **Regions (Decided — absorbs the old "seasons" axis, which is CUT):** a region is the
+  single visual-theme axis, an **aesthetic/cultural theme**, 1:1 with chapters. It now does
+  three things:
+  - **Dictates the track's OFF-ROAD surface** (desert → sand, tundra → snow, …). ⚠️ The
+    **road still mixes surfaces per race** — a region is *not* a full surface biome; it sets
+    what surrounds the track, not what you race on.
+  - **Supplies the prop / dressing set.** Each prop is authored **per region × 3 variants**
+    for scatter variety — i.e. `models per prop = regions × 3`. Caps the dressing cost the
+    way the old "only build the seasons a track uses" rule did.
+  - **Sets the overall look** (palette lean, skybox tint, scenery), the job seasons used to do.
+  No difficulty effect: region is look + surroundings, never a pace lever. The one gameplay
+  consequence is that the off-road surface's own grip changes with the region — leaving the
+  road in a tundra vs a desert feels different — but that is variety, not difficulty, and the
+  **road** you actually race is unchanged.
 
 ## 8. Progression & meta
 - **Two currencies, no overlap:** **money → garage** (what you drive), **CP → progression** (how
@@ -156,7 +165,7 @@ See [PILLARS.md](PILLARS.md). In short:
   (white on dark, kept legible — *not* the blue menu look). Both sit under the VHS tape filter
   (§11). No in-fiction framing.
 - **Readability:** five stat bars front-and-center; instant car comparison. The pre-race screen
-  (track/surfaces/season/weather + chosen car & bars) previews the race; a loading screen covers
+  (track/surfaces/region/weather + chosen car & bars) previews the race; a loading screen covers
   async scene load — no hitch into the race.
 - **Screens:** career map (region map of races + CP/boss progress), car select / garage, shop,
   results, boss-rival intro, settings + input remap, pause.
@@ -200,5 +209,5 @@ See [PILLARS.md](PILLARS.md). In short:
 - **Cut:** upgrade-card system (contradicted "no upgrades"; nitro parked as the post-v1
   brand-feature candidate — v1 brands are pure stat personalities, §8).
 - **v1 scoping (Open):** number of chapters (= regions, 1:1), rivals/tiers, total cars,
-  tracks, and how many get full seasonal dressing. Trim to a shippable vertical slice first
+  tracks, and how many regions get full dressing. Trim to a shippable vertical slice first
   (work tracked in `tasks.yaml` / `STATUS.md`).

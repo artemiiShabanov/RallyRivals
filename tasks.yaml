@@ -32,7 +32,7 @@ tasks:
   - {id: code-track-test-track, title: "Gray-box test track (authored images + tuned TrackPath)", type: code, group: track, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-checkpoints, title: "Checkpoint gates baked from the spline", type: code, group: track, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-bake-tool, title: "Bake tool as in-editor @tool button", type: code, group: tools, size: default, status: done, blockers: [code-track-generator]}
-  - {id: code-track-seasons, title: "Seasonal visual swap (author-picked per race)", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: code-track-regions, title: "Apply region per race: off-road surface + prop set + dressing (RaceDef.region, replaces .season)", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-props, title: "Prop scatter from marker map", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-ai-line, title: "Bake AI racing line from the spline", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
   - {id: code-track-weather-grip, title: "Weather grip modifier (stacks on surface grip)", type: code, group: track, size: small, status: done, blockers: [code-vehicle-surface-grip]}
@@ -127,7 +127,7 @@ tasks:
   - {id: art-voxel-stubs, title: "Voxel inventory scaffold: 45 car + 3 wheel stubs with .vox sources", type: art, group: voxel, size: small, status: done, blockers: [art-voxel-car-blockout, art-world-palette]}
   - {id: code-vehicle-model-wiring, title: "CarDef model refs: body/wheel meshes swap with the car", type: code, group: vehicle, size: small, status: done, blockers: [code-vehicle-stats, art-voxel-stubs]}
   - {id: code-vehicle-lights, title: "Head/taillights: night beams via LightingPreset + brake flare", type: code, group: vehicle, size: small, status: done, blockers: [art-world-lighting]}
-  - {id: art-voxel-props, title: "Voxel prop set (rocks/signs/barriers)", type: art, group: voxel, size: default, status: todo, blockers: []}
+  - {id: art-voxel-props, title: "Voxel prop set (rocks/signs/barriers) — each prop authored per region x3 for scatter variety", type: art, group: voxel, size: big, status: todo, blockers: []}
   - {id: art-voxel-environment, title: "Voxel scenery/buildings set", type: art, group: voxel, size: big, status: todo, blockers: []}
   - {id: art-voxel-brand-families, title: "Visual family per manufacturer", type: art, group: voxel, size: default, status: todo, blockers: [content-cars-roster]}
   # ---------- art: voxel fleet (sculpt over assets/voxels stubs; base shells only —
@@ -164,8 +164,7 @@ tasks:
   - {id: art-world-palette, title: "Master colour palette (voxel + terrain ramps, ADR-003)", type: art, group: world, size: small, status: done, blockers: []}
   - {id: art-world-skybox, title: "Weather-driven sky sets (VHS banded sky shader)", type: art, group: world, size: default, status: done, blockers: [art-vfx-weather]}
   - {id: art-world-lighting, title: "Time-of-day lighting presets", type: art, group: world, size: default, status: done, blockers: []}
-  - {id: art-world-regions, title: "Region aesthetic themes", type: art, group: world, size: big, status: todo, blockers: [art-voxel-environment]}
-  - {id: art-world-seasons, title: "Seasonal dressing sets (only seasons a track uses)", type: art, group: world, size: big, status: todo, blockers: [code-track-seasons, art-voxel-environment]}
+  - {id: art-world-regions, title: "Region theme sets (look + off-road surface + per-region prop/dressing variants)", type: art, group: world, size: big, status: todo, blockers: [art-voxel-environment, art-voxel-props]}
   - {id: art-shader-surface, title: "Terrain surface/splat-blend shader", type: art, group: shader, size: default, status: done, blockers: [code-track-generator]}
   - {id: art-shader-road, title: "Per-surface material response: matte/gloss + fake blocky relief", type: art, group: shader, size: default, status: done, blockers: [code-track-generator]}
   - {id: art-shader-vhs, title: "VHS tape post-process (grain/bleed/tracking; intensity slider + off switch)", type: art, group: shader, size: default, status: done, blockers: []}
