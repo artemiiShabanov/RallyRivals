@@ -54,6 +54,7 @@ func _ready() -> void:
 		margin.add_child(col)
 
 	_build(col)                                       # …children hug the left edge (SHRINK_BEGIN)
+	Music.play("menu")                                # menu/career music (idempotent across nav)
 
 	var vhs := VHSFilter.new()
 	vhs.name = "VHSFilter"

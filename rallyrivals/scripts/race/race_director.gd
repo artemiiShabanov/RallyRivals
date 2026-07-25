@@ -113,6 +113,7 @@ func _build(track_ps: PackedScene) -> void:
 		add_child(hud)
 		hud.bind(_car, _timing, _cps, _race.laps, _race.race_type, _race.tt_targets())
 
+	Music.play(_race.race_type)   # race-type track (no-op/quiet until its .ogg exists)
 	_banner = _make_banner()
 
 ## Big centred text over the HUD — the countdown and the finish message share it.
