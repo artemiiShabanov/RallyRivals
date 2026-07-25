@@ -117,7 +117,7 @@ tasks:
   - {id: content-cars-manufacturers, title: "Define 3-4 manufacturers (identity + brand feature)", type: content, group: cars, size: default, status: done, blockers: []}
   - {id: content-rivals-defs, title: "Define 4 boss-rivals (brand + class per chapter)", type: content, group: rivals, size: default, status: done, blockers: []}
   - {id: content-rivals-campaign, title: "4-chapter structure (class mixes, boss per chapter)", type: content, group: rivals, size: default, status: done, blockers: [content-rivals-defs]}
-  - {id: content-rivals-roster, title: "Chapter driver rosters (9 per chapter: name, number, brand, behaviour)", type: content, group: rivals, size: default, status: todo, blockers: [content-rivals-campaign]}
+  - {id: content-rivals-roster, title: "Chapter driver rosters (9 per chapter: name, number, brand, behaviour)", type: content, group: rivals, size: default, status: done, blockers: [content-rivals-campaign]}
   - {id: content-tracks-first, title: "First real track (heightmap/surface/markers images)", type: content, group: tracks, size: big, status: todo, blockers: [code-track-bake-tool]}
   # umbrella — split into per-track tasks once v1 scope (GDD 12) settles chapter/track counts
   - {id: content-tracks-campaign, title: "Campaign track set (v1 regions x races)", type: content, group: tracks, size: huge, status: todo, blockers: [content-tracks-first, content-rivals-campaign]}

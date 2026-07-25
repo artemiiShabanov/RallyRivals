@@ -26,8 +26,9 @@ finale: beat them to pink-slip their car and advance to the next region (GDD §5
 
 - **HUD** is the short name the leaderboard shows (it only fits a surname); the full name is for the
   boss-intro screen (`code-ui-boss-intro`).
-- **Numbers are reserved** campaign-wide — the roster generator must exclude {66, 23, 7, 1} so no
-  regular driver shares a boss's plate (spec: numbers are 1–100, campaign-unique).
+- **Numbers are reserved** campaign-wide — the roster generator must exclude the boss plates
+  {66, 23, 7, 1} **and the player's #99** ([ROSTER.md](ROSTER.md)) so no regular driver shares one
+  (spec: numbers are 1–100, campaign-unique).
 
 ## Driving intent
 
