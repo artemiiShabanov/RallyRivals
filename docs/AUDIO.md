@@ -62,8 +62,8 @@ thin out a wide recording through phase cancellation — if it goes hollow, take
 loops and beds** (loops are always playing, so everything else stacks on top of them) — then do
 all balancing in `volume_db` on the def. Headroom matters because a race sums engine + tyres +
 rain + crowd + an impact + a UI click at once, and summed signals clip. Don't LUFS-normalize
-one-shots (a 0.2 s click has no meaningful integrated loudness); *do* use LUFS to match the three
-music tracks and the six beds to each other. Peak-normalizing does **not** make a set sound even —
+one-shots (a 0.2 s click has no meaningful integrated loudness); *do* use LUFS to match the
+music tracks (§7) and the six beds to each other. Peak-normalizing does **not** make a set sound even —
 a bright click at −3 dBFS reads much louder than a dull thud at −3 — so audition each group
 back-to-back in game and fix outliers in the def.
 
@@ -145,10 +145,12 @@ is the cheap version; don't source three until the one-loop version feels right.
 cheapest whole-task win on this page.
 
 ### Music — `audio-music-*`
-`menu` · `race` · `boss` — **no placeholders on purpose**; `audio-music-direction` writes the brief
-first, and a synthesized stand-in would only anchor the direction badly.
+**No placeholders on purpose** — a synthesized stand-in would anchor the direction badly. The full
+brief is **§7 (Music direction & sourcing)**; in short: a **city-pop** house sound with per-race-type
+variety, one finished loop per context. **~6 tracks** — 1 menu + 5 race-type; the boss duel is a
+hotter mix of the sprint track, not a separate source.
 
-**37 sound files + 3 music tracks** for the full game. Ambience and UI are the two cheapest groups;
+**37 sound files + ~6 music tracks** for the full game. Ambience and UI are the two cheapest groups;
 engine and tyres are the two that actually sell the driving.
 
 ## 3. Where to get sounds for free
@@ -496,3 +498,69 @@ Tempting, and mostly not worth it here:
 
 For a game you intend to sell, recorded libraries with written licences carry materially less risk.
 Use AI for one-off filler at most, never for the signature engine sound.
+
+## 7. Music direction & sourcing
+
+The `audio-music-direction` brief — the sound of the game and how to source it for free. Behaviour
+is decided: **one finished loop per context** (no adaptive stems), stereo `.ogg`, loop baked, on the
+Music bus. Licensing is decided: **CC0 + CC-BY only, never NC/ND** (this game is commercial — §6);
+log CC-BY in `CREDITS.md` + `SOURCES.md`.
+
+### Identity — city pop
+
+The house sound is **city pop**: glossy 80s Japanese pop — funky slap/round bass, lush 7th-chord
+keys, drum-machine + live-kit grooves, electric piano, sax/guitar licks, a nocturnal-but-breezy
+mood. It marries the VHS look for free: city pop's own modern revival is **cassette/VHS-coded**
+(the whole aesthetic is dubbed 80s tape), so the music *is* the tape the game pretends to be.
+
+It is a **palette, not a monotone**. City pop anchors it; adjacent genres colour individual race
+types for variety (the player asked for this) while staying in one warm, retro, groove-first world.
+
+### ⚠️ The sourcing reality (read before hunting)
+
+**Genuine city pop is almost entirely copyrighted** — the revival rides on ripped 80s records, and
+there is essentially no CC0/CC-BY Tatsuro-Yamashita-grade library. So do **not** search "city pop"
+and expect free results. Target its **free-reachable cousins**, which get you 90% of the feel:
+
+- **future funk** — city pop chopped over house/disco drums; the closest free analogue
+- **lo-fi / jazzhop** — the mellow, hazy end
+- **synth-funk / boogie / nu-disco** — the groove and slap-bass end
+- **vaporwave / mallsoft** — the woozy, nostalgic end (use sparingly; can be too slow)
+- **synthwave** — the propulsive fallback when a race needs pure drive
+
+### Track map — one loop each
+
+| Context | Mood | Genre lean |
+|---------|------|------------|
+| **Menu / career** | warm, unhurried, inviting | lounge city pop / lo-fi funk |
+| **Time trial** | focused, minimal, hypnotic (you vs the clock) | lo-fi / jazzhop |
+| **Circuit** | the staple — upbeat, mid-tempo, sunny | city pop / future funk |
+| **Sprint** | punchy, fast, urgent (short point-to-point) | future funk / boogie |
+| **Endurance** | long-form, hypnotic, doesn't fatigue | deep funk / vaporwave groove |
+| **Grand prix** | biggest, most 'produced', a little dramatic | lush city pop (the serious event) |
+| **Boss duel** | the sprint track, **hotter + faster mix** | — (reuse, not sourced) |
+
+The boss duel is a 1v1 *sprint* ([CAMPAIGN.md](CAMPAIGN.md)), so it reuses the **sprint** track with
+a hotter/faster mix rather than a bespoke boss theme — cheapest, and cohesive with the moment.
+
+### Sourcing plan
+
+- **Prefer instrumental.** Vocals date fast, fight the SFX for the midrange, and shrink the free
+  pool. Instrumental future-funk/lo-fi is plentiful.
+- **Where to look** (all have CC0/CC-BY filters — verify each track, don't trust a page banner):
+  Free Music Archive, OpenGameArt, Pixabay Music, Patrick de Arteaga, Incompetech (Kevin MacLeod,
+  CC-BY). Search terms: *future funk · lo-fi funk · synthwave · boogie · nu-disco · jazz house*.
+- **Per track:** confirm the licence (CC0 or CC-BY, **no NC/ND/SA**), download, log it in
+  `SOURCES.md` and — if CC-BY — `CREDITS.md`, then prep per §5 (trim, `.ogg`, **loop baked, offset
+  0**, stereo) and normalise *with* the other music so the set sits even (§1 loudness note).
+
+### v1 priority
+
+Source in this order, matched to what's playable now:
+
+1. **Time trial** — the vertical-slice race is a time trial (the slot runs `test_timetrial`), so this
+   is the first track the game actually needs.
+2. **Menu / career** — heard before every race.
+3. **Circuit + sprint** — the campaign staples (and sprint feeds the boss mix).
+4. **Endurance + grand prix** — campaign fills.
+5. **Boss** — a mix of the sprint track; do last, needs nothing new sourced.
