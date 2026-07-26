@@ -1,7 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://d0wf0mkc2rqlq"]
 
-[ext_resource type="Script" path="res://scripts/ai/ai_rival_test.gd" id="1_rival"]
+[ext_resource type="Script" uid="uid://4mb4614hs02b" path="res://scripts/ai/ai_rival_test.gd" id="1_rival"]
 
 [node name="AiRivalTest" type="Node3D"]
 script = ExtResource("1_rival")
-baked_scene_path = "res://assets/tracks/test/baked_track.tscn"
