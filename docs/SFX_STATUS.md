@@ -20,8 +20,9 @@ menus (`code-ui-*`).
 All roll loops are peak-normalised to **−14 dBFS** rather than −6: they are a texture layer that
 sits under engine and ambience. Final balance belongs to `audio-sfx-surface`.
 
-**Dropped:** `ui_back` (a plain click covers it). **Deferred:** `slipstream`, `nitro_loop`,
-`nitro_fire` — their features aren't built; backlog tasks remain.
+**Dropped:** `ui_back` (a plain click covers it). **Deferred:** `slipstream` — its feature is still
+backlogged (`code-vehicle-slipstream`). **Cut with its feature:** `nitro_loop`, `nitro_fire` — brand
+features are post-v1 (GDD §8), so nitro has no v1 home (`code-vehicle-brand-features` removed).
 Audition everything in-game: `\` → Audio (one-shots + beds + driven loops).
 
 ---

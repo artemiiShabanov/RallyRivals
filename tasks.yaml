@@ -60,7 +60,6 @@ tasks:
   - {id: code-vehicle-damage, title: "Damage system (visible + performance)", type: code, group: vehicle, size: big, status: todo, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-slipstream, title: "Slipstream (player-only) + FX", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller, code-ai-rival]}
   - {id: code-vehicle-stats, title: "Drive handling from the 5 stat bars", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller]}
-  - {id: code-vehicle-brand-features, title: "Baked-in brand abilities (nitro etc.)", type: code, group: vehicle, size: default, status: todo, blockers: [code-vehicle-controller]}
 
   # ---------- code: core / race / ai / ui ----------
   - {id: code-core-camera, title: "Chase camera (promote from prototype)", type: code, group: core, size: default, status: done, blockers: [code-vehicle-controller]}
