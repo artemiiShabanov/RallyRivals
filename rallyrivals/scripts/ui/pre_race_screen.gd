@@ -32,12 +32,24 @@ func _build(col: VBoxContainer) -> void:
 	body.add_child(left)
 
 	var car := _car()
+	var admitted := r.admits(car)
 	var right := _column()
-	right.add_child(heading("YOUR CAR  —  " + (car.display_name.to_upper() if car != null else "NO CAR"), "OsdDim"))
+	var car_line := car.display_name.to_upper() if car != null else "NO CAR"
+	if car != null and car.car_class != "":
+		car_line += "  (CLASS %s)" % car.car_class
+	right.add_child(heading("YOUR CAR  —  " + car_line, "OsdDim"))
 	var view := CarView.new()          # the 3D preview, in place of the stat bars
 	view.custom_minimum_size = Vector2(360, 240)
 	view.set_car(car)
 	right.add_child(view)
+	# Class gate (code-meta-classes): only a grand prix gates entry. Show the requirement, and flag
+	# in red when the current car under-classes it — START is disabled below to match.
+	var gate := r.gate_class()
+	if gate != "":
+		var note := heading("GRAND PRIX · CLASS %s+ REQUIRED" % gate, "OsdDim")
+		if not admitted:
+			note.add_theme_color_override("font_color", Color(1.0, 0.42, 0.32))
+		right.add_child(note)
 	body.add_child(right)
 
 	col.add_child(spacer(20))
@@ -47,7 +59,10 @@ func _build(col: VBoxContainer) -> void:
 	actions.add_theme_constant_override("separation", 12)
 	col.add_child(actions)
 
-	var start := menu_button("START  ▸")
+	# Under-classing a grand prix blocks START (the one gated event) — bring a bigger car. Every other
+	# race type always admits, so START stays live even if you brought a weaker car (that's your call).
+	var start := menu_button("CAR TOO LOW" if not admitted else "START  ▸")
+	start.disabled = not admitted
 	start.pressed.connect(func() -> void:
 		RaceDirector.pending = r      # hand the previewed RaceDef to the race
 		Flow.goto(Routes.RACE))
@@ -64,7 +79,8 @@ func _build(col: VBoxContainer) -> void:
 	back.pressed.connect(func() -> void: Flow.goto(Routes.CAREER_HUB))
 	actions.add_child(back)
 
-	start.grab_focus()
+	# Focus the go-button when it's live; otherwise steer the player to the fix.
+	(start if admitted else change).grab_focus()
 
 func _column() -> VBoxContainer:
 	var v := VBoxContainer.new()

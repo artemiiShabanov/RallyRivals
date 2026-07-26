@@ -13,7 +13,7 @@ extends Resource
 @export_enum("circuit", "sprint", "time_trial", "endurance", "grand_prix") var race_type := "circuit"
 @export var laps := 3                    ## circuit/endurance; ignored for point-to-point
 @export_enum("officials", "wilds") var culture := "officials"   ## contact rules (code-race-contact)
-@export var car_class := ""              ## GP class gate ("" = open entry)
+@export var car_class := ""              ## Grand-Prix class gate (a class letter; "" = open entry). See gate_class()/admits().
 
 @export_group("Conditions (fixed per race)")
 @export var lighting: LightingPreset
@@ -42,3 +42,15 @@ func tt_targets() -> Array:
 			out.append(t)
 	out.sort()
 	return out
+
+## The class a car must reach to enter — code-meta-classes gating policy. ONLY grand_prix is
+## class-gated (GDD §8, field-matching spec); every other type ignores car_class and is open. "" = no
+## gate. (The GP task may later widen this to a band; a single required class is the v1 gate.)
+func gate_class() -> String:
+	return car_class if race_type == "grand_prix" else ""
+
+## May this car enter this race? Open races admit anything; a grand prix needs the car at or ABOVE its
+## gate class. Bringing a stronger car is always allowed — out-classing is a reward, never blocked
+## (field-matching spec); the gate exists only to stop under-classing the one serious event type.
+func admits(car: CarDef) -> bool:
+	return car != null and CarClass.at_least(car.car_class, gate_class())

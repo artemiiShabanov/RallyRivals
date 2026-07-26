@@ -4,9 +4,9 @@ extends RefCounted
 ## queries the shop and garage need: all cars, a car by id, the owned set, what's buyable, and a
 ## price. Prices are a PLACEHOLDER derived from class (D cheap → S dear) until balance-economy-tables
 ## authors real ones — an authored price on the CarDef wins if set. Cars sort by class (S→D) then name.
+## Class ranking is delegated to [CarClass] (code-meta-classes) so ordering never drifts from gating.
 
 const DIR := "res://assets/cars/"
-const CLASS_ORDER := ["S", "A", "B", "C", "D"]
 const CLASS_PRICE := {"S": 160000, "A": 85000, "B": 40000, "C": 18000, "D": 8000}
 
 static var _cache: Array[CarDef] = []
@@ -27,10 +27,10 @@ static func _load() -> void:
 			if def != null:
 				_cache.append(def)
 	_cache.sort_custom(func(a: CarDef, b: CarDef) -> bool:
-		var ra := class_rank(a.car_class)
-		var rb := class_rank(b.car_class)
+		var ra := CarClass.rank(a.car_class)
+		var rb := CarClass.rank(b.car_class)
 		if ra != rb:
-			return ra < rb
+			return ra > rb              # stronger class first (S → D)
 		return a.display_name.naturalnocasecmp_to(b.display_name) < 0)
 
 static func by_id(id: String) -> CarDef:
@@ -64,8 +64,3 @@ static func price_of(def: CarDef) -> int:
 	if def.price > 0:                       # an authored price wins over the class placeholder
 		return def.price
 	return int(CLASS_PRICE.get(def.car_class, 0))
-
-## 0 = S (top) … 4 = D. Unknown classes sort last.
-static func class_rank(cls: String) -> int:
-	var i := CLASS_ORDER.find(cls)
-	return i if i >= 0 else CLASS_ORDER.size()
