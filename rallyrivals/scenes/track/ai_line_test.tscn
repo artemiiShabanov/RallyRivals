@@ -1,7 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://c0x8dkdu6066q"]
 
-[ext_resource type="Script" path="res://scripts/track/ai_line_preview.gd" id="1_ailine"]
+[ext_resource type="Script" uid="uid://bdxvnxp33snan" path="res://scripts/track/ai_line_preview.gd" id="1_ailine"]
 
 [node name="AiLineTest" type="Node3D"]
 script = ExtResource("1_ailine")
-baked_scene_path = "res://assets/tracks/test/baked_track.tscn"

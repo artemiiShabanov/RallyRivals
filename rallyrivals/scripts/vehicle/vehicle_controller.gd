@@ -154,14 +154,33 @@ func _bar(value: int, endpoints: Array) -> float:
 ## steer) at the grid, through the 3·2·1 countdown, and again at the finish.
 var input_enabled := true
 
+## Optional non-human driver (code-ai-rival). When set, the controller PULLS its controls from
+## driver.poll(self, delta) each physics frame instead of the local Input actions — one seam so an AI
+## rival drives this exact body and physics, no parallel sim. Pull (not push) so controls are always
+## computed the same frame they're used, regardless of node order. Duck-typed: any object with
+## `poll(car, delta) -> Dictionary { throttle, reverse, steer, handbrake }`. Gated by input_enabled
+## exactly like the human, so the AI is parked at the grid / countdown / finish too. null = human.
+var driver = null
+
 func _physics_process(delta: float) -> void:
 	var throttle := 0.0
 	var reverse := 0.0
 	var steer_input := 0.0
+	var handbraking := false
+	var want_reset := false
 	if input_enabled:
-		throttle = Input.get_action_strength("accelerate")
-		reverse = Input.get_action_strength("brake_reverse")
-		steer_input = Input.get_action_strength("steer_left") - Input.get_action_strength("steer_right")
+		if driver != null:
+			var c: Dictionary = driver.poll(self, delta)
+			throttle = clampf(c.get("throttle", 0.0), 0.0, 1.0)
+			reverse = clampf(c.get("reverse", 0.0), 0.0, 1.0)
+			steer_input = clampf(c.get("steer", 0.0), -1.0, 1.0)
+			handbraking = bool(c.get("handbrake", false))
+		else:
+			throttle = Input.get_action_strength("accelerate")
+			reverse = Input.get_action_strength("brake_reverse")
+			steer_input = Input.get_action_strength("steer_left") - Input.get_action_strength("steer_right")
+			handbraking = Input.is_action_pressed("handbrake")
+			want_reset = Input.is_action_just_pressed("reset_car")
 
 	# brake_reverse brakes while rolling forward, and reverses once nearly stopped.
 	if reverse > 0.0 and get_forward_speed() > 1.0:
@@ -178,7 +197,6 @@ func _physics_process(delta: float) -> void:
 		brake = max_brake
 
 	# Grip layer: front stays grippy, rear grips less (drift), and much less on handbrake.
-	var handbraking := input_enabled and Input.is_action_pressed("handbrake")
 	throttle_amount = throttle
 	is_braking = brake > 0.0
 	is_handbraking = handbraking
@@ -199,7 +217,7 @@ func _physics_process(delta: float) -> void:
 	# Ease steering toward the target so input isn't twitchy.
 	steering = move_toward(steering, max_steer * steer_input, steer_speed * delta)
 
-	if input_enabled and Input.is_action_just_pressed("reset_car"):
+	if want_reset:
 		reset()
 
 ## Per-wheel, SURFACE-RELATIVE grip. Each wheel reads the grip of whatever surface it's touching
