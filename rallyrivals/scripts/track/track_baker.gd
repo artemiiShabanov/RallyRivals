@@ -26,6 +26,14 @@ var off_road_surface: SurfaceType = null ## surface for everything off the road 
 var gate_height := 8.0                  ## checkpoint box height (catches airborne cars)
 var gate_depth := 4.0                   ## checkpoint box thickness along travel (no tunnelling at speed)
 var path_points := 24                   ## TrackPath control points after decimation (more = closer hand-tune fit on long tracks)
+# AI racing line (code-track-ai-line): a min-curvature line inside the road corridor. It cuts apexes
+# instead of tracing the centreline. `line_margin` keeps a car half-width + safety clear of each edge
+# (car body is 2 m wide); relaxation is a cheap bake-time Laplacian-in-a-corridor solve.
+var line_margin := 1.4                  ## metres kept clear of each road edge (car half-width + safety)
+var line_iters := 140                   ## relaxation passes (more = straighter, tighter apexes)
+var line_rate := 0.35                   ## per-pass move fraction toward the min-curvature target (0..1)
+var line_max_points := 160              ## cap on baked AiLine control points (keeps long tracks lean)
+var line_max_half := 12.0               ## metres — corridor half-width cap, so the line hugs the road ribbon and can't wander into a broad off-ribbon field of some other drivable surface
 
 # Race colours (semantic dots in race.png). A dot is any small blob; its centroid is what counts.
 # Pairs of dots straddle the road: start pair = the start line (gate 0), each gate pair = one
@@ -71,6 +79,7 @@ func bake() -> Error:
 	var counts := _add_ground(root)
 	var spline_pts := _extract_spline(race["start_mid"], race["dir"], Vector2.INF if is_loop else race["finish_mid"])
 	var curve := _add_path(root, spline_pts, is_loop)
+	var ai_pts := _add_ai_line(root, spline_pts, is_loop)
 	var ngates := _add_checkpoints(root, race, curve, is_loop)
 	_add_markers(root, race["start_mid"])
 	if not is_loop:
@@ -83,7 +92,7 @@ func bake() -> Error:
 	var packed := PackedScene.new()
 	packed.pack(root)
 	var err := ResourceSaver.save(packed, out_scene)
-	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " gates=", ngates, " loop=", is_loop, " surfaces=", counts, " save_err=", err)
+	print("bake: size=", _size, " spline_pts=", spline_pts.size(), " ai_pts=", ai_pts, " gates=", ngates, " loop=", is_loop, " surfaces=", counts, " save_err=", err)
 	return err
 
 # ---------- world / image helpers ----------
@@ -427,6 +436,92 @@ func _add_path(root: Node3D, pts: PackedVector2Array, is_loop := true) -> Curve3
 		curve.add_point(wp, -tan, tan)
 	path.curve = curve
 	root.add_child(path)
+	return curve
+
+# ---------- AI racing line (code-track-ai-line) ----------
+# The centreline traces the road's middle; a racing line cuts the apexes. We solve one lateral
+# offset per centreline station: the drivable corridor is measured by marching `_is_road` off each
+# side (minus `line_margin`), then the offsets are relaxed toward the min-curvature line clamped
+# inside that corridor. This is the classic "shortest/straightest path through a bent corridor",
+# which naturally hugs the inside of corners. Purely a plan-view (XZ) solve — elevation just follows
+# the road, exactly as a real racing line does. Baked as a sibling `AiLine` Path3D so it is
+# inspectable and hand-tunable in the editor, and `code-ai-rival` samples it with the same Curve3D
+# API as TrackPath. Returns the baked control-point count (0 = too few stations to bake a line).
+func _add_ai_line(root: Node3D, centre: PackedVector2Array, is_loop: bool) -> int:
+	var n := centre.size()
+	if n < 4:
+		return 0
+	var margin_px := line_margin / mpp
+	# Per-station road normal (perpendicular to the local heading, in pixel/XZ space) and the corridor
+	# offset range the line may take from the centreline: (-left+margin) .. (+right-margin).
+	var normal := PackedVector2Array(); normal.resize(n)
+	var lo := PackedFloat32Array(); lo.resize(n)
+	var hi := PackedFloat32Array(); hi.resize(n)
+	for i in n:
+		var a := centre[(i - 1 + n) % n] if is_loop else centre[maxi(i - 1, 0)]
+		var b := centre[(i + 1) % n] if is_loop else centre[mini(i + 1, n - 1)]
+		var tan := (b - a)
+		if tan.length() < 0.0001:
+			tan = Vector2.RIGHT
+		var nrm := Vector2(-tan.y, tan.x).normalized()   # left of travel
+		normal[i] = nrm
+		var right := maxf(0.0, _road_half(centre[i], -nrm) - margin_px)
+		var left := maxf(0.0, _road_half(centre[i], nrm) - margin_px)
+		lo[i] = -left; hi[i] = right   # offset sign follows +normal (= left)
+	# Relax the lateral offsets: each pass pulls every station's point toward the midpoint of its two
+	# neighbours (curvature reduction), projected back onto that station's normal axis and clamped
+	# into the corridor. Open tracks pin both ends to the centreline so the car meets the start/finish
+	# gates square-on.
+	var off := PackedFloat32Array(); off.resize(n)
+	off.fill(0.0)
+	var lo_i := 0 if is_loop else 1
+	var hi_i := n if is_loop else n - 1
+	for _pass in line_iters:
+		for i in range(lo_i, hi_i):
+			var pa := centre[(i - 1 + n) % n] + normal[(i - 1 + n) % n] * off[(i - 1 + n) % n]
+			var pb := centre[(i + 1) % n] + normal[(i + 1) % n] * off[(i + 1) % n]
+			var desired := (pa + pb) * 0.5
+			var t := (desired - centre[i]).dot(normal[i])   # project neighbour-midpoint onto the normal axis
+			var target := clampf(t, lo[i], hi[i])
+			off[i] = clampf(lerpf(off[i], target, line_rate), lo[i], hi[i])
+	# Bake: apply the offsets, decimate to the point cap, build the Curve3D (heightmap Y, tangents).
+	var line := PackedVector2Array(); line.resize(n)
+	for i in n:
+		line[i] = centre[i] + normal[i] * off[i]
+	var stride := maxi(1, int(ceil(float(n) / line_max_points)))
+	var keep := PackedVector2Array()
+	for i in range(0, n, stride):
+		keep.append(line[i])
+	if not is_loop and keep[keep.size() - 1] != line[n - 1]:
+		keep.append(line[n - 1])
+	var path := Path3D.new(); path.name = "AiLine"
+	path.curve = _pixels_to_curve(keep, is_loop)
+	root.add_child(path)
+	return keep.size()
+
+# Distance (in pixels) from `p` to the road edge along unit `dir`, marching `_is_road`. 0 if `p`
+# itself is already off-road; capped so a gap in the paint can't run the march off to infinity.
+func _road_half(p: Vector2, dir: Vector2) -> float:
+	var cap := line_max_half / mpp
+	var t := 0.5
+	var last := 0.0
+	while t < cap and _is_road(p + dir * t):
+		last = t; t += 0.5
+	return last
+
+# Pixel-space polyline -> world Curve3D: heightmap Y (+0.5 so it floats just over the road) and
+# neighbour-difference tangents (cyclic for a loop). Shared by the AI line; mirrors _add_path's build.
+func _pixels_to_curve(keep: PackedVector2Array, is_loop: bool) -> Curve3D:
+	var curve := Curve3D.new()
+	var n := keep.size()
+	for i in n:
+		var p := keep[i]
+		var wp := Vector3((p.x - _size * 0.5) * mpp, _height(int(p.x), int(p.y)) + 0.5, (p.y - _size * 0.5) * mpp)
+		var ia := (i - 1 + n) % n if is_loop else maxi(i - 1, 0)
+		var ib := (i + 1) % n if is_loop else mini(i + 1, n - 1)
+		var pa := keep[ia]; var pb := keep[ib]
+		var tan := Vector3((pb.x - pa.x) * mpp, 0, (pb.y - pa.y) * mpp) * 0.18
+		curve.add_point(wp, -tan, tan)
 	return curve
 
 # ---------- checkpoints: authored gate pairs -> ordered Area3D gates ----------
