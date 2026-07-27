@@ -15,6 +15,13 @@ var laps: Array = []
 var best_lap := INF
 var finished := true
 
+# Payout breakdown, filled by RaceEconomy.apply() at finish (code-meta-economy) for the results screen.
+var money_earned := 0
+var cp_earned := 0
+var prev_best := 0        ## banked best place before this run (0 = none)
+var banked_place := 0     ## banked best place after this run
+var improved := false     ## did this run beat the banked best (a top-up, not a trickle)?
+
 func is_win() -> bool:
 	return place == 1
 

@@ -173,6 +173,7 @@ func _finish() -> void:
 		# Solo field in the skeleton — no rival times yet, so this places 1 / 1. code-ai-rival will
 		# pass the rivals' finish times to compute().
 		last_result = RaceResult.compute(_race.id, total, laps, best)
+	RaceEconomy.apply(last_result, _race)   # bank the finish + pay out (code-meta-economy)
 	Sfx.play(load("res://assets/audio/sfx/finish_win.tres") as SfxDef)
 	var ca := _car.get_node_or_null("CarAudio")
 	if ca != null and ca.has_method("shut_down"):

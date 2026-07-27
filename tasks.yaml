@@ -101,7 +101,7 @@ tasks:
   # ---------- code: meta (progression / economy) ----------
   - {id: code-meta-currencies, title: "Money + CP wallets (seed money + debug top-up; real earn = economy)", type: code, group: meta, size: small, status: done, blockers: []}
   - {id: code-meta-car-catalog, title: "Car catalog registry (all/owned/by-class + placeholder prices)", type: code, group: meta, size: small, status: done, blockers: [content-cars-roster]}
-  - {id: code-meta-economy, title: "Banked-best top-up payout economy", type: code, group: meta, size: big, status: todo, blockers: [code-race-result, code-meta-currencies, code-race-defs]}
+  - {id: code-meta-economy, title: "Banked-best top-up payout economy", type: code, group: meta, size: big, status: done, blockers: [code-race-result, code-meta-currencies, code-race-defs]}
   - {id: code-meta-classes, title: "Class system S-D + class gating", type: code, group: meta, size: default, status: done, blockers: [content-cars-roster]}
   - {id: code-meta-shop, title: "Always-open price-gated car shop", type: code, group: meta, size: default, status: done, blockers: [code-meta-currencies, code-meta-car-catalog]}
   - {id: code-meta-garage, title: "Owned-cars garage + selection", type: code, group: meta, size: default, status: done, blockers: [code-meta-currencies, code-meta-car-catalog]}
