@@ -16,15 +16,19 @@ static var autodrive := false           ## test/attract: a RivalDriver drives th
 
 @export var fallback_race: RaceDef      ## used when launched directly (no pending)
 @export var car_scene: PackedScene = preload("res://scenes/vehicle/car.tscn")
+## Dev/test: spawn this many AI rivals that drive the AiLine, lined up ahead of you (so you can catch +
+## ram one). Drawn from the race's assembled field (real driver cars). The full auto-field with
+## finish-time placings is a later integration; this is the minimal opponent.
+@export var rivals := 0
 
 const SLICE_RACE := "res://assets/races/test_timetrial.tres"
 const COUNT_FROM := 3
-# Contact penalty (code-race-contact): an OFFICIALS race turns each car-to-car ram into seconds added
-# to the finish time, scaled by impact impulse. Wilds ignore it entirely. Placeholder rates — balance
-# owns the real numbers.
-const PENALTY_RATE := 0.0008   # seconds per N·s of ram impulse
-const PENALTY_MIN := 0.5       # a qualifying ram costs at least this
-const PENALTY_MAX := 4.0       # cap on a single ram
+# Contact penalty (code-race-contact): an OFFICIALS race turns each front/back slam into another car
+# into whole seconds added to the finish time, 2–5 s scaled by impact impulse (harder = more). Wilds
+# ignore it entirely. Placeholder map — balance owns the real numbers.
+const PENALTY_MIN := 2.0       # a qualifying slam costs at least this
+const PENALTY_MAX := 5.0       # a full-speed slam costs this
+const RAM_HARD := 5000.0       # impulse (N·s) at/above which a slam is worth the full 5 s
 
 var _race: RaceDef
 var _car: VehicleController
@@ -35,6 +39,7 @@ var _built := false
 var _banner: Label
 var _penalty := 0.0            ## accrued Officials contact penalty (s), folded into the finish time
 var _penalty_label: Label
+var _rivals: Array[VehicleController] = []   ## AI opponents (dev/test), parked until GO
 
 func _ready() -> void:
 	_race = pending if pending != null else (fallback_race if fallback_race != null else load(SLICE_RACE) as RaceDef)
@@ -115,6 +120,8 @@ func _build(track_ps: PackedScene) -> void:
 		_car.driver = RivalDriver.new(ai_line, _cps.loop if _cps != null else true)
 	if _race.culture == "officials":    # clean racing: rams cost time. Wilds never connects this.
 		_car.rammed.connect(_on_ram)
+	if rivals > 0 and ai_line != null:
+		_spawn_rivals(spawn, fwd, right, ai_line)
 
 	var cam := ChaseCamera.new()
 	cam.name = "ChaseCamera"
@@ -136,6 +143,23 @@ func _build(track_ps: PackedScene) -> void:
 	_banner = _make_banner()
 	if _race.culture == "officials":
 		_penalty_label = _make_penalty_label()
+
+# Line up `rivals` AI cars ahead of the player in the same lane, each driving the AiLine, parked until
+# GO. Cars come from the race's assembled field (real driver/car); short of the field, they use the
+# scene default. Minimal opponent for contact/feel testing — not the finish-time-scored auto-field yet.
+func _spawn_rivals(base: Vector3, fwd: Vector3, right: Vector3, ai_line: Path3D) -> void:
+	var field := RaceField.assemble(_race, 0)
+	var loop: bool = _cps.loop if _cps != null else true
+	for i in rivals:
+		var car := car_scene.instantiate() as VehicleController
+		car.name = "Rival%d" % (i + 1)
+		if i < field.size():
+			car.car = field[i]["car"]                       # a real (brand, class) car
+		car.transform = Transform3D(Basis(right, Vector3.UP, fwd), base + fwd * (6.0 + i * 6.0))
+		car.input_enabled = false                           # parked until GO, like the player
+		car.driver = RivalDriver.new(ai_line, loop)
+		add_child(car)
+		_rivals.append(car)
 
 ## Big centred text over the HUD — the countdown and the finish message share it.
 func _make_banner() -> Label:
@@ -175,10 +199,11 @@ func _make_penalty_label() -> Label:
 func _on_ram(impulse: float) -> void:
 	if _finished:
 		return
-	var secs := clampf(impulse * PENALTY_RATE, PENALTY_MIN, PENALTY_MAX)
+	# whole-second penalty in [2, 5], scaled by how hard the slam was
+	var secs := clampf(roundf(remap(impulse, VehicleController.IMPACT_MIN, RAM_HARD, PENALTY_MIN, PENALTY_MAX)), PENALTY_MIN, PENALTY_MAX)
 	_penalty += secs
 	if _penalty_label != null:
-		_penalty_label.text = "CONTACT  +%.1fs   (penalty +%.1fs)" % [secs, _penalty]
+		_penalty_label.text = "CONTACT  +%.0fs   (penalty +%.0fs)" % [secs, _penalty]
 		_penalty_label.modulate.a = 1.0
 		var tw := create_tween()
 		tw.tween_property(_penalty_label, "modulate:a", 0.0, 1.4).set_delay(0.5)
@@ -188,6 +213,8 @@ func _run() -> void:
 	if _finished:
 		return
 	_car.input_enabled = true
+	for r in _rivals:                   # release the AI opponents at the same GO
+		r.input_enabled = true
 	_timing.begin()
 	_banner.text = ""
 	if autodrive:

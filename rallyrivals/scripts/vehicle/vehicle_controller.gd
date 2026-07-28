@@ -67,10 +67,12 @@ var is_handbraking := false
 
 ## Collision impulse in N·s, once per hit. CarAudio picks light vs heavy from the magnitude.
 signal impacted(strength: float)
-## A CAR-TO-CAR ram (the contact body is another vehicle), impulse in N·s. Officials races turn this
-## into a time penalty (code-race-contact); Wilds ignore it. Walls/props fire `impacted`, never this.
+## A front/back SLAM into another car — I drove my nose or tail into another vehicle (a side-by-side
+## rub does NOT count). Impulse in N·s. Officials races turn this into a time penalty
+## (code-race-contact); Wilds ignore it. Walls/props fire `impacted`, never this.
 signal rammed(impulse: float)
 const IMPACT_MIN := 900.0                # below this it's a scrape, not a hit
+const SLAM_DOT := 0.6                    # |dot(dir-to-other, my forward)| ≥ this ⇒ a front/back slam, not a side rub
 const IMPACT_COOLDOWN := 0.12            # s — one contact spans several physics frames
 var _impact_cool := 0.0
 var _touching := 0                       # bodies in contact right now (scrape source)
@@ -353,15 +355,23 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	if _impact_cool > 0.0:
 		return
 	var strongest := 0.0
-	var car_hit := false
+	var slam := false
+	var mypos := state.transform.origin
+	var fwd := state.transform.basis.z          # this car drives toward +Z
 	for i in state.get_contact_count():
 		strongest = maxf(strongest, state.get_contact_impulse(i).length())
-		if state.get_contact_collider_object(i) is VehicleController:
-			car_hit = true          # hit another car, not a wall/prop
+		var other := state.get_contact_collider_object(i)
+		if other is VehicleController:
+			# Front/back slam only: is the other car roughly ahead of or behind me (I ran into it),
+			# vs beside me (an incidental side rub, which doesn't count)?
+			var to_other := (other as VehicleController).global_position - mypos
+			to_other.y = 0.0
+			if to_other.length() > 0.01 and absf(to_other.normalized().dot(fwd)) >= SLAM_DOT:
+				slam = true
 	if strongest >= IMPACT_MIN:
 		_impact_cool = IMPACT_COOLDOWN
 		impacted.emit(strongest)
-		if car_hit:
+		if slam:
 			rammed.emit(strongest)
 
 ## Hard-cap the yaw rate: the car can never rotate faster than max_yaw_rate, so when the rear
