@@ -11,6 +11,7 @@ extends Resource
 @export var owned_cars: PackedStringArray = []   ## CarDef ids the player owns
 @export var current_car := ""                    ## selected CarDef id
 @export var bests: Dictionary = {}               ## race_id (String) -> best place (int, 1 = win)
+@export var roster: Array = []                    ## generated rival drivers (Array of DriverDef dicts), one campaign's worth; built once by Roster
 @export var created_unix := 0                     ## slot creation time
 @export var played_unix := 0                      ## last save time
 @export var playtime_sec := 0.0
@@ -23,6 +24,7 @@ func to_dict() -> Dictionary:
 		"owned_cars": Array(owned_cars),
 		"current_car": current_car,
 		"bests": bests,
+		"roster": roster,
 		"created_unix": created_unix,
 		"played_unix": played_unix,
 		"playtime_sec": playtime_sec,
@@ -36,6 +38,7 @@ static func from_dict(d: Dictionary) -> SaveProfile:
 	p.owned_cars = PackedStringArray(d.get("owned_cars", []))
 	p.current_car = String(d.get("current_car", ""))
 	p.bests = d.get("bests", {})
+	p.roster = Array(d.get("roster", []))
 	p.created_unix = int(d.get("created_unix", 0))
 	p.played_unix = int(d.get("played_unix", 0))
 	p.playtime_sec = float(d.get("playtime_sec", 0.0))

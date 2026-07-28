@@ -15,6 +15,13 @@ extends Resource
 @export_enum("officials", "wilds") var culture := "officials"   ## contact rules (code-race-contact)
 @export var car_class := ""              ## Grand-Prix class gate (a class letter; "" = open entry). See gate_class()/admits().
 
+@export_group("Field (open races)")
+## Class band the AI field is drawn from (field-matching spec): rivals get a uniform-random class in
+## [class_low..class_high]; the player's own car has no effect. Either bound "" leaves that side open.
+## Author a band spanning 2–3 classes. Ignored by time trial (no field) and grand prix (its own grid).
+@export var class_low := ""
+@export var class_high := ""
+
 @export_group("Conditions (fixed per race)")
 @export var lighting: LightingPreset
 @export var weather: WeatherPreset

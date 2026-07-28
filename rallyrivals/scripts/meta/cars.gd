@@ -39,6 +39,15 @@ static func by_id(id: String) -> CarDef:
 			return d
 	return null
 
+## The one car for a (brand, class) — the roster is a perfect 3 brands × 5 classes grid, so this is
+## unambiguous (pink-slip cars own their slot too). Used by the field draw to give a rival its car.
+## Returns null only on bad data (a missing brand/class combo).
+static func by_brand_class(brand: String, cls: String) -> CarDef:
+	for d in all():
+		if d.brand == brand and d.car_class == cls:
+			return d
+	return null
+
 static func is_owned(id: String) -> bool:
 	return Save.active != null and id in Save.active.owned_cars
 

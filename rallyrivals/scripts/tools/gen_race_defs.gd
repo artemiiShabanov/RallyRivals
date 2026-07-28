@@ -13,6 +13,8 @@ func _initialize() -> void:
 	day_race.track_scene = "res://assets/tracks/test/baked_track.tscn"
 	day_race.race_type = "circuit"
 	day_race.laps = 3
+	day_race.class_low = "D"          # field band (field-matching): D–C beginner circuit
+	day_race.class_high = "C"
 	day_race.lighting = load("res://assets/lighting/golden.tres")
 	day_race.weather = load("res://assets/weather/clear.tres")
 	ResourceSaver.save(day_race, dir + "test_circuit.tres")
@@ -23,6 +25,8 @@ func _initialize() -> void:
 	storm.track_scene = "res://assets/tracks/test/baked_track.tscn"
 	storm.race_type = "circuit"
 	storm.laps = 3
+	storm.class_low = "C"             # field band: a tougher C–A night circuit
+	storm.class_high = "A"
 	storm.culture = "wilds"
 	storm.lighting = load("res://assets/lighting/night.tres")
 	storm.weather = load("res://assets/weather/thunder.tres")
@@ -41,5 +45,6 @@ func _initialize() -> void:
 	trial.tt_bronze = 85.0
 	ResourceSaver.save(trial, dir + "test_timetrial.tres")
 
+	# test_timetrial has no field, so it authors no band.
 	print("race defs: 3")
 	quit()

@@ -14,8 +14,12 @@ extends Node3D
 
 @export var baked_scene_path := "res://assets/tracks/test/baked_track.tscn"
 @export var car_scene: PackedScene = preload("res://scenes/vehicle/car.tscn")
-@export var ai_count := 3          ## how many AI rivals to spawn
+@export var ai_count := 3          ## how many AI rivals to spawn (generic pack; ignored when `race` is set)
 @export var include_player := true ## also spawn a WASD car on the grid
+## Optional: assemble a real field (code-race-field) from this RaceDef instead of the generic pack —
+## rivals become the chapter's drawn drivers in their (brand, class) cars, labelled by HUD name.
+@export var race: RaceDef
+@export var chapter := 0           ## which chapter's roster to draw the field from
 
 # demo-only pace spread applied across the AIs (see the CAVEAT above) — NOT code-ai-difficulty
 const CORNER_GRIP_LO := 7.8
@@ -54,17 +58,15 @@ func _ready() -> void:
 			fwd = f.normalized()
 	var right := Vector3.UP.cross(fwd).normalized()
 
-	# Build the grid: optional player on pole, then the AIs. Each gets a staggered 2-wide slot.
+	# Build the grid: optional player on pole, then the rivals. Each gets a staggered 2-wide slot.
+	# A real assembled field (code-race-field) if `race` is set, else the generic tuning pack.
+	var rivals := _rivals(ai, loop)     # [{name, car_def, driver}]
 	var slot := 0
 	if include_player:
 		_add_car(_grid_pos(base, fwd, right, slot), fwd, right, "You", null)
 		slot += 1
-	for k in ai_count:
-		var d := RivalDriver.new(ai, loop) if ai != null else null
-		if d != null and ai_count > 1:
-			# spread corner pace across the field so they don't drive in lockstep (demo convenience)
-			d.corner_grip = lerpf(CORNER_GRIP_LO, CORNER_GRIP_HI, float(k) / float(ai_count - 1))
-		_add_car(_grid_pos(base, fwd, right, slot), fwd, right, "AI %d" % (k + 1), d)
+	for r in rivals:
+		_add_car(_grid_pos(base, fwd, right, slot), fwd, right, r["name"], r["driver"], r["car_def"])
 		slot += 1
 
 	# Cameras: a chase per car, then a top-down overview. C cycles.
@@ -83,7 +85,28 @@ func _ready() -> void:
 	vhs.name = "VHSFilter"
 	add_child(vhs)
 	_label = _make_readout()
-	print("AI pack test: %d AI rival(s)%s. C = cycle camera." % [ai_count, " + you (WASD)" if include_player else ""])
+	var mode := ("field %s" % race.id) if race != null else ("%d AI" % ai_count)
+	print("AI pack test (%s): %d cars%s. C = cycle camera." % [mode, _cars.size(), " (you = WASD)" if include_player else ""])
+
+# The rivals to grid up: a real assembled field (code-race-field) when `race` is set — chapter drivers
+# in their (brand, class) cars, HUD-named — else the generic pace-spread tuning pack.
+func _rivals(ai: Path3D, loop: bool) -> Array:
+	var out: Array = []
+	if race != null and ai != null:
+		var field := RaceField.assemble(race, chapter)
+		for i in field.size():
+			var e: Dictionary = field[i]
+			var d := RivalDriver.new(ai, loop)
+			if field.size() > 1:
+				d.corner_grip = lerpf(CORNER_GRIP_LO, CORNER_GRIP_HI, float(i) / float(field.size() - 1))
+			out.append({"name": String(e["driver"].hud).to_upper(), "car_def": e["car"], "driver": d})
+		return out
+	for k in ai_count:
+		var d := RivalDriver.new(ai, loop) if ai != null else null
+		if d != null and ai_count > 1:
+			d.corner_grip = lerpf(CORNER_GRIP_LO, CORNER_GRIP_HI, float(k) / float(ai_count - 1))
+		out.append({"name": "AI %d" % (k + 1), "car_def": null, "driver": d})
+	return out
 
 # Staggered 2-wide starting grid, rows marching back along -fwd.
 func _grid_pos(base: Vector3, fwd: Vector3, right: Vector3, i: int) -> Vector3:
@@ -91,9 +114,11 @@ func _grid_pos(base: Vector3, fwd: Vector3, right: Vector3, i: int) -> Vector3:
 	var row := i / 2
 	return base + right * side + (-fwd) * (row * 6.0) + Vector3.UP * 1.5
 
-func _add_car(pos: Vector3, fwd: Vector3, right: Vector3, nm: String, drv) -> void:
+func _add_car(pos: Vector3, fwd: Vector3, right: Vector3, nm: String, drv, car_def: CarDef = null) -> void:
 	var car := car_scene.instantiate() as VehicleController
 	car.name = nm
+	if car_def != null:
+		car.car = car_def          # set before entering the tree so _ready applies its model + stats
 	car.transform = Transform3D(Basis(right, Vector3.UP, fwd), pos)
 	add_child(car)
 	if drv != null:
