@@ -38,6 +38,11 @@ const RECOVER_TIME := 0.9
 var _stuck := 0.0
 var _recover := 0.0
 
+# rollover recovery: a flipped AI can't drive out, so respawn it upright after a beat
+const ROLL_UP := 0.35        # car up · world up below this = rolled onto its roof/side
+const ROLL_RESET := 2.0      # seconds flipped before the auto-reset
+var _rolled := 0.0
+
 # telemetry (read by the test bed / probes)
 var last_cross_track := 0.0   ## metres from the racing line this frame
 var last_offset := 0.0        ## arc-length position along the line this frame
@@ -58,6 +63,16 @@ func poll(car, delta: float) -> Dictionary:
 	var off := curve.get_closest_offset(path.to_local(pos))
 	last_offset = off
 	last_cross_track = pos.distance_to(_point(curve, off, length))
+
+	# Rolled onto its roof/side? After a beat, respawn upright on the line where it flipped (a flipped
+	# AI can't drive itself out). The player recovers manually (reset_car), so this is rivals-only.
+	if car.global_transform.basis.y.dot(Vector3.UP) < ROLL_UP:
+		_rolled += delta
+		if _rolled >= ROLL_RESET:
+			_rolled = 0.0
+			_recover_upright(car, curve, length, off)
+		return {}
+	_rolled = 0.0
 
 	# --- STEER: pure pursuit toward a speed-scaled look-ahead point ---
 	var la := lookahead_base + speed * lookahead_per_speed
@@ -97,6 +112,15 @@ func poll(car, delta: float) -> Dictionary:
 		_stuck = 0.0
 
 	return {throttle = throttle, reverse = reverse, steer = steer, handbrake = false}
+
+# Respawn the car upright on the racing line at its current progress, facing along the line, stopped.
+func _recover_upright(car, curve: Curve3D, length: float, off: float) -> void:
+	var here := _point(curve, off, length)
+	var fwd := _point(curve, off + 3.0, length) - here
+	fwd.y = 0.0
+	fwd = fwd.normalized() if fwd.length() > 0.01 else Vector3.FORWARD
+	var right := Vector3.UP.cross(fwd).normalized()
+	car.respawn_at(Transform3D(Basis(right, Vector3.UP, fwd), here + Vector3.UP * 1.5))
 
 # World-space point at arc-length `off` on the line (wraps on a loop, clamps point-to-point).
 func _point(curve: Curve3D, off: float, length: float) -> Vector3:

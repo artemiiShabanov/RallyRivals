@@ -23,12 +23,9 @@ static var autodrive := false           ## test/attract: a RivalDriver drives th
 
 const SLICE_RACE := "res://assets/races/test_timetrial.tres"
 const COUNT_FROM := 3
-# Contact penalty (code-race-contact): an OFFICIALS race turns each front/back slam into another car
-# into whole seconds added to the finish time, 2–5 s scaled by impact impulse (harder = more). Wilds
-# ignore it entirely. Placeholder map — balance owns the real numbers.
-const PENALTY_MIN := 2.0       # a qualifying slam costs at least this
-const PENALTY_MAX := 5.0       # a full-speed slam costs this
-const RAM_HARD := 5000.0       # impulse (N·s) at/above which a slam is worth the full 5 s
+# Contact penalty (code-race-contact): an OFFICIALS race adds a flat time penalty for every contact
+# with another car (any side). Wilds ignore it entirely. Placeholder — balance owns the number.
+const CONTACT_PENALTY := 3.0   # seconds per car-to-car contact
 
 var _race: RaceDef
 var _car: VehicleController
@@ -196,14 +193,12 @@ func _make_penalty_label() -> Label:
 
 # A car-to-car ram in an Officials race (Wilds never connect this). Accrue an impact-scaled penalty
 # into the finish time and flash it. Cooldown/debounce lives in VehicleController, so one ram = one call.
-func _on_ram(impulse: float) -> void:
+func _on_ram(_impulse: float) -> void:
 	if _finished:
 		return
-	# whole-second penalty in [2, 5], scaled by how hard the slam was
-	var secs := clampf(roundf(remap(impulse, VehicleController.IMPACT_MIN, RAM_HARD, PENALTY_MIN, PENALTY_MAX)), PENALTY_MIN, PENALTY_MAX)
-	_penalty += secs
+	_penalty += CONTACT_PENALTY
 	if _penalty_label != null:
-		_penalty_label.text = "CONTACT  +%.0fs   (penalty +%.0fs)" % [secs, _penalty]
+		_penalty_label.text = "CONTACT  +%.0fs   (penalty +%.0fs)" % [CONTACT_PENALTY, _penalty]
 		_penalty_label.modulate.a = 1.0
 		var tw := create_tween()
 		tw.tween_property(_penalty_label, "modulate:a", 0.0, 1.4).set_delay(0.5)
