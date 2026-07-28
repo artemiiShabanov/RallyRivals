@@ -44,6 +44,14 @@ extends VehicleBody3D
 @export_group("Anti-spin")
 @export var max_yaw_rate := 1.3          ## rad/s — HARD cap on rotation speed; the car slides sideways instead of spinning to 180. Skipped while braking (deliberate rotation)
 
+@export_group("Stability")
+## Roll-righting assist (arcade anti-roll): a torque about the car's OWN forward axis that pulls its
+## roll back to level — so it's much harder to tip in a turn, WITHOUT touching steering (yaw) or ramp
+## pitch. Higher = harder to roll. This replaces a low centre-of-mass, which pushed the CoM below the
+## suspension roll centre and made cars lean INTO turns and flip on slight steering.
+@export var anti_roll := 22.0            ## roll-righting stiffness (0 = off)
+@export var anti_roll_damp := 6.0        ## damping on roll velocity (settles the assist, no wobble)
+
 @export_group("Stats")
 @export var car: CarDef                  ## the roster car this body drives as (null = raw scene tuning)
 
@@ -72,7 +80,6 @@ signal impacted(strength: float)
 ## `impacted`, never this.
 signal rammed(impulse: float)
 const IMPACT_MIN := 900.0                # below this it's a scrape, not a hit
-const ROLL_COM_Y := -0.5                 # centre of mass this far below the body — planted, much harder to roll (arcade anti-roll)
 const IMPACT_COOLDOWN := 0.12            # s — one contact spans several physics frames
 var _impact_cool := 0.0
 var _touching := 0                       # bodies in contact right now (scrape source)
@@ -98,9 +105,6 @@ var _taillights: Array[OmniLight3D] = []
 
 func _ready() -> void:
 	add_to_group("vehicles")
-	# Drop the centre of mass well below the body so the car stays planted — much harder to roll.
-	center_of_mass_mode = RigidBody3D.CENTER_OF_MASS_MODE_CUSTOM
-	center_of_mass = Vector3(0, ROLL_COM_Y, 0)
 	_spawn_transform = global_transform
 	for child in get_children():
 		if child is VehicleWheel3D:
@@ -221,6 +225,7 @@ func _physics_process(delta: float) -> void:
 	# deliberate request to rotate — the clamp would fight the drift the player asked for.
 	if not handbraking and brake == 0.0:
 		_clamp_yaw()
+	_apply_anti_roll()
 
 	# Ease steering toward the target so input isn't twitchy.
 	steering = move_toward(steering, max_steer * steer_input, steer_speed * delta)
@@ -368,6 +373,18 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		impacted.emit(strongest)
 		if car_hit:
 			rammed.emit(strongest)
+
+## Roll-righting assist: a torque about the car's OWN forward axis that pulls its roll back to level.
+## Only the roll axis, so steering (yaw) and ramp pitch are left alone — that's how cars stay hard to
+## flip in turns without feeling glued. `lean` is the sideways tilt of the up-vector; the damping term
+## opposes roll velocity so it settles instead of wobbling. Mass-scaled to be consistent across cars.
+func _apply_anti_roll() -> void:
+	if anti_roll <= 0.0:
+		return
+	var fwd := global_transform.basis.z
+	var lean := global_transform.basis.y.cross(Vector3.UP).dot(fwd)
+	var roll_rate := angular_velocity.dot(fwd)
+	apply_torque(fwd * (lean * anti_roll - roll_rate * anti_roll_damp) * mass)
 
 ## Hard-cap the yaw rate: the car can never rotate faster than max_yaw_rate, so when the rear
 ## breaks loose it slides sideways at a held angle instead of whipping around to 180. Turns below
