@@ -58,7 +58,6 @@ tasks:
   - {id: code-vehicle-grip, title: "Front/rear grip + handbrake drift layer", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller]}
   - {id: code-vehicle-surface-grip, title: "Per-surface grip via SurfaceType", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller, content-surfaces-defs]}
   - {id: code-vehicle-damage, title: "Damage system (visible + performance)", type: code, group: vehicle, size: big, status: todo, blockers: [code-vehicle-controller]}
-  - {id: code-vehicle-slipstream, title: "Slipstream (player-only) + FX", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller, code-ai-rival]}
   - {id: code-vehicle-stats, title: "Drive handling from the 5 stat bars", type: code, group: vehicle, size: default, status: done, blockers: [code-vehicle-controller]}
 
   # ---------- code: core / race / ai / ui ----------
@@ -151,7 +150,6 @@ tasks:
   - {id: art-vfx-juice, title: "Screen shake + landing thump (+ VHS glitch spike)", type: art, group: vfx, size: micro, status: done, blockers: [code-vehicle-controller]}
   - {id: art-vfx-surface-particles, title: "Per-surface particles (dust/snow/spray)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-surface-grip]}
   - {id: art-vfx-skidmarks, title: "Tyre skid marks (per-surface ribbon under sliding wheels)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-surface-grip]}
-  - {id: art-vfx-slipstream, title: "Slipstream speed-lines/wind FX", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-slipstream]}
   - {id: art-vfx-damage, title: "Voxel-chipping damage FX", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-damage]}
   - {id: art-vfx-weather, title: "Weather visuals (rain/snow/fog)", type: art, group: vfx, size: big, status: done, blockers: [code-track-generator]}
   - {id: art-ui-hud-gfx, title: "HUD scorebug graphics (VHS register)", type: art, group: ui-art, size: default, status: done, blockers: []}
@@ -170,7 +168,6 @@ tasks:
   - {id: audio-sfx-engine, title: "Engine audio: 3 RPM bands crossfaded + start/off cues", type: audio, group: sfx, size: default, status: done, blockers: [audio-sfx-core, code-vehicle-controller]}
   - {id: audio-sfx-surface, title: "Per-surface tyre roll + skid, crossfaded on surface change", type: audio, group: sfx, size: default, status: done, blockers: [audio-sfx-core, code-vehicle-surface-grip]}
   - {id: audio-sfx-impact, title: "Impact SFX scaled by collision impulse + debris burst", type: audio, group: sfx, size: small, status: done, blockers: [audio-sfx-core, code-vehicle-controller]}
-  - {id: audio-sfx-slipstream, title: "Slipstream whoosh/rush cue", type: audio, group: sfx, size: small, status: done, blockers: [audio-sfx-core, code-vehicle-slipstream]}
   - {id: audio-sfx-ui, title: "UI clicks/confirms (wired in debug menu; real menus reuse)", type: audio, group: sfx, size: small, status: done, blockers: [audio-sfx-core]}
   - {id: audio-sfx-ambient, title: "Ambient beds: festival crowd + per-weather (rain/snow/wind/fog) + thunder", type: audio, group: sfx, size: default, status: done, blockers: [audio-sfx-core]}
   - {id: audio-music-direction, title: "Music direction + sourcing plan", type: audio, group: music, size: big, status: done, blockers: []}

@@ -288,15 +288,6 @@ func _update_tt(cur: float) -> void:
 
 ## Put a message on the bottom strip. It shows itself, holds, then fades out — the strip is only
 ## ever on screen while it is carrying something.
-## Subtle slipstream glow (art-vfx-slipstream): the speed readout + bar warm to a bright cyan while
-## drafting. Driven by the RaceDirector from the player's slip_intensity (0 = normal white).
-func set_slipstream(intensity: float) -> void:
-	var glow := Color.WHITE.lerp(Color(0.6, 1.0, 1.2), clampf(intensity, 0.0, 1.0))
-	if _speed != null:
-		_speed.modulate = glow
-	if _bar != null:
-		_bar.modulate = glow
-
 func show_strip(text: String, col: Color) -> void:
 	_strip_label.text = text
 	_strip_label.add_theme_color_override("font_color", col)

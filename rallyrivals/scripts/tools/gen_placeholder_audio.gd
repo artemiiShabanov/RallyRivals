@@ -50,7 +50,6 @@ const DRIVEN := [
 	["skid_asphalt", 39, "skid_asphalt", 2.0],   # squeal
 	["skid_loose", 40, "skid_loose", 2.0],       # gravel slide, no tone
 	["scrape", 41, "scrape", 2.0],
-	["slipstream", 42, "slipstream", 2.0],       # drafting rush — faded in by slip intensity
 ]
 
 # ---------------------------------------------------------------- one-shots
@@ -247,12 +246,6 @@ func _synth(recipe: String, n: int) -> PackedFloat32Array:
 			"roll_ice":
 				lp += (w - lp) * 0.06
 				out[i] = lp * 1.1 + sin(TAU * 420.0 * t) * 0.04   # faint ring: 420*2.0s = 840 cycles
-			"slipstream":
-				# rushing air: a band of hiss over a low body, breathing once per 2 s loop (0.5 Hz).
-				lp += (w - lp) * 0.22
-				lp2 += (w - lp2) * 0.05
-				var breathe := 1.0 + 0.15 * sin(TAU * 0.5 * t)
-				out[i] = ((w - lp) * 0.5 + (lp - lp2) * 1.4) * breathe * 0.6
 			"skid_asphalt":
 				# squeal = narrow resonance; 1100 and 6 Hz both complete whole cycles in 2.0 s
 				lp += (w - lp) * 0.45

@@ -37,7 +37,6 @@ var _built := false
 var _banner: Label
 var _penalty := 0.0            ## accrued Officials contact penalty (s), folded into the finish time
 var _hud: RaceHud             ## the race HUD; its bottom strip doubles as the penalty alert line
-var _slip_lines: SlipstreamLines             ## screen speed-lines, driven from the player's draft
 var _rivals: Array[VehicleController] = []   ## AI opponents (dev/test), parked until GO
 
 func _ready() -> void:
@@ -117,7 +116,6 @@ func _build(track_ps: PackedScene) -> void:
 	add_child(_car)
 	if autodrive and ai_line != null:   # test/attract: hand the wheel to a RivalDriver
 		_car.driver = RivalDriver.new(ai_line, _cps.loop if _cps != null else true)
-	_car.slipstream_enabled = true      # player-only draft boost (GDD §4); rivals never get it
 	if _race.culture == "officials":    # clean racing: rams cost time. Wilds never connects this.
 		_car.rammed.connect(_on_ram)
 	if rivals > 0 and ai_line != null:
@@ -132,10 +130,6 @@ func _build(track_ps: PackedScene) -> void:
 	var vhs := VHSFilter.new()          # layer 5: over the world, under the HUD
 	vhs.name = "VHSFilter"
 	add_child(vhs)
-
-	_slip_lines = SlipstreamLines.new()  # layer 6: speed-lines over the tape, still under the HUD
-	_slip_lines.name = "SlipstreamLines"
-	add_child(_slip_lines)
 
 	if _cps != null:
 		_hud = RaceHud.new()
@@ -199,15 +193,6 @@ func _run() -> void:
 	_banner.text = ""
 	if autodrive:
 		print("[autodrive] GO %s (%s)" % [_race.id, _race.race_type])
-
-# Drive the slipstream feedback (speed-lines + HUD glow) from the player's live draft strength.
-func _process(_dt: float) -> void:
-	if _car == null:
-		return
-	if _slip_lines != null:
-		_slip_lines.set_strength(_car.slip_intensity)
-	if _hud != null:
-		_hud.set_slipstream(_car.slip_intensity)
 
 func _countdown() -> void:
 	var beep := load("res://assets/audio/sfx/countdown_beep.tres") as SfxDef

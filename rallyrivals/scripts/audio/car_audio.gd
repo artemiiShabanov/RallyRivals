@@ -23,7 +23,6 @@ const SILENT_DB := -60.0
 @export var roll_pitch_range := 0.35   ## pitch added from standstill to full speed
 @export var skid_volume_db := -8.0
 @export var scrape_volume_db := -10.0
-@export var slip_volume_db := -13.0    ## drafting whoosh at full slip intensity (subtle; player-only)
 @export var fade_time := 0.15          ## s for a layer to fade in/out
 @export var surface_fade_time := 0.25  ## s to crossfade between two surfaces
 
@@ -41,7 +40,6 @@ var _roll_b: AudioStreamPlayer3D
 var _roll_surface := ""
 var _skid: AudioStreamPlayer3D
 var _scrape: AudioStreamPlayer3D
-var _slip: AudioStreamPlayer3D         # drafting whoosh (stays silent on AI cars — only the player drafts)
 var _rpm := 0.0
 var _rolls := {}                       # surface id -> AudioStream, loaded once
 
@@ -66,14 +64,13 @@ func _ready() -> void:
 	_roll_b = _make_player(null)
 	_skid = _make_player(null)
 	_scrape = _make_player(load(ROLL_DIR + "scrape.wav") as AudioStream)
-	_slip = _make_player(load(ROLL_DIR + "slipstream.res") as AudioStream)
 
 ## Cut the engine — every loop out. Call when a race ends. (No start/off one-shots: they were cut
 ## deliberately; the engine just comes in and goes out with the bands.)
 func shut_down() -> void:
 	for p in _bands:
 		p.stop()
-	for p in [_roll_a, _roll_b, _skid, _scrape, _slip]:
+	for p in [_roll_a, _roll_b, _skid, _scrape]:
 		if p != null:
 			p.stop()
 	set_physics_process(false)
@@ -100,11 +97,6 @@ func _physics_process(delta: float) -> void:
 	_update_roll(delta, speed, grounded)
 	_update_skid(delta, speed, grounded)
 	_fade(_scrape, scrape_volume_db if _car.is_scraping() else SILENT_DB, delta, fade_time)
-	# Slipstream whoosh: volume + a touch of pitch track the player's draft (slip_intensity is 0 on AI).
-	if _slip != null:
-		var si: float = _car.slip_intensity
-		_slip.volume_db = slip_volume_db + linear_to_db(clampf(si, 0.0001, 1.0))
-		_slip.pitch_scale = 1.0 + 0.12 * si
 
 # ---------------------------------------------------------------- engine
 func _update_engine(delta: float, speed: float) -> void:

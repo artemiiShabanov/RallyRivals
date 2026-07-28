@@ -52,21 +52,6 @@ extends VehicleBody3D
 @export var anti_roll := 22.0            ## roll-righting stiffness (0 = off)
 @export var anti_roll_damp := 6.0        ## damping on roll velocity (settles the assist, no wobble)
 
-@export_group("Slipstream")
-## Drafting boost (code-vehicle-slipstream, GDD §4). PLAYER-ONLY: the AI provides draft (you tuck in
-## behind it) but never uses it — asymmetry favours the player, so only the player car sets
-## slipstream_enabled. While a car sits ahead within the draft cone, `slip_intensity` builds and gently
-## lifts the top speed (steady catch-up, no burst, no rubber-banding). FX/SFX/HUD read slip_intensity.
-@export var slipstream_enabled := false
-@export var slip_range := 20.0           ## m — the draft reaches this far behind a car
-@export var slip_close := 5.0            ## m — at/under this the draft is full (and you're about to hit them)
-@export var slip_cone := 0.82            ## dot(forward, dir-to-car) above this = the car is ahead in your path
-@export var slip_min_speed := 12.0       ## m/s — no draft below this (it's a high-speed effect)
-@export var slip_speed_bonus := 0.18     ## fraction added to top speed at full draft
-@export var slip_ramp := 4.0             ## per-second rate the draft builds / fades
-
-var slip_intensity := 0.0                ## 0..1 current draft strength — read by the FX, whoosh and HUD glow
-
 @export_group("Stats")
 @export var car: CarDef                  ## the roster car this body drives as (null = raw scene tuning)
 
@@ -209,18 +194,13 @@ func _physics_process(delta: float) -> void:
 			handbraking = Input.is_action_pressed("handbrake")
 			want_reset = Input.is_action_just_pressed("reset_car")
 
-	# Slipstream: build/fade the draft, which lifts the top-speed cap a little (steady catch-up).
-	slip_intensity = move_toward(slip_intensity, _draft_target(), slip_ramp * delta)
-
 	# brake_reverse brakes while rolling forward, and reverses once nearly stopped.
 	if reverse > 0.0 and get_forward_speed() > 1.0:
 		engine_force = 0.0
 		brake = max_brake * reverse
 	else:
-		# top-speed cap: force tapers to zero approaching max_speed (the last km/h are earned).
-		# Drafting raises that cap by slip_speed_bonus, so the car pulls a bit more top end while tucked in.
-		var cap := max_speed * (1.0 + slip_speed_bonus * slip_intensity)
-		var headroom := 1.0 - pow(clampf(absf(get_forward_speed()) / cap, 0.0, 1.0), 4.0)
+		# top-speed cap: force tapers to zero approaching max_speed (the last km/h are earned)
+		var headroom := 1.0 - pow(clampf(absf(get_forward_speed()) / max_speed, 0.0, 1.0), 4.0)
 		engine_force = max_engine_force * (throttle - reverse) * headroom
 		brake = 0.0
 
@@ -393,26 +373,6 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		impacted.emit(strongest)
 		if car_hit:
 			rammed.emit(strongest)
-
-## The draft strength (0..1) this car is currently catching: the closest car AHEAD of it within the
-## draft cone and range, scaled by how close (full at slip_close, none at slip_range). Player-only —
-## disabled cars and cars below slip_min_speed catch nothing. Cheap: only the player runs this, over
-## the handful of cars in the "vehicles" group.
-func _draft_target() -> float:
-	if not slipstream_enabled or get_forward_speed() < slip_min_speed:
-		return 0.0
-	var fwd := global_transform.basis.z
-	var here := global_position
-	var best := 0.0
-	for v in get_tree().get_nodes_in_group("vehicles"):
-		if v == self:
-			continue
-		var to: Vector3 = (v as Node3D).global_position - here
-		var dist := to.length()
-		if dist < 0.5 or dist > slip_range or to.normalized().dot(fwd) < slip_cone:
-			continue
-		best = maxf(best, clampf(remap(dist, slip_range, slip_close, 0.0, 1.0), 0.0, 1.0))
-	return best
 
 ## Roll-righting assist: a torque about the car's OWN forward axis that pulls its roll back to level.
 ## Only the roll axis, so steering (yaw) and ramp pitch are left alone — that's how cars stay hard to
