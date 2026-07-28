@@ -26,6 +26,7 @@ const COUNT_FROM := 3
 # Contact penalty (code-race-contact): an OFFICIALS race adds a flat time penalty for every contact
 # with another car (any side). Wilds ignore it entirely. Placeholder — balance owns the number.
 const CONTACT_PENALTY := 3.0   # seconds per car-to-car contact
+const PENALTY_COLOR := Color(1.0, 0.42, 0.32)   # red alert on the HUD strip
 
 var _race: RaceDef
 var _car: VehicleController
@@ -35,7 +36,7 @@ var _finished := false
 var _built := false
 var _banner: Label
 var _penalty := 0.0            ## accrued Officials contact penalty (s), folded into the finish time
-var _penalty_label: Label
+var _hud: RaceHud             ## the race HUD; its bottom strip doubles as the penalty alert line
 var _rivals: Array[VehicleController] = []   ## AI opponents (dev/test), parked until GO
 
 func _ready() -> void:
@@ -131,15 +132,13 @@ func _build(track_ps: PackedScene) -> void:
 	add_child(vhs)
 
 	if _cps != null:
-		var hud := RaceHud.new()
-		hud.name = "RaceHud"
-		add_child(hud)
-		hud.bind(_car, _timing, _cps, _race.laps, _race.race_type, _race.tt_targets())
+		_hud = RaceHud.new()
+		_hud.name = "RaceHud"
+		add_child(_hud)
+		_hud.bind(_car, _timing, _cps, _race.laps, _race.race_type, _race.tt_targets())
 
 	Music.play(_race.race_type)   # race-type track (no-op/quiet until its .ogg exists)
 	_banner = _make_banner()
-	if _race.culture == "officials":
-		_penalty_label = _make_penalty_label()
 
 # Line up `rivals` AI cars ahead of the player in the same lane, each driving the AiLine, parked until
 # GO. Cars come from the race's assembled field (real driver/car); short of the field, they use the
@@ -173,35 +172,15 @@ func _make_banner() -> Label:
 	layer.add_child(l)
 	return l
 
-# A small red flash near the top for Officials contact penalties — distinct from the big centre banner.
-func _make_penalty_label() -> Label:
-	var layer := CanvasLayer.new()
-	layer.name = "PenaltyFlash"
-	layer.layer = 55                    # above the HUD (50), below the banner (60)
-	add_child(layer)
-	var l := Label.new()
-	l.theme_type_variation = "HudTag"
-	l.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	l.position = Vector2(0, 96)
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	l.add_theme_color_override("font_color", Color(1.0, 0.42, 0.32))
-	l.modulate.a = 0.0
-	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(l)
-	return l
-
-# A car-to-car ram in an Officials race (Wilds never connect this). Accrue an impact-scaled penalty
-# into the finish time and flash it. Cooldown/debounce lives in VehicleController, so one ram = one call.
+# A car-to-car contact in an Officials race (Wilds never connect this). Accrue the flat penalty into
+# the finish time and announce it on the HUD's bottom strip (the same line checkpoint splits use).
+# Debounce lives in VehicleController, so one contact = one call.
 func _on_ram(_impulse: float) -> void:
 	if _finished:
 		return
 	_penalty += CONTACT_PENALTY
-	if _penalty_label != null:
-		_penalty_label.text = "CONTACT  +%.0fs   (penalty +%.0fs)" % [CONTACT_PENALTY, _penalty]
-		_penalty_label.modulate.a = 1.0
-		var tw := create_tween()
-		tw.tween_property(_penalty_label, "modulate:a", 0.0, 1.4).set_delay(0.5)
+	if _hud != null:
+		_hud.show_strip("CONTACT  +%.0fs   ·   PENALTY +%.0fs" % [CONTACT_PENALTY, _penalty], PENALTY_COLOR)
 
 func _run() -> void:
 	await _countdown()
