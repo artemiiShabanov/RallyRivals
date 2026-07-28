@@ -73,7 +73,7 @@ tasks:
   - {id: code-race-result, title: "Win/lose + finishing place", type: code, group: race, size: default, status: done, blockers: [code-race-timing, code-race-director]}
   - {id: code-race-types, title: "Race types: sprint + circuit", type: code, group: race, size: big, status: done, blockers: [code-race-timing]}
   - {id: code-race-timetrial, title: "Race type: time trial vs clock", type: code, group: race, size: small, status: done, blockers: [code-race-timing]}
-  - {id: code-race-endurance, title: "Race type: endurance / attrition", type: code, group: race, size: default, status: todo, blockers: [code-race-types]}
+  - {id: code-race-endurance, title: "Race type: endurance / attrition", type: code, group: race, size: default, status: done, blockers: [code-race-types]}
   - {id: code-race-grandprix, title: "Race type: grand prix (qualify + grid + class gate)", type: code, group: race, size: big, status: todo, blockers: [code-race-types, code-meta-classes]}
   - {id: code-race-contact, title: "Officials penalty vs Wilds ramming rules", type: code, group: race, size: default, status: todo, blockers: [code-race-result, code-race-defs]}
   - {id: code-race-field, title: "Assemble the race field: class band + size by type, drawn from the chapter roster", type: code, group: race, size: default, status: done, blockers: [code-race-defs, content-rivals-roster]}

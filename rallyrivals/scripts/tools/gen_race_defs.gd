@@ -57,6 +57,21 @@ func _initialize() -> void:
 	sprint.weather = load("res://assets/weather/clear.tres")
 	ResourceSaver.save(sprint, dir + "test_sprint.tres")
 
+	# Endurance: a long-form lap race with the largest field (8). Same finish as a circuit (RaceDef.laps
+	# on a loop); attrition is deferred to the damage system (code-vehicle-damage), not a bespoke rule.
+	# Real endurance races author more laps; this test stays short (4) so it's quick to drive-check.
+	var endur := RaceDef.new()
+	endur.id = "test_endurance"
+	endur.display_name = "Test Circuit — Endurance"
+	endur.track_scene = "res://assets/tracks/test/baked_track.tscn"   # loop
+	endur.race_type = "endurance"
+	endur.laps = 4
+	endur.class_low = "C"            # field band: a demanding C–A long race
+	endur.class_high = "A"
+	endur.lighting = load("res://assets/lighting/golden.tres")
+	endur.weather = load("res://assets/weather/clear.tres")
+	ResourceSaver.save(endur, dir + "test_endurance.tres")
+
 	# test_timetrial has no field, so it authors no band.
-	print("race defs: 4")
+	print("race defs: 5")
 	quit()

@@ -71,7 +71,9 @@ func admits(car: CarDef) -> bool:
 func is_sprint() -> bool:
 	return race_type == "sprint"
 
-## Lap race = counts down RaceDef.laps on a loop (circuit, endurance, grand prix).
+## Lap race = counts down RaceDef.laps on a loop (circuit, endurance, grand prix). Endurance is a
+## long-form circuit with the largest field (RaceField); its "attrition" (GDD §5) is realized by the
+## damage system (code-vehicle-damage) accumulating over the long race — deferred, not a bespoke rule.
 func is_lap_race() -> bool:
 	return race_type in ["circuit", "endurance", "grand_prix"]
 
