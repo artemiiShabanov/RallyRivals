@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="RaceDef" load_steps=4 format=3]
+
+[ext_resource type="Resource" path="res://assets/lighting/golden.tres" id="1_py8n6"]
+[ext_resource type="Script" path="res://scripts/race/race_def.gd" id="2_kha2e"]
+[ext_resource type="Resource" path="res://assets/weather/clear.tres" id="3_kf3x8"]
+
+[resource]
+script = ExtResource("2_kha2e")
+id = "test_sprint"
+display_name = "Coast Run — Sprint"
+track_scene = "res://assets/tracks/track 1/baked_track.tscn"
+race_type = "sprint"
+laps = 3
+culture = "officials"
+car_class = ""
+class_low = "D"
+class_high = "C"
+lighting = ExtResource("1_py8n6")
+weather = ExtResource("3_kf3x8")
+season = "summer"
+tt_gold = 0.0
+tt_silver = 0.0
+tt_bronze = 0.0
+money_pool = 0
+cp_pool = 0

@@ -45,6 +45,18 @@ func _initialize() -> void:
 	trial.tt_bronze = 85.0
 	ResourceSaver.save(trial, dir + "test_timetrial.tres")
 
+	# Sprint: a single point-to-point stage (A→B) on the point-to-point baked track. laps is ignored.
+	var sprint := RaceDef.new()
+	sprint.id = "test_sprint"
+	sprint.display_name = "Coast Run — Sprint"
+	sprint.track_scene = "res://assets/tracks/track 1/baked_track.tscn"
+	sprint.race_type = "sprint"
+	sprint.class_low = "D"            # field band: D–C sprint
+	sprint.class_high = "C"
+	sprint.lighting = load("res://assets/lighting/golden.tres")
+	sprint.weather = load("res://assets/weather/clear.tres")
+	ResourceSaver.save(sprint, dir + "test_sprint.tres")
+
 	# test_timetrial has no field, so it authors no band.
-	print("race defs: 3")
+	print("race defs: 4")
 	quit()

@@ -61,3 +61,26 @@ func gate_class() -> String:
 ## (field-matching spec); the gate exists only to stop under-classing the one serious event type.
 func admits(car: CarDef) -> bool:
 	return car != null and CarClass.at_least(car.car_class, gate_class())
+
+# ---------- race format (code-race-types) ----------
+# The format follows the TYPE: circuit/endurance/grand_prix run `laps` laps on a loop; a sprint is one
+# point-to-point stage (A→B, laps ignored); a time trial runs against the clock on either topology.
+# The finish trigger itself follows the TRACK (a loop fires laps, a point-to-point fires its finish
+# line), so a race just needs its type and its baked track to agree — track_ok() is that check.
+
+func is_sprint() -> bool:
+	return race_type == "sprint"
+
+## Lap race = counts down RaceDef.laps on a loop (circuit, endurance, grand prix).
+func is_lap_race() -> bool:
+	return race_type in ["circuit", "endurance", "grand_prix"]
+
+## Does a baked track with this loop-ness suit the type? A sprint needs a point-to-point track (else it
+## never reaches a finish line); a lap race needs a loop (else it ends after one pass). A time trial is
+## scored by the clock on either, so it's always fine. The director warns when this is false.
+func track_ok(track_is_loop: bool) -> bool:
+	if is_sprint():
+		return not track_is_loop
+	if is_lap_race():
+		return track_is_loop
+	return true   # time_trial: loop or point-to-point both work

@@ -12,6 +12,7 @@ extends Node3D
 
 static var pending: RaceDef = null      ## handoff from the pre-race screen
 static var last_result: RaceResult = null   ## finish outcome for the results screen
+static var autodrive := false           ## test/attract: a RivalDriver drives the player car to the finish
 
 @export var fallback_race: RaceDef      ## used when launched directly (no pending)
 @export var car_scene: PackedScene = preload("res://scenes/vehicle/car.tscn")
@@ -67,6 +68,11 @@ func _build(track_ps: PackedScene) -> void:
 
 	# Checkpoints + timing.
 	_cps = track.get_node_or_null("Checkpoints") as TrackCheckpoints
+	# The type and its baked track must agree (code-race-types): a sprint on a loop never reaches a
+	# finish line; a circuit on a point-to-point ends after one pass. Loud, not fatal.
+	if _cps != null and not _race.track_ok(_cps.loop):
+		push_warning("RaceDirector: '%s' is %s but its track is %s — fix RaceDef.track_scene." % [
+			_race.id, _race.race_type, "a loop" if _cps.loop else "point-to-point"])
 	_timing = RaceTiming.new()
 	_timing.name = "RaceTiming"
 	add_child(_timing)
@@ -80,6 +86,7 @@ func _build(track_ps: PackedScene) -> void:
 	# Car parked at the start line, facing along the extracted spline.
 	var start := track.get_node_or_null("StartFinish") as Marker3D
 	var path := track.get_node_or_null("TrackPath") as Path3D
+	var ai_line := track.get_node_or_null("AiLine") as Path3D
 	var spawn := (start.global_position if start else Vector3.ZERO) + Vector3.UP * 1.5
 	var fwd := Vector3.FORWARD
 	if path != null and path.curve != null and path.curve.point_count > 1:
@@ -96,6 +103,8 @@ func _build(track_ps: PackedScene) -> void:
 	if picked != null:                  # race the car chosen in the garage/pre-race (else scene default)
 		_car.car = picked
 	add_child(_car)
+	if autodrive and ai_line != null:   # test/attract: hand the wheel to a RivalDriver
+		_car.driver = RivalDriver.new(ai_line, _cps.loop if _cps != null else true)
 
 	var cam := ChaseCamera.new()
 	cam.name = "ChaseCamera"
@@ -138,6 +147,8 @@ func _run() -> void:
 	_car.input_enabled = true
 	_timing.begin()
 	_banner.text = ""
+	if autodrive:
+		print("[autodrive] GO %s (%s)" % [_race.id, _race.race_type])
 
 func _countdown() -> void:
 	var beep := load("res://assets/audio/sfx/countdown_beep.tres") as SfxDef
@@ -151,6 +162,8 @@ func _countdown() -> void:
 	await get_tree().create_timer(0.6).timeout
 
 func _on_lap(body: Node3D, _lap_time: float, lap_number: int, _is_best: bool) -> void:
+	if body == _car and autodrive:
+		print("[autodrive] lap %d/%d" % [lap_number, _race.laps])
 	if body == _car and _cps != null and _cps.loop and lap_number >= _race.laps:
 		_finish()
 
@@ -174,6 +187,8 @@ func _finish() -> void:
 		# pass the rivals' finish times to compute().
 		last_result = RaceResult.compute(_race.id, total, laps, best)
 	RaceEconomy.apply(last_result, _race)   # bank the finish + pay out (code-meta-economy)
+	if autodrive:
+		print("[autodrive] FINISH %s (%s): place %d/%d, %.2fs" % [_race.id, _race.race_type, last_result.place, last_result.field_size, total])
 	Sfx.play(load("res://assets/audio/sfx/finish_win.tres") as SfxDef)
 	var ca := _car.get_node_or_null("CarAudio")
 	if ca != null and ca.has_method("shut_down"):
