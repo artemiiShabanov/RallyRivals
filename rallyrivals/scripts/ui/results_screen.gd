@@ -23,6 +23,8 @@ func _build(col: VBoxContainer) -> void:
 	col.add_child(spacer(14))
 
 	col.add_child(heading("TIME       %s" % _fmt(res.total_time)))
+	if res.penalty > 0.0:               # Officials contact penalty already folded into TIME
+		col.add_child(heading("  incl. contact penalty  +%.1fs" % res.penalty, "OsdDim"))
 	col.add_child(heading("BEST LAP   %s" % (_fmt(res.best_lap) if res.best_lap < INF else "—")))
 	col.add_child(spacer(14))
 

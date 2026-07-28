@@ -19,6 +19,12 @@ static var autodrive := false           ## test/attract: a RivalDriver drives th
 
 const SLICE_RACE := "res://assets/races/test_timetrial.tres"
 const COUNT_FROM := 3
+# Contact penalty (code-race-contact): an OFFICIALS race turns each car-to-car ram into seconds added
+# to the finish time, scaled by impact impulse. Wilds ignore it entirely. Placeholder rates — balance
+# owns the real numbers.
+const PENALTY_RATE := 0.0008   # seconds per N·s of ram impulse
+const PENALTY_MIN := 0.5       # a qualifying ram costs at least this
+const PENALTY_MAX := 4.0       # cap on a single ram
 
 var _race: RaceDef
 var _car: VehicleController
@@ -27,6 +33,8 @@ var _cps: TrackCheckpoints
 var _finished := false
 var _built := false
 var _banner: Label
+var _penalty := 0.0            ## accrued Officials contact penalty (s), folded into the finish time
+var _penalty_label: Label
 
 func _ready() -> void:
 	_race = pending if pending != null else (fallback_race if fallback_race != null else load(SLICE_RACE) as RaceDef)
@@ -105,6 +113,8 @@ func _build(track_ps: PackedScene) -> void:
 	add_child(_car)
 	if autodrive and ai_line != null:   # test/attract: hand the wheel to a RivalDriver
 		_car.driver = RivalDriver.new(ai_line, _cps.loop if _cps != null else true)
+	if _race.culture == "officials":    # clean racing: rams cost time. Wilds never connects this.
+		_car.rammed.connect(_on_ram)
 
 	var cam := ChaseCamera.new()
 	cam.name = "ChaseCamera"
@@ -124,6 +134,8 @@ func _build(track_ps: PackedScene) -> void:
 
 	Music.play(_race.race_type)   # race-type track (no-op/quiet until its .ogg exists)
 	_banner = _make_banner()
+	if _race.culture == "officials":
+		_penalty_label = _make_penalty_label()
 
 ## Big centred text over the HUD — the countdown and the finish message share it.
 func _make_banner() -> Label:
@@ -139,6 +151,37 @@ func _make_banner() -> Label:
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(l)
 	return l
+
+# A small red flash near the top for Officials contact penalties — distinct from the big centre banner.
+func _make_penalty_label() -> Label:
+	var layer := CanvasLayer.new()
+	layer.name = "PenaltyFlash"
+	layer.layer = 55                    # above the HUD (50), below the banner (60)
+	add_child(layer)
+	var l := Label.new()
+	l.theme_type_variation = "HudTag"
+	l.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	l.position = Vector2(0, 96)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	l.add_theme_color_override("font_color", Color(1.0, 0.42, 0.32))
+	l.modulate.a = 0.0
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(l)
+	return l
+
+# A car-to-car ram in an Officials race (Wilds never connect this). Accrue an impact-scaled penalty
+# into the finish time and flash it. Cooldown/debounce lives in VehicleController, so one ram = one call.
+func _on_ram(impulse: float) -> void:
+	if _finished:
+		return
+	var secs := clampf(impulse * PENALTY_RATE, PENALTY_MIN, PENALTY_MAX)
+	_penalty += secs
+	if _penalty_label != null:
+		_penalty_label.text = "CONTACT  +%.1fs   (penalty +%.1fs)" % [secs, _penalty]
+		_penalty_label.modulate.a = 1.0
+		var tw := create_tween()
+		tw.tween_property(_penalty_label, "modulate:a", 0.0, 1.4).set_delay(0.5)
 
 func _run() -> void:
 	await _countdown()
@@ -176,7 +219,7 @@ func _finish() -> void:
 		return
 	_finished = true
 	_car.input_enabled = false          # coast to a parked stop
-	var total := _timing.total_time(_car)
+	var total := _timing.total_time(_car) + _penalty   # contact penalty folds into the finish time
 	var laps := _timing.laps_of(_car).duplicate()
 	var best := _timing.best_lap(_car)
 	if _race.race_type == "time_trial":
@@ -186,6 +229,7 @@ func _finish() -> void:
 		# Solo field in the skeleton — no rival times yet, so this places 1 / 1. code-ai-rival will
 		# pass the rivals' finish times to compute().
 		last_result = RaceResult.compute(_race.id, total, laps, best)
+	last_result.penalty = _penalty
 	RaceEconomy.apply(last_result, _race)   # bank the finish + pay out (code-meta-economy)
 	if autodrive:
 		print("[autodrive] FINISH %s (%s): place %d/%d, %.2fs" % [_race.id, _race.race_type, last_result.place, last_result.field_size, total])

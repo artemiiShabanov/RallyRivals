@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="RaceDef" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="RaceDef" load_steps=4 format=3 uid="uid://dlw2wr7qfsmul"]
 
 [ext_resource type="Resource" path="res://assets/lighting/golden.tres" id="1_exwjh"]
-[ext_resource type="Script" path="res://scripts/race/race_def.gd" id="2_cqhux"]
+[ext_resource type="Script" uid="uid://cbhjc4tgw6yo7" path="res://scripts/race/race_def.gd" id="2_cqhux"]
 [ext_resource type="Resource" path="res://assets/weather/clear.tres" id="3_yu0rf"]
 
 [resource]

@@ -67,6 +67,9 @@ var is_handbraking := false
 
 ## Collision impulse in N·s, once per hit. CarAudio picks light vs heavy from the magnitude.
 signal impacted(strength: float)
+## A CAR-TO-CAR ram (the contact body is another vehicle), impulse in N·s. Officials races turn this
+## into a time penalty (code-race-contact); Wilds ignore it. Walls/props fire `impacted`, never this.
+signal rammed(impulse: float)
 const IMPACT_MIN := 900.0                # below this it's a scrape, not a hit
 const IMPACT_COOLDOWN := 0.12            # s — one contact spans several physics frames
 var _impact_cool := 0.0
@@ -350,11 +353,16 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	if _impact_cool > 0.0:
 		return
 	var strongest := 0.0
+	var car_hit := false
 	for i in state.get_contact_count():
 		strongest = maxf(strongest, state.get_contact_impulse(i).length())
+		if state.get_contact_collider_object(i) is VehicleController:
+			car_hit = true          # hit another car, not a wall/prop
 	if strongest >= IMPACT_MIN:
 		_impact_cool = IMPACT_COOLDOWN
 		impacted.emit(strongest)
+		if car_hit:
+			rammed.emit(strongest)
 
 ## Hard-cap the yaw rate: the car can never rotate faster than max_yaw_rate, so when the rear
 ## breaks loose it slides sideways at a held angle instead of whipping around to 180. Turns below

@@ -10,7 +10,8 @@ extends RefCounted
 var race_id := ""
 var place := 1
 var field_size := 1
-var total_time := 0.0
+var total_time := 0.0    ## finishing time, INCLUDING any contact penalty (code-race-contact)
+var penalty := 0.0       ## seconds of Officials contact penalty folded into total_time (0 = clean / Wilds)
 var laps: Array = []
 var best_lap := INF
 var finished := true

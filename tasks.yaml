@@ -75,7 +75,7 @@ tasks:
   - {id: code-race-timetrial, title: "Race type: time trial vs clock", type: code, group: race, size: small, status: done, blockers: [code-race-timing]}
   - {id: code-race-endurance, title: "Race type: endurance / attrition", type: code, group: race, size: default, status: done, blockers: [code-race-types]}
   - {id: code-race-grandprix, title: "Race type: grand prix (qualify + grid + class gate)", type: code, group: race, size: big, status: todo, blockers: [code-race-types, code-meta-classes]}
-  - {id: code-race-contact, title: "Officials penalty vs Wilds ramming rules", type: code, group: race, size: default, status: todo, blockers: [code-race-result, code-race-defs]}
+  - {id: code-race-contact, title: "Officials penalty vs Wilds ramming rules", type: code, group: race, size: default, status: done, blockers: [code-race-result, code-race-defs]}
   - {id: code-race-field, title: "Assemble the race field: class band + size by type, drawn from the chapter roster", type: code, group: race, size: default, status: done, blockers: [code-race-defs, content-rivals-roster]}
   - {id: code-ai-rival, title: "AI rival driving a baked spline line", type: code, group: ai, size: huge, status: done, blockers: [code-track-ai-line, code-vehicle-controller]}
   - {id: code-ai-difficulty, title: "Difficulty via opponents + track complexity", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
