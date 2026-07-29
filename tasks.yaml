@@ -79,7 +79,7 @@ tasks:
   - {id: code-race-grid, title: "Spawn + score the assembled field in open races (physical grid, band-paced sim times, live gap-to-leader standings)", type: code, group: race, size: default, status: done, blockers: [code-race-field, code-ai-rival, code-race-result]}
   - {id: code-ai-rival, title: "AI rival driving a baked spline line", type: code, group: ai, size: huge, status: done, blockers: [code-track-ai-line, code-vehicle-controller]}
   - {id: code-ai-difficulty, title: "Difficulty via opponents + track complexity", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
-  - {id: code-ai-boss, title: "Boss-rival duel behavior", type: code, group: ai, size: default, status: todo, blockers: [code-ai-rival]}
+  - {id: code-ai-boss, title: "Boss-rival duel behavior", type: code, group: ai, size: default, status: done, blockers: [code-ai-rival]}
   - {id: code-ui-statbars, title: "Five stat bars display widget", type: code, group: ui, size: small, status: done, blockers: []}
   - {id: code-ui-hud, title: "Basic HUD (speed / position / timer)", type: code, group: ui, size: default, status: done, blockers: [code-race-timing]}
   - {id: code-ui-title, title: "Title / main menu (New / Continue / Settings / Quit)", type: code, group: ui, size: small, status: done, blockers: [code-core-scene-flow]}
