@@ -52,6 +52,23 @@ extends VehicleBody3D
 @export var anti_roll := 22.0            ## roll-righting stiffness (0 = off)
 @export var anti_roll_damp := 6.0        ## damping on roll velocity (settles the assist, no wobble)
 
+@export_group("Damage")
+## In-race damage (code-vehicle-damage, GDD §4). Any hard hit adds damage (impact impulse × the
+## CarDef's damage_sensitivity); damage cuts top speed and bends the steering to one FIXED side (a bent
+## chassis you learn to counter). Visible by swapping to the CarDef's damaged body meshes at the two
+## thresholds. There is NO repair — a fresh car each race starts pristine (damage defaults to 0), and
+## reset_car does NOT clear it, so crashing can't be undone. `damage` (0..1) is the read art-vfx-damage
+## and any gauge consume.
+@export var damage_per_ns := 0.00004     ## damage per N·s of impact (before damage_sensitivity)
+@export var damage_speed_loss := 0.25    ## fraction of top speed lost at full damage
+@export var damage_pull := 0.30          ## steering bias toward the bent side at full damage (of full lock)
+@export var damage_light := 0.40         ## damage at which the body swaps to model_damaged_1
+@export var damage_heavy := 0.75         ## ... and to model_damaged_2
+
+var damage := 0.0                        ## 0 pristine .. 1 wrecked — read by FX / gauges
+var _pull_dir := 1.0                     ## which way the bent chassis pulls (fixed per car, set in _ready)
+var _damage_stage := 0                   ## 0 pristine / 1 light / 2 heavy — tracks the visible mesh
+
 @export_group("Stats")
 @export var car: CarDef                  ## the roster car this body drives as (null = raw scene tuning)
 
@@ -105,6 +122,7 @@ var _taillights: Array[OmniLight3D] = []
 
 func _ready() -> void:
 	add_to_group("vehicles")
+	_pull_dir = 1.0 if randf() < 0.5 else -1.0   # this chassis bends one way; you learn to hold against it
 	_spawn_transform = global_transform
 	for child in get_children():
 		if child is VehicleWheel3D:
@@ -199,8 +217,10 @@ func _physics_process(delta: float) -> void:
 		engine_force = 0.0
 		brake = max_brake * reverse
 	else:
-		# top-speed cap: force tapers to zero approaching max_speed (the last km/h are earned)
-		var headroom := 1.0 - pow(clampf(absf(get_forward_speed()) / max_speed, 0.0, 1.0), 4.0)
+		# top-speed cap: force tapers to zero approaching max_speed (the last km/h are earned). Damage
+		# lowers that cap, so a wrecked car coasts down to a slower top end (GDD §4 "reduced speed").
+		var cap := max_speed * (1.0 - damage_speed_loss * damage)
+		var headroom := 1.0 - pow(clampf(absf(get_forward_speed()) / cap, 0.0, 1.0), 4.0)
 		engine_force = max_engine_force * (throttle - reverse) * headroom
 		brake = 0.0
 
@@ -227,8 +247,11 @@ func _physics_process(delta: float) -> void:
 		_clamp_yaw()
 	_apply_anti_roll()
 
-	# Ease steering toward the target so input isn't twitchy.
-	steering = move_toward(steering, max_steer * steer_input, steer_speed * delta)
+	# Ease steering toward the target so input isn't twitchy. Damage adds a constant pull to the bent
+	# side (GDD §4) — you hold against it to drive straight.
+	_update_damage_visual()
+	var steer_target := clampf(steer_input + _pull_dir * damage_pull * damage, -1.0, 1.0)
+	steering = move_toward(steering, max_steer * steer_target, steer_speed * delta)
 
 	if want_reset:
 		reset()
@@ -373,6 +396,30 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		impacted.emit(strongest)
 		if car_hit:
 			rammed.emit(strongest)
+		# Any hard hit (wall, prop or car) damages the car, scaled by impulse × the car's sensitivity.
+		# Accumulate the float here (safe in the physics callback); the mesh swap happens in _process.
+		var sens: float = car.damage_sensitivity if car != null else 1.0
+		damage = clampf(damage + strongest * damage_per_ns * sens, 0.0, 1.0)
+
+## Swap the body to the CarDef's damaged mesh once damage crosses a threshold (no-op if the slot is
+## empty or the stage hasn't changed). This is the "read" the damage-sculpt art tasks author against.
+func _update_damage_visual() -> void:
+	var stage := 2 if damage >= damage_heavy else (1 if damage >= damage_light else 0)
+	if stage == _damage_stage:
+		return
+	_damage_stage = stage
+	if car == null:
+		return
+	var body := get_node_or_null("Body") as MeshInstance3D
+	if body == null:
+		return
+	var m: Mesh = car.model
+	if stage == 1 and car.model_damaged_1 != null:
+		m = car.model_damaged_1
+	elif stage == 2 and car.model_damaged_2 != null:
+		m = car.model_damaged_2
+	if m != null:
+		body.mesh = m
 
 ## Roll-righting assist: a torque about the car's OWN forward axis that pulls its roll back to level.
 ## Only the roll axis, so steering (yaw) and ramp pitch are left alone — that's how cars stay hard to
