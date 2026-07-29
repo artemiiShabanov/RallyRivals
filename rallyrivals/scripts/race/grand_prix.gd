@@ -90,6 +90,15 @@ func set_reference(ref_lap: float) -> void:
 	for e in field:
 		e["qual"] = _ref_lap * float(e["pace"])
 
+## Re-anchor the provisional rival qual times to your REAL pace once you've set a lap, so the
+## qualifying board shows believable lap times instead of the REF_SPEED estimate. Phase/grid untouched;
+## record_qual() re-derives from your final best regardless, so this only sharpens the live board.
+func reanchor(best_lap: float) -> void:
+	if best_lap <= 0.0 or best_lap >= INF:
+		return
+	for e in field:
+		e["qual"] = best_lap * float(e["pace"])
+
 ## Lock in your qualifying lap and build the grid. Rival qual + race times RE-ANCHOR to your lap so the
 ## field is competitive at any skill; the grid is everyone sorted by qual time. Advances to the race.
 func record_qual(best_lap: float) -> void:
@@ -112,10 +121,33 @@ func record_qual(best_lap: float) -> void:
 func qual_standings(player_live: float) -> Array:
 	return _rows_by_time(player_live, "qual")
 
-## Order-panel rows for the RACE HUD: rivals by simulated finish time + you by a projected finish
-## (INF before your first lap completes), best-first.
+## Order-panel rows for the RACE HUD, best-first: rivals by simulated finish time + you by a projected
+## finish (INF until you've crossed a checkpoint). Times show as a GAP TO THE LEADER (P1 = "LEADER"),
+## which is how a live running order reads — you watch the gap grow or shrink, not an absolute clock.
 func race_standings(player_proj: float) -> Array:
-	return _rows_by_time(player_proj, "race_time")
+	var rows: Array = []
+	for e in field:
+		rows.append({"name": _name(e), "t": float(e["race_time"]), "player": false})
+	rows.append({"name": "YOU", "t": player_proj, "player": true})
+	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["t"]) < float(b["t"]))
+	var leader: float = float(rows[0]["t"]) if not rows.is_empty() else 0.0
+	var out: Array = []
+	for i in rows.size():
+		var t: float = float(rows[i]["t"])
+		var label := "--:--"
+		if t < INF:
+			label = "LEADER" if i == 0 else _gap(t - leader)
+		out.append({"name": rows[i]["name"], "time": label, "player": bool(rows[i]["player"])})
+	return out
+
+# A leader gap: "+2.4" under a minute, "+1:03.20" beyond it.
+func _gap(delta: float) -> String:
+	if delta <= 0.0:
+		return "+0.0"
+	if delta < 60.0:
+		return "+%.1f" % delta
+	var m := int(delta) / 60
+	return "+%d:%05.2f" % [m, delta - m * 60]
 
 ## The grid, pole-first: each {name, time, place, player}. Used by the GP hub and the race's opening board.
 func grid() -> Array:

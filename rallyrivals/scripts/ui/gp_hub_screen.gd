@@ -8,6 +8,10 @@ extends MenuScreen
 
 const HOT := Color(1.0, 0.85, 0.3)     # your row, picked out of the grid
 
+# The entry list / grid can run past the frame (six rows + result + actions), so scroll like the hub.
+func _scrolls() -> bool:
+	return true
+
 func _build(col: VBoxContainer) -> void:
 	var gp := GrandPrix.session
 	if gp == null:                     # opened without a live meeting (e.g. direct nav) — bail cleanly

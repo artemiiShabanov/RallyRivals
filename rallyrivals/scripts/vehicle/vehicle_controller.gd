@@ -59,7 +59,7 @@ extends VehicleBody3D
 ## thresholds. There is NO repair — a fresh car each race starts pristine (damage defaults to 0), and
 ## reset_car does NOT clear it, so crashing can't be undone. `damage` (0..1) is the read art-vfx-damage
 ## and any gauge consume.
-@export var damage_per_ns := 0.00004     ## damage per N·s of impact (before damage_sensitivity)
+@export var damage_per_ns := 0.000012    ## damage per N·s of impact (before damage_sensitivity) — tuned so it takes ~3 HARD hits to wreck, not one
 @export var damage_speed_loss := 0.25    ## fraction of top speed lost at full damage
 @export var damage_pull := 0.10          ## steering bias toward the bent side at full damage (of full lock)
 @export var damage_light := 0.40         ## damage at which the body swaps to model_damaged_1
@@ -92,11 +92,13 @@ var is_handbraking := false
 
 ## Collision impulse in N·s, once per hit. CarAudio picks light vs heavy from the magnitude.
 signal impacted(strength: float)
-## Any contact with another car — all sides, a side rub counts too. Impulse in N·s. Officials races
-## turn this into a flat time penalty (code-race-contact); Wilds ignore it. Walls/props fire
-## `impacted`, never this.
-signal rammed(impulse: float)
+## Any contact with another car — all sides, a side rub counts too. Impulse in N·s. `rear` is true when
+## the strongest car-contact landed on the BACK of this car (you got rear-ended), so the race rule can
+## spare you the penalty for a hit that wasn't your doing. Officials races turn a non-rear contact into
+## a flat time penalty (code-race-contact); Wilds ignore it. Walls/props fire `impacted`, never this.
+signal rammed(impulse: float, rear: bool)
 const IMPACT_MIN := 900.0                # below this it's a scrape, not a hit
+const REAR_ZONE := 0.5                   # m behind the car's centre: a car-contact past this is "rear"
 const IMPACT_COOLDOWN := 0.12            # s — one contact spans several physics frames
 var _impact_cool := 0.0
 var _touching := 0                       # bodies in contact right now (scrape source)
@@ -387,15 +389,22 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		return
 	var strongest := 0.0
 	var car_hit := false
+	var car_impulse := 0.0            # strongest CAR contact, to classify which side got hit
+	var car_local := Vector3.ZERO     # its contact point in this car's local frame
 	for i in state.get_contact_count():
-		strongest = maxf(strongest, state.get_contact_impulse(i).length())
+		var imp := state.get_contact_impulse(i).length()
+		strongest = maxf(strongest, imp)
 		if state.get_contact_collider_object(i) is VehicleController:
 			car_hit = true          # contact with another car, any side
+			if imp >= car_impulse:  # track the hardest car-contact for the front/rear test
+				car_impulse = imp
+				car_local = global_transform.affine_inverse() * state.get_contact_local_position(i)
 	if strongest >= IMPACT_MIN:
 		_impact_cool = IMPACT_COOLDOWN
 		impacted.emit(strongest)
 		if car_hit:
-			rammed.emit(strongest)
+			# Local +Z is forward, so a contact well behind the centre is a rear-end (not your fault).
+			rammed.emit(strongest, car_local.z < -REAR_ZONE)
 		# Any hard hit (wall, prop or car) damages the car, scaled by impulse × the car's sensitivity.
 		# Accumulate the float here (safe in the physics callback); the mesh swap happens in _process.
 		var sens: float = car.damage_sensitivity if car != null else 1.0

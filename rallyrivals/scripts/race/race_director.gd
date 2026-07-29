@@ -42,6 +42,7 @@ var _gp: GrandPrix = null      ## the active grand-prix meeting when this scene 
 var _qual := false             ## this scene is a GP QUALIFYING session (solo hot-laps, ends to the GP hub)
 var _laps_total := 0           ## laps this session runs: QUAL_LAPS in qualifying, else RaceDef.laps
 var _qual_hint: Label          ## persistent "[ENTER] to finish" prompt, shown once you've set a lap
+var _gates_passed := 0         ## player checkpoints crossed this race — monotonic, drives the race-board projection
 
 # Physical starting grid (code-race-grandprix): a staggered two-column grid built back from the line.
 const GRID_ROW := 6.0          # metres between grid rows
@@ -110,6 +111,9 @@ func _build(track_ps: PackedScene) -> void:
 		_cps.gate_passed.connect(func(body: Node3D, _i: int, _t: int) -> void: Sfx.play_at(cp_sfx, body.global_position))
 		_timing.lap_completed.connect(_on_lap)
 		_timing.stage_completed.connect(_on_stage)
+		# Live running order refreshes every checkpoint (not just each lap) while there's a field to rank.
+		if _gp != null and not _qual:
+			_timing.gate_crossed.connect(_on_gate_board)
 
 	# Car parked at the start line, facing along the extracted spline.
 	var start := track.get_node_or_null("StartFinish") as Marker3D
@@ -265,8 +269,9 @@ func _make_banner() -> Label:
 # A car-to-car contact in an Officials race (Wilds never connect this). Accrue the flat penalty into
 # the finish time and announce it on the HUD's bottom strip (the same line checkpoint splits use).
 # Debounce lives in VehicleController, so one contact = one call.
-func _on_ram(_impulse: float) -> void:
-	if _finished:
+func _on_ram(_impulse: float, rear: bool) -> void:
+	# A rear-end (someone hit the BACK of your car) isn't your fault — no penalty (code-race-contact).
+	if _finished or rear:
 		return
 	_penalty += CONTACT_PENALTY
 	if _hud != null:
@@ -301,15 +306,15 @@ func _on_lap(body: Node3D, _lap_time: float, lap_number: int, _is_best: bool) ->
 	if _qual:
 		if _qual_hint != null:
 			_qual_hint.visible = true                 # a lap is on the board — end-early is now offered
-		if _gp != null and _hud != null:
-			_hud.set_standings(_gp.qual_standings(_timing.best_lap(_car)))
+		if _gp != null:
+			_gp.reanchor(_timing.best_lap(_car))      # rival board tracks your real lap pace now
+			if _hud != null:
+				_hud.set_standings(_gp.qual_standings(_timing.best_lap(_car)))
 		if lap_number >= _laps_total:
 			_finish_qual()
 		return
 	if autodrive:
 		print("[autodrive] lap %d/%d" % [lap_number, _laps_total])
-	if _gp != null:
-		_update_race_board()                          # positions refresh each time you cross the line
 	if _cps != null and _cps.loop and lap_number >= _laps_total:
 		_finish()
 
@@ -370,17 +375,25 @@ func _finish_qual() -> void:
 	await get_tree().create_timer(1.5).timeout
 	Flow.goto(Routes.GP_HUB)
 
+# Player crossed a checkpoint — bump the progress counter and refresh the running order (every gate).
+func _on_gate_board(body: Node3D, _index: int, _split: float) -> void:
+	if body != _car:
+		return
+	_gates_passed += 1
+	_update_race_board()
+
 # Refresh the grand-prix race board: rivals sit at their simulated finish times; you slot in by a
-# projected total (current pace held for the full distance). Approximate by design — the FINAL place is
-# your real time vs the rival times (_finish); this is just the live read-out and can differ mid-race.
+# projected total (elapsed scaled by how far through the race's gates you are — so it works from the
+# very first checkpoint, not only whole laps). Approximate by design — the FINAL place is your real time
+# vs the rival times (_finish); this is just the live read-out and can differ mid-race.
 func _update_race_board() -> void:
 	if _gp == null or _hud == null:
 		return
 	var elapsed := _timing.total_time(_car)
-	var done: int = (_timing.laps_of(_car) as Array).size()
+	var total_gates := (_cps.gate_count() if _cps != null else 0) * maxi(_laps_total, 1)
 	var proj := INF
-	if done > 0 and elapsed > 0.0:
-		proj = elapsed * float(_laps_total) / float(done)
+	if total_gates > 0 and _gates_passed > 0 and elapsed > 0.0:
+		proj = elapsed * float(total_gates) / float(_gates_passed)
 	_hud.set_standings(_gp.race_standings(proj))
 
 func _grid_label(place: int) -> String:
