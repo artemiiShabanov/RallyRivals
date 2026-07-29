@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="RaceDef" load_steps=4 format=3]
+
+[ext_resource type="Resource" path="res://assets/lighting/golden.tres" id="1_cmjy7"]
+[ext_resource type="Script" path="res://scripts/race/race_def.gd" id="2_bok35"]
+[ext_resource type="Resource" path="res://assets/weather/clear.tres" id="3_bbepw"]
+
+[resource]
+script = ExtResource("2_bok35")
+id = "test_grandprix"
+display_name = "Test Circuit — Grand Prix"
+track_scene = "res://assets/tracks/test/baked_track.tscn"
+race_type = "grand_prix"
+laps = 3
+culture = "officials"
+car_class = "C"
+class_low = ""
+class_high = ""
+lighting = ExtResource("1_cmjy7")
+weather = ExtResource("3_bbepw")
+season = "summer"
+tt_gold = 0.0
+tt_silver = 0.0
+tt_bronze = 0.0
+money_pool = 0
+cp_pool = 0

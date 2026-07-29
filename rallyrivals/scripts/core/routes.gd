@@ -10,5 +10,6 @@ const CAREER_HUB := "res://scenes/ui/career_hub.tscn"
 const GARAGE := "res://scenes/ui/garage.tscn"
 const SHOP := "res://scenes/ui/shop.tscn"
 const PRE_RACE := "res://scenes/ui/pre_race.tscn"
+const GP_HUB := "res://scenes/ui/gp_hub.tscn"        ## grand-prix intermediate menu (qualify ⇄ race)
 const RESULTS := "res://scenes/ui/results.tscn"
 const RACE := "res://scenes/race/race.tscn"          ## the one real race (built by code-race-director)

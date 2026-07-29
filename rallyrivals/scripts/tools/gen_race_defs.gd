@@ -72,6 +72,20 @@ func _initialize() -> void:
 	endur.weather = load("res://assets/weather/clear.tres")
 	ResourceSaver.save(endur, dir + "test_endurance.tres")
 
+	# Grand prix: the two-session type (qualify → grid → race). Class-GATED (C+), and its field is built
+	# by GrandPrix from the gate band, not RaceField — so class_low/high are left unset here. A loop, so
+	# the finish counts RaceDef.laps like a circuit. Kept short (3) for quick drive-checks.
+	var gp := RaceDef.new()
+	gp.id = "test_grandprix"
+	gp.display_name = "Test Circuit — Grand Prix"
+	gp.track_scene = "res://assets/tracks/test/baked_track.tscn"   # loop
+	gp.race_type = "grand_prix"
+	gp.laps = 3
+	gp.car_class = "C"                # class gate: a C-or-better car is required to enter
+	gp.lighting = load("res://assets/lighting/golden.tres")
+	gp.weather = load("res://assets/weather/clear.tres")
+	ResourceSaver.save(gp, dir + "test_grandprix.tres")
+
 	# test_timetrial has no field, so it authors no band.
-	print("race defs: 5")
+	print("race defs: 6")
 	quit()

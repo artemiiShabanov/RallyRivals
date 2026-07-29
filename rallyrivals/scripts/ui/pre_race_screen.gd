@@ -64,8 +64,14 @@ func _build(col: VBoxContainer) -> void:
 	var start := menu_button("CAR TOO LOW" if not admitted else "START  ▸")
 	start.disabled = not admitted
 	start.pressed.connect(func() -> void:
-		RaceDirector.pending = r      # hand the previewed RaceDef to the race
-		Flow.goto(Routes.RACE))
+		# A grand prix runs through its own menu (qualify → grid → race); every other type races now.
+		if r.race_type == "grand_prix":
+			GrandPrix.begin(r)
+			Flow.goto(Routes.GP_HUB)
+		else:
+			GrandPrix.clear()         # drop any abandoned meeting so this race is clean
+			RaceDirector.pending = r  # hand the previewed RaceDef to the race
+			Flow.goto(Routes.RACE))
 	actions.add_child(start)
 
 	# Reuse the garage as the owned-car picker; BACK there returns here, showing the new car.

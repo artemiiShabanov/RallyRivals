@@ -62,6 +62,7 @@ func _menu() -> Array:
 			{"label": "Performance", "hud": "perf"},
 			{"label": "Vehicle state", "hud": "vehicle"},
 		]},
+		{"label": "Boot Grand Prix (test)", "run": _boot_grand_prix},
 		{"label": "Lighting", "sub": _lighting_menu()},
 		{"label": "Weather", "sub": _weather_menu()},
 		{"label": "Audio", "sub": _audio_menu()},
@@ -206,6 +207,16 @@ func _reset_car() -> void:
 	var car := _car()
 	if car != null:
 		car.reset()
+
+# Jump straight into the grand-prix flow (code-race-grandprix) at its hub, bypassing the pre-race class
+# gate — you race whatever car is active. The gate itself is exercised via the normal career → pre-race
+# path (START disables on an under-classed car).
+func _boot_grand_prix() -> void:
+	var gp_def := load("res://assets/races/test_grandprix.tres") as RaceDef
+	if gp_def == null:
+		return
+	GrandPrix.begin(gp_def)
+	Flow.goto(Routes.GP_HUB)
 
 # Force the car's in-race damage (code-vehicle-damage) to a preset % — feel the pull + speed loss + the
 # mesh swap without having to crash. Effects apply next physics frame; 0% restores pristine.
