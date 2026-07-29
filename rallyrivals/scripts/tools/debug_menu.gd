@@ -56,6 +56,7 @@ func _menu() -> Array:
 			{"label": "Return to last checkpoint", "run": _respawn_checkpoint},
 			{"label": "Reset to spawn", "run": _reset_car},
 			{"label": "Car: %s" % (current.car.display_name if current != null and current.car != null else "?"), "sub": _car_menu()},
+			{"label": "Damage (%d%%)" % roundi((current.damage if current != null else 0.0) * 100.0), "sub": _damage_menu()},
 		]},
 		{"label": "Overlays", "sub": [
 			{"label": "Performance", "hud": "perf"},
@@ -205,6 +206,19 @@ func _reset_car() -> void:
 	var car := _car()
 	if car != null:
 		car.reset()
+
+# Force the car's in-race damage (code-vehicle-damage) to a preset % — feel the pull + speed loss + the
+# mesh swap without having to crash. Effects apply next physics frame; 0% restores pristine.
+func _damage_menu() -> Array:
+	var out: Array = []
+	for pct in [0, 25, 50, 75, 100]:
+		out.append({"label": "%d%%" % pct, "run": _set_damage.bind(pct / 100.0)})
+	return out
+
+func _set_damage(frac: float) -> void:
+	var car := _car()
+	if car != null:
+		car.damage = clampf(frac, 0.0, 1.0)
 
 # One entry per roster CarDef — pick to hot-swap the drive (A/B feel testing across the roster).
 func _car_menu() -> Array:
