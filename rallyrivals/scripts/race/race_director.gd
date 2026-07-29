@@ -147,7 +147,7 @@ func _build(track_ps: PackedScene) -> void:
 		field_entries = _gp.grid_rivals()
 	elif not _qual and ai_line != null and ai_line.curve != null and RaceField.size_for(_race.race_type) > 0:
 		var stages := _laps_total if _race.is_lap_race() else 1
-		_grid = RaceGrid.build(_race, 0, ai_line.curve.get_baked_length(), stages)
+		_grid = RaceGrid.build(_race, Chapters.current(), ai_line.curve.get_baked_length(), stages)
 		if _grid.size() > 0:
 			_field = _grid
 			player_slot = _grid.size()   # you start at the BACK, the field ahead to carve through
@@ -213,7 +213,7 @@ func _build(track_ps: PackedScene) -> void:
 # GO. Cars come from the race's assembled field (real driver/car); short of the field, they use the
 # scene default. Minimal opponent for contact/feel testing — not the finish-time-scored auto-field yet.
 func _spawn_rivals(base: Vector3, fwd: Vector3, right: Vector3, ai_line: Path3D) -> void:
-	var field := RaceField.assemble(_race, 0)
+	var field := RaceField.assemble(_race, Chapters.current())
 	var loop: bool = _cps.loop if _cps != null else true
 	for i in rivals:
 		var car := car_scene.instantiate() as VehicleController
@@ -392,6 +392,8 @@ func _finish() -> void:
 		# Boss duel: placed head-to-head on the boss's REAL time (INF if it hasn't finished — i.e. you
 		# crossed first, so you won). A Wilds contact penalty (if any) still folds into your `total`.
 		last_result = RaceResult.compute(_race.id, total, laps, best, [_boss_time])
+		if last_result.place == 1:
+			Chapters.on_boss_win(_race.boss_chapter)   # beating THIS chapter's boss advances the campaign
 	elif _field != null:
 		# Placed against the field's SIMULATED race times (GP grid / open-race RaceGrid). Ramming a rival
 		# already folded a penalty into `total`, so contact costs you positions here.

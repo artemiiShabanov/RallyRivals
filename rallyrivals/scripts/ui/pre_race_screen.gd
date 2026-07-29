@@ -66,7 +66,7 @@ func _build(col: VBoxContainer) -> void:
 	start.pressed.connect(func() -> void:
 		# A grand prix runs through its own menu (qualify → grid → race); every other type races now.
 		if r.race_type == "grand_prix":
-			GrandPrix.begin(r)
+			GrandPrix.begin(r, Chapters.current())
 			Flow.goto(Routes.GP_HUB)
 		else:
 			GrandPrix.clear()         # drop any abandoned meeting so this race is clean

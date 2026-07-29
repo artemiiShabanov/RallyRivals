@@ -1,0 +1,73 @@
+class_name Chapters
+extends RefCounted
+## Campaign progression (code-meta-chapters, GDD §5/§8, CAMPAIGN.md). Four chapters = four regions; a
+## two-step gate carries you through each:
+##   1. Bank ≈70% of the chapter's CP  → the chapter BOSS duel unlocks.
+##   2. Beat the boss                  → advance to the next chapter/region (+ pink-slip the boss car,
+##                                        code-meta-pinkslip). Losing costs only the retry (lenient).
+##
+## Static helpers over Save.active — the one owner of `chapter` + `chapter_cp_base`. CP is never spent
+## (GDD §8), so chapter progress is simply how much CP has been banked SINCE the chapter began:
+## `cp - chapter_cp_base`. Advancing rebases that to the current CP, so the bar resets while lifetime CP
+## keeps climbing.
+##
+## The CP TARGET here is a placeholder — balance-difficulty-pacing owns the real per-chapter totals
+## (derived from the chapter's eight race CP pools once content-tracks-campaign authors them) and the
+## exact gate %. This file owns the MECHANISM; those own the numbers. The career MAP that lists races +
+## the boss tile is code-ui-career-map; awarding the won car is code-meta-pinkslip.
+
+const COUNT := 4               ## four chapters; chapter == COUNT means the campaign is complete
+const GATE := 0.7              ## fraction of the chapter CP target that unlocks the boss (placeholder)
+const CP_TARGET := 100         ## PLACEHOLDER per-chapter CP total — balance-difficulty-pacing owns the real, per-chapter figure
+
+## Current chapter (0-based), clamped to a valid roster index even when the campaign is complete.
+static func current() -> int:
+	if Save.active == null:
+		return 0
+	return clampi(Save.active.chapter, 0, COUNT - 1)
+
+## Raw chapter counter (may equal COUNT once every chapter is done — unlike current(), not clamped).
+static func raw() -> int:
+	return Save.active.chapter if Save.active != null else 0
+
+static func is_complete() -> bool:
+	return raw() >= COUNT
+
+## CP banked toward THIS chapter's boss (cp since the chapter began; never negative).
+static func cp_progress() -> int:
+	if Save.active == null:
+		return 0
+	return maxi(0, Save.active.cp - Save.active.chapter_cp_base)
+
+## CP needed this chapter (placeholder; balance owns the real per-chapter total).
+static func cp_target() -> int:
+	return CP_TARGET
+
+## CP that unlocks the boss (≈70% of the target).
+static func boss_threshold() -> int:
+	return roundi(GATE * float(cp_target()))
+
+## 0..1 progress toward the boss unlock, for a gauge.
+static func boss_fraction() -> float:
+	var t := boss_threshold()
+	return clampf(float(cp_progress()) / float(t), 0.0, 1.0) if t > 0 else 1.0
+
+## Has the boss duel unlocked (enough CP banked, campaign not already finished)?
+static func boss_unlocked() -> bool:
+	return not is_complete() and cp_progress() >= boss_threshold()
+
+## The current chapter's boss (identity + manner + pink-slip car).
+static func boss() -> BossDef:
+	return BossDef.for_chapter(current())
+
+## Beating a boss (place 1 in its duel, RaceDirector). Advances ONLY when it's the CURRENT chapter's
+## boss — so debug-booting another chapter's boss can't skip you ahead. Rebases CP + persists.
+## `boss_chapter` is the RaceDef's 1-based chapter; awarding the car is code-meta-pinkslip's job.
+static func on_boss_win(boss_chapter: int) -> void:
+	if Save.active == null or is_complete():
+		return
+	if boss_chapter - 1 != current():
+		return                                   # not this chapter's boss — no advance
+	Save.active.chapter += 1
+	Save.active.chapter_cp_base = Save.active.cp
+	Save.write()

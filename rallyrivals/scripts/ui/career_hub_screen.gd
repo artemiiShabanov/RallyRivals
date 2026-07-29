@@ -16,6 +16,7 @@ func _scrolls() -> bool:
 func _build(col: VBoxContainer) -> void:
 	col.add_child(heading("CAREER"))
 	col.add_child(heading(_profile_line(), "OsdDim"))
+	col.add_child(heading(_chapter_line(), "OsdDim"))
 	col.add_child(spacer(18))
 
 	var race := _tile("RACE  ▸")
@@ -69,6 +70,17 @@ func _profile_line() -> String:
 	if Save.active == null:
 		return "no profile loaded"
 	return "$%d   ·   CP %d   ·   %s" % [Save.active.money, Save.active.cp, _car_name()]
+
+## Chapter + the two-step gate (code-meta-chapters): CP left to unlock the boss, or that it's open.
+func _chapter_line() -> String:
+	if Save.active == null:
+		return ""
+	if Chapters.is_complete():
+		return "CAMPAIGN COMPLETE"
+	var ch := "CHAPTER %d / %d" % [Chapters.current() + 1, Chapters.COUNT]
+	if Chapters.boss_unlocked():
+		return "%s   ·   BOSS UNLOCKED — %s" % [ch, Chapters.boss().hud]
+	return "%s   ·   BOSS IN %d CP" % [ch, Chapters.boss_threshold() - Chapters.cp_progress()]
 
 ## Prefer the CarDef's display name over the raw id; fall back to the id if the resource is missing.
 func _car_name() -> String:

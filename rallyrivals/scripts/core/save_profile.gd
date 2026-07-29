@@ -11,6 +11,8 @@ extends Resource
 @export var owned_cars: PackedStringArray = []   ## CarDef ids the player owns
 @export var current_car := ""                    ## selected CarDef id
 @export var bests: Dictionary = {}               ## race_id (String) -> best place (int, 1 = win)
+@export var chapter := 0                          ## current campaign chapter (0-based; == COUNT means the campaign is complete) — code-meta-chapters
+@export var chapter_cp_base := 0                  ## Save.cp at the start of `chapter`; chapter progress = cp - this (CP is never spent, so the delta is CP banked this chapter)
 @export var roster: Array = []                    ## generated rival drivers (Array of DriverDef dicts), one campaign's worth; built once by Roster
 @export var created_unix := 0                     ## slot creation time
 @export var played_unix := 0                      ## last save time
@@ -24,6 +26,8 @@ func to_dict() -> Dictionary:
 		"owned_cars": Array(owned_cars),
 		"current_car": current_car,
 		"bests": bests,
+		"chapter": chapter,
+		"chapter_cp_base": chapter_cp_base,
 		"roster": roster,
 		"created_unix": created_unix,
 		"played_unix": played_unix,
@@ -38,6 +42,8 @@ static func from_dict(d: Dictionary) -> SaveProfile:
 	p.owned_cars = PackedStringArray(d.get("owned_cars", []))
 	p.current_car = String(d.get("current_car", ""))
 	p.bests = d.get("bests", {})
+	p.chapter = int(d.get("chapter", 0))
+	p.chapter_cp_base = int(d.get("chapter_cp_base", 0))
 	p.roster = Array(d.get("roster", []))
 	p.created_unix = int(d.get("created_unix", 0))
 	p.played_unix = int(d.get("played_unix", 0))

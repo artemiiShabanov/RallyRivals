@@ -68,6 +68,7 @@ func _menu() -> Array:
 		{"label": "Weather", "sub": _weather_menu()},
 		{"label": "Audio", "sub": _audio_menu()},
 		{"label": "Wallet ($%d · CP %d)" % [Save.active.money if Save.active != null else 0, Save.active.cp if Save.active != null else 0], "sub": _wallet_menu()},
+		{"label": _chapters_label(), "sub": _chapters_menu()},
 		{"label": "VHS filter (%d%%)" % roundi(VHSFilter.intensity * 100.0), "sub": _vhs_menu()},
 		{"label": "Font (compare)", "sub": _font_menu()},
 		{"label": "Time scale (%sx)" % String.num(Engine.time_scale), "sub": [
@@ -76,6 +77,25 @@ func _menu() -> Array:
 			{"label": "1x", "run": func() -> void: Engine.time_scale = 1.0},
 			{"label": "2x", "run": func() -> void: Engine.time_scale = 2.0},
 		]},
+	]
+
+# Campaign progression (code-meta-chapters): watch the CP gate + force the boss-win advance without
+# having to drive the duel. +CP (wallet menu) feeds the same chapter progress.
+func _chapters_label() -> String:
+	if Chapters.is_complete():
+		return "Chapters (COMPLETE)"
+	if Chapters.boss_unlocked():
+		return "Chapters (Ch%d · boss OPEN)" % (Chapters.current() + 1)
+	return "Chapters (Ch%d · %d/%d CP)" % [Chapters.current() + 1, Chapters.cp_progress(), Chapters.boss_threshold()]
+
+func _chapters_menu() -> Array:
+	return [
+		{"label": "Force boss win (advance)", "run": func() -> void: Chapters.on_boss_win(Chapters.current() + 1)},
+		{"label": "Reset to Chapter 1", "run": func() -> void:
+			if Save.active != null:
+				Save.active.chapter = 0
+				Save.active.chapter_cp_base = 0
+				Save.write()},
 	]
 
 # Cheat top-up so the shop is testable before the real earn economy (code-meta-economy). No-ops
@@ -216,7 +236,7 @@ func _boot_grand_prix() -> void:
 	var gp_def := load("res://assets/races/test_grandprix.tres") as RaceDef
 	if gp_def == null:
 		return
-	GrandPrix.begin(gp_def)
+	GrandPrix.begin(gp_def, Chapters.current())
 	Flow.goto(Routes.GP_HUB)
 
 # One entry per chapter boss — boot the 1v1 duel (code-ai-boss) on the point-to-point sprint track, so
