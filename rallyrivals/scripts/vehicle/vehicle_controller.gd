@@ -61,7 +61,7 @@ extends VehicleBody3D
 ## and any gauge consume.
 @export var damage_per_ns := 0.00004     ## damage per N·s of impact (before damage_sensitivity)
 @export var damage_speed_loss := 0.25    ## fraction of top speed lost at full damage
-@export var damage_pull := 0.30          ## steering bias toward the bent side at full damage (of full lock)
+@export var damage_pull := 0.10          ## steering bias toward the bent side at full damage (of full lock)
 @export var damage_light := 0.40         ## damage at which the body swaps to model_damaged_1
 @export var damage_heavy := 0.75         ## ... and to model_damaged_2
 
