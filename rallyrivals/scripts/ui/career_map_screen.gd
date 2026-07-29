@@ -8,6 +8,9 @@ extends MenuScreen
 # Preloaded by PATH (not a global class_name) so the map compiles the instant the file exists — no
 # waiting on the editor's class registry / a restart. Usable as a type and via .new().
 const CareerMapView = preload("res://scripts/ui/career_map_view.gd")
+# Also preloaded by path (its class_name was added this session and only this screen references it, so
+# a stale editor registry would parse-error until a restart). Static vars are set through it below.
+const PreRace = preload("res://scripts/ui/pre_race_screen.gd")
 
 const CARD_W := 460
 const HOT := Color(1.0, 0.85, 0.3)
@@ -137,8 +140,8 @@ func _launch(i: int) -> void:
 	if bool(nd["locked"]):
 		play_cue("ui_error")
 		return
-	PreRaceScreen.race = nd["race"]
-	PreRaceScreen.return_to = Routes.CAREER_MAP
+	PreRace.race = nd["race"]
+	PreRace.return_to = Routes.CAREER_MAP
 	Flow.goto(Routes.PRE_RACE)
 
 func _on_cancel() -> void:
