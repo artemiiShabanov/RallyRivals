@@ -107,7 +107,7 @@ tasks:
   - {id: code-meta-garage, title: "Owned-cars garage + selection", type: code, group: meta, size: default, status: done, blockers: [code-meta-currencies, code-meta-car-catalog]}
   - {id: code-meta-pinkslip, title: "Beat rival -> win their car (pink-slip)", type: code, group: meta, size: default, status: todo, blockers: [code-meta-garage, code-ai-boss]}
   - {id: code-meta-achievements, title: "Steam achievements (event-triggered, no in-game unlocks)", type: code, group: meta, size: default, status: todo, blockers: [setup-build-export]}
-  - {id: code-meta-chapters, title: "Chapter CP gate (~70%) + advance on boss win", type: code, group: meta, size: big, status: todo, blockers: [code-meta-economy, code-ai-boss]}
+  - {id: code-meta-chapters, title: "Chapter CP gate (~70%) + advance on boss win", type: code, group: meta, size: big, status: done, blockers: [code-meta-economy, code-ai-boss]}
 
   # ---------- content ----------
   - {id: content-surfaces-defs, title: "SurfaceType resources (asphalt/dirt/snow/sand/gravel/ice)", type: content, group: surfaces, size: default, status: done, blockers: []}
