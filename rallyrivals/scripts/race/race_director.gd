@@ -39,6 +39,8 @@ var _penalty := 0.0            ## accrued Officials contact penalty (s), folded 
 var _hud: RaceHud             ## the race HUD; its bottom strip doubles as the penalty alert line
 var _rivals: Array[VehicleController] = []   ## AI opponents (dev/test), parked until GO
 var _gp: GrandPrix = null      ## the active grand-prix meeting when this scene is a GP session (else null)
+var _grid: RaceGrid = null     ## the simulated field for an OPEN race (circuit/sprint/endurance); else null
+var _field                     ## whichever field ranks this race — the GP (race phase) or the RaceGrid; null = solo/TT/qual. Both expose race_standings() + rival_race_times().
 var _qual := false             ## this scene is a GP QUALIFYING session (solo hot-laps, ends to the GP hub)
 var _laps_total := 0           ## laps this session runs: QUAL_LAPS in qualifying, else RaceDef.laps
 var _qual_hint: Label          ## persistent "[ENTER] to finish" prompt, shown once you've set a lap
@@ -111,9 +113,9 @@ func _build(track_ps: PackedScene) -> void:
 		_cps.gate_passed.connect(func(body: Node3D, _i: int, _t: int) -> void: Sfx.play_at(cp_sfx, body.global_position))
 		_timing.lap_completed.connect(_on_lap)
 		_timing.stage_completed.connect(_on_stage)
-		# Live running order refreshes every checkpoint (not just each lap) while there's a field to rank.
-		if _gp != null and not _qual:
-			_timing.gate_crossed.connect(_on_gate_board)
+		# Live running order refreshes every checkpoint (not just each lap). Harmless with no field —
+		# _update_race_board() no-ops until _field is set (below, once the AiLine + size are known).
+		_timing.gate_crossed.connect(_on_gate_board)
 
 	# Car parked at the start line, facing along the extracted spline.
 	var start := track.get_node_or_null("StartFinish") as Marker3D
@@ -127,12 +129,26 @@ func _build(track_ps: PackedScene) -> void:
 		if f.length() > 0.01:
 			fwd = f.normalized()
 	var right := Vector3.UP.cross(fwd).normalized()
+	# The field that ranks this race (spawns physically + supplies scored times + the live order): a GP's
+	# qualifying grid, or an OPEN race's simulated field (RaceGrid — band-paced, player-independent per
+	# the field-matching spec). Time trial + qualifying field nobody. Both need a baked AiLine.
+	var player_slot := -1                # -1 = start on the line (no grid); else your grid slot (0 = pole)
+	var field_entries: Array = []        # rival entries in grid order, filling every slot but yours
+	if _gp != null and not _qual:
+		_field = _gp
+		player_slot = _gp.player_grid - 1
+		field_entries = _gp.grid_rivals()
+	elif not _qual and ai_line != null and ai_line.curve != null and RaceField.size_for(_race.race_type) > 0:
+		var stages := _laps_total if _race.is_lap_race() else 1
+		_grid = RaceGrid.build(_race, 0, ai_line.curve.get_baked_length(), stages)
+		if _grid.size() > 0:
+			_field = _grid
+			player_slot = _grid.size()   # you start at the BACK, the field ahead to carve through
+			field_entries = _grid.entries()
+
 	_car = car_scene.instantiate() as VehicleController
 	_car.name = "Car"
-	# A grand-prix RACE starts you from your qualified grid slot; qualifying + open races use the line.
-	var car_pos := spawn
-	if _gp != null and not _qual:
-		car_pos = _grid_pos(spawn, fwd, right, _gp.player_grid - 1)
+	var car_pos := _grid_pos(spawn, fwd, right, player_slot) if player_slot >= 0 else spawn
 	_car.transform = Transform3D(Basis(right, Vector3.UP, fwd), car_pos)
 	_car.input_enabled = false          # parked until GO
 	var picked := Cars.by_id(Save.active.current_car) if Save.active != null else null
@@ -143,11 +159,11 @@ func _build(track_ps: PackedScene) -> void:
 		_car.driver = RivalDriver.new(ai_line, _cps.loop if _cps != null else true)
 	if _race.culture == "officials":    # clean racing: rams cost time. Wilds never connects this.
 		_car.rammed.connect(_on_ram)
-	# Opponents: qualifying is solo; a GP race lines up the physical grid; a dev scene may add `rivals`.
+	# Opponents: qualifying is solo; a ranked race lines up the physical grid; else a dev `rivals` count.
 	if _qual:
 		pass
-	elif _gp != null and ai_line != null:
-		_spawn_grid(spawn, fwd, right, ai_line)
+	elif player_slot >= 0:
+		_place_field(field_entries, player_slot, spawn, fwd, right, ai_line)
 	elif rivals > 0 and ai_line != null:
 		_spawn_rivals(spawn, fwd, right, ai_line)
 
@@ -166,12 +182,14 @@ func _build(track_ps: PackedScene) -> void:
 		_hud.name = "RaceHud"
 		add_child(_hud)
 		_hud.bind(_car, _timing, _cps, _laps_total, _race.race_type, _race.tt_targets())
-		# Grand-prix order panel: rivals' provisional times while you qualify; the grid at the race start.
+		# Opening order panel: GP shows provisional qual times / the grid; an open race shows its field.
 		if _qual and _gp != null:
 			_gp.set_reference(_reference_lap(ai_line))
 			_hud.set_standings(_gp.qual_standings(INF))
 		elif _gp != null:
 			_hud.set_standings(_gp.grid())
+		elif _grid != null:
+			_hud.set_standings(_grid.race_standings(INF))
 
 	Music.play(_race.race_type)   # race-type track (no-op/quiet until its .ogg exists)
 	_banner = _make_banner()
@@ -195,20 +213,20 @@ func _spawn_rivals(base: Vector3, fwd: Vector3, right: Vector3, ai_line: Path3D)
 		add_child(car)
 		_rivals.append(car)
 
-# Line up the grand-prix field on a PHYSICAL grid in qualifying order, each rival driving the AiLine,
-# parked until GO. Your slot is left empty (the player car sits there); rivals fill the rest in grid
-# order. Their finish PLACING is the simulated race time (GrandPrix), but they really drive — so you can
-# dice with them and ramming still costs you (contact penalty), which is the point of a real grid.
-func _spawn_grid(base: Vector3, fwd: Vector3, right: Vector3, ai_line: Path3D) -> void:
+# Line up a field on a PHYSICAL grid, parked until GO: `entries` (rival {car} dicts, already in grid
+# order) fill every slot EXCEPT `player_slot`, where the player car already sits. Each rival drives the
+# AiLine. Their finishing PLACE is their simulated time (GrandPrix / RaceGrid), but they really drive —
+# so you can dice with them and ramming still costs you the contact penalty. GP puts you mid-grid at your
+# qualified slot; an open race puts you last so the pack is ahead to overtake.
+func _place_field(entries: Array, player_slot: int, base: Vector3, fwd: Vector3, right: Vector3, ai_line: Path3D) -> void:
 	var loop: bool = _cps.loop if _cps != null else true
-	var order := _gp.grid_rivals()
 	var oi := 0
-	for slot in GrandPrix.GRID_SIZE:
-		if slot == _gp.player_grid - 1:
+	for slot in entries.size() + 1:                         # slots = rivals + you
+		if slot == player_slot:
 			continue                                        # your slot — the player car is already here
-		if oi >= order.size():
+		if oi >= entries.size():
 			break
-		var entry: Dictionary = order[oi]
+		var entry: Dictionary = entries[oi]
 		oi += 1
 		var car := car_scene.instantiate() as VehicleController
 		car.name = "Rival%d" % slot
@@ -333,14 +351,14 @@ func _finish() -> void:
 	if _race.race_type == "time_trial":
 		# No field: your time becomes a place via the medal targets (code-race-timetrial).
 		last_result = RaceResult.compute_time_trial(_race.id, total, laps, best, _race.tt_targets())
-	elif _gp != null:
-		# Grand prix: placed against the field's SIMULATED race times (code-race-grandprix). Ramming a
-		# rival already folded a penalty into `total`, so contact costs you positions here.
-		last_result = RaceResult.compute(_race.id, total, laps, best, _gp.rival_race_times())
-		GrandPrix.clear()                   # the meeting is complete
+	elif _field != null:
+		# Placed against the field's SIMULATED race times (GP grid / open-race RaceGrid). Ramming a rival
+		# already folded a penalty into `total`, so contact costs you positions here.
+		last_result = RaceResult.compute(_race.id, total, laps, best, _field.rival_race_times())
+		if _gp != null:
+			GrandPrix.clear()               # the meeting is complete
 	else:
-		# Solo field in the skeleton — no rival times yet, so this places 1 / 1. code-ai-rival will
-		# pass the rivals' finish times to compute().
+		# No field (a race type that fields nobody, or no baked AiLine to pace one) — you place 1 / 1.
 		last_result = RaceResult.compute(_race.id, total, laps, best)
 	last_result.penalty = _penalty
 	RaceEconomy.apply(last_result, _race)   # bank the finish + pay out (code-meta-economy)
@@ -382,19 +400,20 @@ func _on_gate_board(body: Node3D, _index: int, _split: float) -> void:
 	_gates_passed += 1
 	_update_race_board()
 
-# Refresh the grand-prix race board: rivals sit at their simulated finish times; you slot in by a
-# projected total (elapsed scaled by how far through the race's gates you are — so it works from the
-# very first checkpoint, not only whole laps). Approximate by design — the FINAL place is your real time
-# vs the rival times (_finish); this is just the live read-out and can differ mid-race.
+# Refresh the running order for any ranked race (GP grid or open-race field): rivals sit at their
+# simulated finish times; you slot in by a projected total (elapsed scaled by how far through the race's
+# gates you are — so it works from the very first checkpoint, not only whole laps). Approximate by design
+# — the FINAL place is your real time vs the rival times (_finish); this live read-out can differ mid-race.
 func _update_race_board() -> void:
-	if _gp == null or _hud == null:
+	if _field == null or _hud == null:
 		return
 	var elapsed := _timing.total_time(_car)
-	var total_gates := (_cps.gate_count() if _cps != null else 0) * maxi(_laps_total, 1)
+	var stages := _laps_total if _race.is_lap_race() else 1   # a sprint scores one pass, not `laps`
+	var total_gates := (_cps.gate_count() if _cps != null else 0) * maxi(stages, 1)
 	var proj := INF
 	if total_gates > 0 and _gates_passed > 0 and elapsed > 0.0:
 		proj = elapsed * float(total_gates) / float(_gates_passed)
-	_hud.set_standings(_gp.race_standings(proj))
+	_hud.set_standings(_field.race_standings(proj))
 
 func _grid_label(place: int) -> String:
 	return "P%d" % place
