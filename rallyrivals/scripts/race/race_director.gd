@@ -44,7 +44,12 @@ var _field                     ## whichever field ranks this race — the GP (ra
 var _qual := false             ## this scene is a GP QUALIFYING session (solo hot-laps, ends to the GP hub)
 var _laps_total := 0           ## laps this session runs: QUAL_LAPS in qualifying, else RaceDef.laps
 var _qual_hint: Label          ## persistent "[ENTER] to finish" prompt, shown once you've set a lap
-var _gates_passed := 0         ## player checkpoints crossed this race — monotonic, drives the race-board projection
+var _gates := {}               ## body -> checkpoints crossed (monotonic); drives the board projection per car
+# Boss duel (code-ai-boss): a live 1v1, scored on real head-to-head time — not the simulated field.
+var _boss: BossDriver
+var _boss_car: VehicleController
+var _boss_def: BossDef
+var _boss_time := INF          ## the boss's real finish time (INF until it crosses the line)
 
 # Physical starting grid (code-race-grandprix): a staggered two-column grid built back from the line.
 const GRID_ROW := 6.0          # metres between grid rows
@@ -134,7 +139,9 @@ func _build(track_ps: PackedScene) -> void:
 	# the field-matching spec). Time trial + qualifying field nobody. Both need a baked AiLine.
 	var player_slot := -1                # -1 = start on the line (no grid); else your grid slot (0 = pole)
 	var field_entries: Array = []        # rival entries in grid order, filling every slot but yours
-	if _gp != null and not _qual:
+	if _race.is_boss():
+		player_slot = 0                  # a duel: you + boss share the front row (boss at slot 1 below)
+	elif _gp != null and not _qual:
 		_field = _gp
 		player_slot = _gp.player_grid - 1
 		field_entries = _gp.grid_rivals()
@@ -159,9 +166,12 @@ func _build(track_ps: PackedScene) -> void:
 		_car.driver = RivalDriver.new(ai_line, _cps.loop if _cps != null else true)
 	if _race.culture == "officials":    # clean racing: rams cost time. Wilds never connects this.
 		_car.rammed.connect(_on_ram)
-	# Opponents: qualifying is solo; a ranked race lines up the physical grid; else a dev `rivals` count.
+	# Opponents: qualifying is solo; a boss duel spawns the one live boss; a ranked race lines up the
+	# physical grid; else a dev `rivals` count.
 	if _qual:
 		pass
+	elif _race.is_boss() and ai_line != null:
+		_spawn_boss(spawn, fwd, right, ai_line)
 	elif player_slot >= 0:
 		_place_field(field_entries, player_slot, spawn, fwd, right, ai_line)
 	elif rivals > 0 and ai_line != null:
@@ -182,7 +192,8 @@ func _build(track_ps: PackedScene) -> void:
 		_hud.name = "RaceHud"
 		add_child(_hud)
 		_hud.bind(_car, _timing, _cps, _laps_total, _race.race_type, _race.tt_targets())
-		# Opening order panel: GP shows provisional qual times / the grid; an open race shows its field.
+		# Opening order panel: GP shows provisional qual times / the grid; an open race shows its field; a
+		# boss duel shows YOU vs the boss (fills in with the live gap once you're rolling).
 		if _qual and _gp != null:
 			_gp.set_reference(_reference_lap(ai_line))
 			_hud.set_standings(_gp.qual_standings(INF))
@@ -190,6 +201,8 @@ func _build(track_ps: PackedScene) -> void:
 			_hud.set_standings(_gp.grid())
 		elif _grid != null:
 			_hud.set_standings(_grid.race_standings(INF))
+		elif _race.is_boss():
+			_update_duel_board()
 
 	Music.play(_race.race_type)   # race-type track (no-op/quiet until its .ogg exists)
 	_banner = _make_banner()
@@ -236,6 +249,27 @@ func _place_field(entries: Array, player_slot: int, base: Vector3, fwd: Vector3,
 		car.driver = RivalDriver.new(ai_line, loop)
 		add_child(car)
 		_rivals.append(car)
+
+# Spawn the chapter boss for the 1v1 duel (code-ai-boss): one live BossDriver on the boss's pink-slip
+# car, alongside you on the front row, parked until GO. It drives for REAL and is scored on real time
+# (unlike the simulated field). The boss never rams — it only defends and yields; on_contact() reacts to
+# YOU bumping it. Wilds or Officials, the AI aggression is positional (GDD §6).
+func _spawn_boss(base: Vector3, fwd: Vector3, right: Vector3, ai_line: Path3D) -> void:
+	_boss_def = BossDef.for_chapter(_race.boss_chapter - 1)
+	var car := car_scene.instantiate() as VehicleController
+	car.name = "Boss"
+	var cd := Cars.by_id(_boss_def.car_id)                   # the pink-slip car the win awards
+	if cd != null:
+		car.car = cd
+	car.transform = Transform3D(Basis(right, Vector3.UP, fwd), _grid_pos(base, fwd, right, 1))
+	car.input_enabled = false
+	_boss = BossDriver.new(ai_line, _cps.loop if _cps != null else false, _boss_def)
+	_boss.player = _car
+	car.driver = _boss
+	car.rammed.connect(func(_impulse: float, _rear: bool) -> void: _boss.on_contact())
+	add_child(car)
+	_rivals.append(car)
+	_boss_car = car
 
 # World position of grid slot `i` (0 = pole), staggered two-column and stepped back from the line.
 func _grid_pos(base: Vector3, fwd: Vector3, right: Vector3, i: int) -> Vector3:
@@ -337,6 +371,9 @@ func _on_lap(body: Node3D, _lap_time: float, lap_number: int, _is_best: bool) ->
 		_finish()
 
 func _on_stage(body: Node3D, _total_time: float) -> void:
+	if body == _boss_car:
+		_boss_time = _timing.total_time(_boss_car)   # the boss crossed the line — bank its real time
+		return
 	if body == _car:
 		_finish()
 
@@ -351,6 +388,10 @@ func _finish() -> void:
 	if _race.race_type == "time_trial":
 		# No field: your time becomes a place via the medal targets (code-race-timetrial).
 		last_result = RaceResult.compute_time_trial(_race.id, total, laps, best, _race.tt_targets())
+	elif _boss_car != null:
+		# Boss duel: placed head-to-head on the boss's REAL time (INF if it hasn't finished — i.e. you
+		# crossed first, so you won). A Wilds contact penalty (if any) still folds into your `total`.
+		last_result = RaceResult.compute(_race.id, total, laps, best, [_boss_time])
 	elif _field != null:
 		# Placed against the field's SIMULATED race times (GP grid / open-race RaceGrid). Ramming a rival
 		# already folded a penalty into `total`, so contact costs you positions here.
@@ -393,27 +434,47 @@ func _finish_qual() -> void:
 	await get_tree().create_timer(1.5).timeout
 	Flow.goto(Routes.GP_HUB)
 
-# Player crossed a checkpoint — bump the progress counter and refresh the running order (every gate).
+# A car crossed a checkpoint — count it per body (for projections), and refresh the order on the player's.
 func _on_gate_board(body: Node3D, _index: int, _split: float) -> void:
+	if body != null:
+		_gates[body] = int(_gates.get(body, 0)) + 1
 	if body != _car:
 		return
-	_gates_passed += 1
-	_update_race_board()
+	if _boss_car != null:
+		_update_duel_board()
+	elif _field != null:
+		_update_race_board()
+
+# Project a car's finish total from how far through the race's gates it is (elapsed scaled up) — works
+# from the very first checkpoint, not only whole laps. INF until the car has a gate + elapsed time.
+func _project(body: Node3D) -> float:
+	var g := int(_gates.get(body, 0))
+	var elapsed := _timing.total_time(body)
+	if g <= 0 or elapsed <= 0.0:
+		return INF
+	var stages := _laps_total if _race.is_lap_race() else 1   # a sprint scores one pass, not `laps`
+	var total_gates := (_cps.gate_count() if _cps != null else 0) * maxi(stages, 1)
+	if total_gates <= 0:
+		return INF
+	return elapsed * float(total_gates) / float(g)
 
 # Refresh the running order for any ranked race (GP grid or open-race field): rivals sit at their
-# simulated finish times; you slot in by a projected total (elapsed scaled by how far through the race's
-# gates you are — so it works from the very first checkpoint, not only whole laps). Approximate by design
-# — the FINAL place is your real time vs the rival times (_finish); this live read-out can differ mid-race.
+# simulated finish times; you slot in by your projected total. Approximate by design — the FINAL place is
+# your real time vs the rival times (_finish); this live read-out can differ mid-race.
 func _update_race_board() -> void:
 	if _field == null or _hud == null:
 		return
-	var elapsed := _timing.total_time(_car)
-	var stages := _laps_total if _race.is_lap_race() else 1   # a sprint scores one pass, not `laps`
-	var total_gates := (_cps.gate_count() if _cps != null else 0) * maxi(stages, 1)
-	var proj := INF
-	if total_gates > 0 and _gates_passed > 0 and elapsed > 0.0:
-		proj = elapsed * float(total_gates) / float(_gates_passed)
-	_hud.set_standings(_field.race_standings(proj))
+	_hud.set_standings(_field.race_standings(_project(_car)))
+
+# Refresh the boss-duel order: YOU vs the boss, both by their REAL projected totals, as a gap to whoever
+# leads (shared FieldStandings). Both cars really drive, so this order is honest — the boss's simulated
+# time doesn't exist; its place is its actual finish (_boss_time).
+func _update_duel_board() -> void:
+	if _hud == null or _boss_def == null:
+		return
+	var boss_row := {"driver": DriverDef.make(_boss_def.name, _boss_def.hud, _boss_def.number, _boss_def.brand),
+		"race_time": _project(_boss_car)}
+	_hud.set_standings(FieldStandings.gap_rows([boss_row], _project(_car), "race_time"))
 
 func _grid_label(place: int) -> String:
 	return "P%d" % place

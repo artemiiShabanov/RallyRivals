@@ -14,6 +14,7 @@ extends Resource
 @export var laps := 3                    ## circuit/endurance; ignored for point-to-point
 @export_enum("officials", "wilds") var culture := "officials"   ## contact rules (code-race-contact)
 @export var car_class := ""              ## Grand-Prix class gate (a class letter; "" = open entry). See gate_class()/admits().
+@export var boss_chapter := 0            ## 1–4 = this race is that chapter's 1v1 boss duel (player vs a live BossDriver, real head-to-head time); 0 = normal race. See is_boss().
 
 @export_group("Field (open races)")
 ## Class band the AI field is drawn from (field-matching spec): rivals get a uniform-random class in
@@ -70,6 +71,11 @@ func admits(car: CarDef) -> bool:
 
 func is_sprint() -> bool:
 	return race_type == "sprint"
+
+## Is this a chapter boss duel (code-ai-boss)? A 1v1 sprint against a live boss on their pink-slip car,
+## scored on real head-to-head time (not the simulated field). boss_chapter is the 1-based chapter.
+func is_boss() -> bool:
+	return boss_chapter >= 1
 
 ## Lap race = counts down RaceDef.laps on a loop (circuit, endurance, grand prix). Endurance is a
 ## long-form circuit with the largest field (RaceField); its "attrition" (GDD §5) is realized by the

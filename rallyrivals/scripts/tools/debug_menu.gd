@@ -63,6 +63,7 @@ func _menu() -> Array:
 			{"label": "Vehicle state", "hud": "vehicle"},
 		]},
 		{"label": "Boot Grand Prix (test)", "run": _boot_grand_prix},
+		{"label": "Boot Boss Duel", "sub": _boss_menu()},
 		{"label": "Lighting", "sub": _lighting_menu()},
 		{"label": "Weather", "sub": _weather_menu()},
 		{"label": "Audio", "sub": _audio_menu()},
@@ -217,6 +218,31 @@ func _boot_grand_prix() -> void:
 		return
 	GrandPrix.begin(gp_def)
 	Flow.goto(Routes.GP_HUB)
+
+# One entry per chapter boss — boot the 1v1 duel (code-ai-boss) on the point-to-point sprint track, so
+# each manner can be felt without the campaign wiring. The RaceDef is built in code (no .tres needed).
+func _boss_menu() -> Array:
+	var out: Array = []
+	var bosses := BossDef.all()
+	for i in bosses.size():
+		var d: BossDef = bosses[i]
+		out.append({"label": "Ch%d — %s (%s · %s)" % [i + 1, d.hud, d.car_class, d.car_id], "run": _boot_boss.bind(i)})
+	return out
+
+func _boot_boss(chapter_idx: int) -> void:
+	var d := BossDef.for_chapter(chapter_idx)
+	var r := RaceDef.new()
+	r.id = "test_boss_%d" % (chapter_idx + 1)
+	r.display_name = "Boss Duel — %s" % d.hud
+	r.track_scene = "res://assets/tracks/track 1/baked_track.tscn"   # point-to-point sprint
+	r.race_type = "sprint"
+	r.culture = "wilds"          # you may bump the boss (rattles the brittle ones); the AI never rams back
+	r.boss_chapter = chapter_idx + 1
+	r.lighting = load("res://assets/lighting/golden.tres")
+	r.weather = load("res://assets/weather/clear.tres")
+	GrandPrix.clear()
+	RaceDirector.pending = r
+	Flow.goto(Routes.RACE)
 
 # Force the car's in-race damage (code-vehicle-damage) to a preset % — feel the pull + speed loss + the
 # mesh swap without having to crash. Effects apply next physics frame; 0% restores pristine.
