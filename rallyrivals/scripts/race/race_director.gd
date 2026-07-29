@@ -10,7 +10,8 @@ extends Node3D
 ## (F6). On finish it stores `last_result` and returns to the hub — code-ui-results will slot the
 ## results screen into that handoff (reading last_result).
 
-static var pending: RaceDef = null      ## handoff from the pre-race screen
+static var pending: RaceDef = null      ## one-shot handoff from the pre-race screen / GP hub / debug
+static var _restart_race: RaceDef = null   ## the race last loaded — survives Flow.reload so an in-race RESTART re-runs THE SAME race (pending is already consumed by then), not the scene's fallback
 static var last_result: RaceResult = null   ## finish outcome for the results screen
 static var autodrive := false           ## test/attract: a RivalDriver drives the player car to the finish
 
@@ -57,14 +58,30 @@ const GRID_STAGGER := 1.6      # the right column sits this far further back tha
 const GRID_LAT := 2.2          # lateral offset of each column from the lane centre
 
 func _ready() -> void:
-	_race = pending if pending != null else (fallback_race if fallback_race != null else load(SLICE_RACE) as RaceDef)
-	pending = null
+	_race = _resolve_race(fallback_race)
 	# A grand-prix scene entry carries a live meeting whose RaceDef IS this race (the GP hub set both).
 	# `phase` says whether we're running qualifying (solo hot-laps) or the graded race off the grid.
 	if GrandPrix.session != null and GrandPrix.session.race == _race:
 		_gp = GrandPrix.session
 		_qual = _gp.phase == GrandPrix.PHASE_QUAL
 	_boot()
+
+# Which race this scene runs. `pending` (a one-shot from pre-race / GP hub / debug) wins and is consumed.
+# On an in-race RESTART (Flow.reload re-enters the scene) `pending` is already null, so we re-run the race
+# we were LAST running (kept in `_restart_race`, which survives the reload) rather than silently dropping
+# to the scene's fallback_race — that swap raced the wrong def and broke the campaign return-to-map loop.
+# `fallback` (the scene's fallback_race) is only used for a truly standalone entry (F6), else the slice.
+static func _resolve_race(fallback: RaceDef) -> RaceDef:
+	var r: RaceDef
+	if pending != null:
+		r = pending
+		pending = null
+	elif _restart_race != null:
+		r = _restart_race
+	else:
+		r = fallback if fallback != null else load(SLICE_RACE) as RaceDef
+	_restart_race = r
+	return r
 
 ## The baked track is the heavy load — pull it through Flow's async loader (loading screen) so it
 ## streams in behind the transition's black instead of hitching the main thread.

@@ -56,8 +56,8 @@ func _build() -> void:
 	box.add_child(_resume)
 
 	var restart := _button("RESTART", "ui_confirm")
-	# Reloads the race scene (fresh countdown). It restarts the scene's own race — fine while there's
-	# one race; a career map picking many will re-arm RaceDirector.pending here.
+	# Reloads the race scene (fresh countdown). RaceDirector remembers the race it was running (a static
+	# that survives the reload), so RESTART re-runs THAT race — campaign race, GP or boss alike.
 	restart.pressed.connect(func() -> void: Flow.reload())
 	box.add_child(restart)
 

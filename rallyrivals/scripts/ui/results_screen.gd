@@ -11,7 +11,10 @@ func _build(col: VBoxContainer) -> void:
 		_continue_button(col)
 		return
 
-	var rd := load("res://assets/races/%s.tres" % res.race_id) as RaceDef
+	# Campaign races are built in code (Campaign.by_id); fall back to an authored .tres for test races.
+	var rd := Campaign.by_id(res.race_id)
+	if rd == null and ResourceLoader.exists("res://assets/races/%s.tres" % res.race_id):
+		rd = load("res://assets/races/%s.tres" % res.race_id) as RaceDef
 	col.add_child(heading(rd.display_name if rd != null else "RESULTS"))
 	col.add_child(spacer(8))
 
@@ -43,13 +46,20 @@ func _bank_line(res: RaceResult) -> String:
 	return "BEST %s  ·  replay top-up (10%%)" % _ordinal(res.banked_place)
 
 func _on_cancel() -> void:
-	Flow.goto(Routes.CAREER_HUB)
+	Flow.goto(_continue_route())
 
 func _continue_button(col: VBoxContainer) -> void:
 	var cont := menu_button("CONTINUE  ▸")
-	cont.pressed.connect(func() -> void: Flow.goto(Routes.CAREER_HUB))
+	cont.pressed.connect(func() -> void: Flow.goto(_continue_route()))
 	col.add_child(cont)
 	cont.grab_focus()
+
+## A campaign race returns to the map (loop back in); anything else (test races) to the hub.
+func _continue_route() -> String:
+	var res := RaceDirector.last_result
+	if res != null and Campaign.by_id(res.race_id) != null:
+		return Routes.CAREER_MAP
+	return Routes.CAREER_HUB
 
 func _ordinal(n: int) -> String:
 	match n:

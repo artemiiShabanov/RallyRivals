@@ -39,9 +39,11 @@ static func cp_progress() -> int:
 		return 0
 	return maxi(0, Save.active.cp - Save.active.chapter_cp_base)
 
-## CP needed this chapter (placeholder; balance owns the real per-chapter total).
+## CP needed this chapter: the sum of the chapter's race CP pools (Campaign). Falls back to the flat
+## placeholder only if the campaign has no pools yet. balance-difficulty-pacing owns the real figure.
 static func cp_target() -> int:
-	return CP_TARGET
+	var total := Campaign.chapter_cp_total(current())
+	return total if total > 0 else CP_TARGET
 
 ## CP that unlocks the boss (≈70% of the target).
 static func boss_threshold() -> int:

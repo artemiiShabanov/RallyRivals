@@ -7,6 +7,7 @@ const TITLE := "res://scenes/ui/title.tscn"
 const SAVE_SLOTS := "res://scenes/ui/save_slots.tscn"
 const SETTINGS := "res://scenes/ui/settings.tscn"
 const CAREER_HUB := "res://scenes/ui/career_hub.tscn"
+const CAREER_MAP := "res://scenes/ui/career_map.tscn"    ## chapter's races + boss gate (code-ui-career-map)
 const GARAGE := "res://scenes/ui/garage.tscn"
 const SHOP := "res://scenes/ui/shop.tscn"
 const PRE_RACE := "res://scenes/ui/pre_race.tscn"

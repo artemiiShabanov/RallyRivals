@@ -19,11 +19,10 @@ func _build(col: VBoxContainer) -> void:
 	col.add_child(heading(_chapter_line(), "OsdDim"))
 	col.add_child(spacer(18))
 
+	# The career map is the way to race — it lists the chapter's races + the boss gate (code-ui-career-map).
 	var race := _tile("RACE  ▸")
-	race.pressed.connect(func() -> void: Flow.goto(Routes.PRE_RACE))
+	race.pressed.connect(func() -> void: Flow.goto(Routes.CAREER_MAP))
 	col.add_child(race)
-
-	col.add_child(_stub("CAREER MAP"))
 
 	var shop := _tile("CAR SHOP")
 	shop.pressed.connect(func() -> void: Flow.goto(Routes.SHOP))
@@ -58,12 +57,6 @@ func _leave() -> void:
 func _tile(text: String, cue := "ui_confirm") -> Button:
 	var b := menu_button(text, cue)
 	b.custom_minimum_size.x = TILE_W
-	return b
-
-## A destination that exists in the design but not yet in the build.
-func _stub(text: String) -> Button:
-	var b := _tile("%-16s SOON" % text)
-	b.disabled = true
 	return b
 
 func _profile_line() -> String:

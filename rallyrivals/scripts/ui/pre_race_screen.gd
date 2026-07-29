@@ -1,12 +1,14 @@
+class_name PreRaceScreen
 extends MenuScreen
 ## Pre-race preview (code-ui-prerace): the race's name, format and conditions, plus the car you're
-## bringing and its five stat bars. START launches the race; BACK returns to the hub.
+## bringing and its five stat bars. START launches the race; BACK returns where the caller came from.
 ##
-## `race` is set by the caller (career hub / map) before entering, defaulting to the skeleton's slice
-## race so the screen stands alone. START hands that RaceDef to the RaceDirector and enters the race
-## scene (countdown → run → finish lifecycle).
+## `race` is set by the caller (career map) before entering, defaulting to the skeleton's slice race so
+## the screen stands alone. `return_to` is the route BACK goes to ("" = career hub) — the map sets it so
+## BACK loops back to the map. START hands the RaceDef to the RaceDirector and enters the race scene.
 
 static var race: RaceDef = null
+static var return_to := ""       ## route BACK returns to; "" = career hub
 
 const SLICE_RACE := "res://assets/races/test_timetrial.tres"
 
@@ -82,7 +84,7 @@ func _build(col: VBoxContainer) -> void:
 	actions.add_child(change)
 
 	var back := menu_button("BACK", "ui_click")
-	back.pressed.connect(func() -> void: Flow.goto(Routes.CAREER_HUB))
+	back.pressed.connect(func() -> void: Flow.goto(_back_route()))
 	actions.add_child(back)
 
 	# Focus the go-button when it's live; otherwise steer the player to the fix.
@@ -95,7 +97,11 @@ func _column() -> VBoxContainer:
 	return v
 
 func _on_cancel() -> void:
-	Flow.goto(Routes.CAREER_HUB)
+	Flow.goto(_back_route())
+
+## Where BACK / cancel returns — the caller's route, else the career hub.
+func _back_route() -> String:
+	return return_to if return_to != "" else Routes.CAREER_HUB
 
 ## The profile's current car, falling back to the starter so the screen never shows blank.
 func _car() -> CarDef:
