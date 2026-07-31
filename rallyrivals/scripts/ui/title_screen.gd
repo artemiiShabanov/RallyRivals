@@ -8,7 +8,7 @@ extends MenuScreen
 
 func _build(col: VBoxContainer) -> void:
 	col.add_child(heading("RALLY RIVALS"))
-	col.add_child(heading("arcade rally", "OsdDim"))
+	col.add_child(heading("a game by Artemii Shabanov", "OsdDim"))
 	col.add_child(spacer(22))
 
 	var new_btn := menu_button("NEW GAME")
