@@ -25,21 +25,31 @@ const INK := Color(0.95, 0.97, 1.0)
 const DIM := Color(0.60, 0.68, 0.92, 0.6)
 const SELECT := Color(1.0, 0.85, 0.3)
 const BOSS_COL := Color(0.97, 0.38, 0.45)
+# Top-down "survey map" backdrop: faint line-only landscape behind the road/dots (seeded per chapter).
+const MAP_LINE := Color(0.72, 0.84, 1.0, 0.22)   # contour + river lines (~25% cool line)
+const GRID_LINE := Color(0.72, 0.84, 1.0, 0.07)  # even fainter chart graticule
+const GRID_STEP := 48.0
+const HILLS := 3
 
 var nodes: Array = []
 var selected := 0
 var _norm: Array = []       # per-node normalized position in [0,1]^2 (seeded)
 var _px: Array = []         # per-node pixel position (resolved on resize)
 var _road := PackedVector2Array()
+var _seed := 0
+var _bg_grid: Array = []    # cached graticule lines (each a 2-point PackedVector2Array)
+var _bg_lines: Array = []   # cached contour + river polylines (the "landscape")
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	focus_mode = Control.FOCUS_ALL
+	clip_contents = true          # keep the backdrop + road inside the panel
 	resized.connect(_relayout)
 
 ## Feed the nodes + a seed (stable scatter). Everything fits the panel; no scroll.
 func configure(list: Array, gen_seed: int) -> void:
 	nodes = list
+	_seed = gen_seed
 	selected = clampi(selected, 0, maxi(0, nodes.size() - 1))
 	_norm = _layout(nodes.size(), gen_seed)
 	_relayout()
@@ -78,7 +88,58 @@ func _relayout() -> void:
 	for p in _norm:
 		_px.append(MARGIN + Vector2((p as Vector2).x * inner.x, (p as Vector2).y * inner.y))
 	_road = _smooth(_px)
+	_build_backdrop()
 	queue_redraw()
+
+# Build the top-down "survey map" backdrop once per layout (cached): a faint graticule + a few contour
+# hills + a river, all line-only and seeded so a region's landscape is stable and distinct.
+func _build_backdrop() -> void:
+	_bg_grid = []
+	_bg_lines = []
+	if size.x < 40.0 or size.y < 40.0:
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = _seed * 2654435761 + 12345      # distinct stream from the dot layout
+	# graticule
+	var x := GRID_STEP
+	while x < size.x:
+		_bg_grid.append(PackedVector2Array([Vector2(x, 0.0), Vector2(x, size.y)]))
+		x += GRID_STEP
+	var y := GRID_STEP
+	while y < size.y:
+		_bg_grid.append(PackedVector2Array([Vector2(0.0, y), Vector2(size.x, y)]))
+		y += GRID_STEP
+	# contour hills — nested wobbly rings around a few seeded peaks
+	for h in HILLS:
+		var c := Vector2(rng.randf_range(size.x * 0.12, size.x * 0.88), rng.randf_range(size.y * 0.12, size.y * 0.88))
+		var rings := rng.randi_range(3, 5)
+		var base_r := rng.randf_range(22.0, 38.0)
+		var f1 := rng.randi_range(2, 4)
+		var f2 := rng.randi_range(3, 6)
+		var p1 := rng.randf() * TAU
+		var p2 := rng.randf() * TAU
+		var a1 := rng.randf_range(0.05, 0.12)
+		var a2 := rng.randf_range(0.03, 0.08)
+		for k in rings:
+			var rr := base_r + float(k) * rng.randf_range(15.0, 26.0)
+			var loop := PackedVector2Array()
+			var pts := 44
+			for s in pts + 1:
+				var ang := TAU * float(s) / float(pts)
+				var wob := 1.0 + a1 * sin(ang * f1 + p1) + a2 * sin(ang * f2 + p2)
+				loop.append(c + Vector2(cos(ang), sin(ang)) * rr * wob)
+			_bg_lines.append(loop)
+	# a river or two — a meandering line spanning the panel top→bottom
+	for rv in rng.randi_range(1, 2):
+		var a := Vector2(rng.randf_range(0.0, size.x), -10.0)
+		var b := Vector2(rng.randf_range(0.0, size.x), size.y + 10.0)
+		var wp: Array = []
+		for j in 6:
+			var t := float(j) / 5.0
+			var base := a.lerp(b, t)
+			base.x += rng.randf_range(-1.0, 1.0) * size.x * 0.18
+			wp.append(base)
+		_bg_lines.append(_smooth(wp))
 
 # A smooth Catmull-Rom road through the ordered dots.
 func _smooth(pts: Array) -> PackedVector2Array:
@@ -161,6 +222,10 @@ func _hit(p: Vector2) -> int:
 # --- draw ---
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, size), BG)
+	for g in _bg_grid:                                 # faint chart graticule
+		draw_polyline(g, GRID_LINE, 1.0, true)
+	for l in _bg_lines:                                # contour hills + rivers (the landscape)
+		draw_polyline(l, MAP_LINE, 1.0, true)
 	if _px.is_empty():
 		return
 	if _road.size() >= 2:
