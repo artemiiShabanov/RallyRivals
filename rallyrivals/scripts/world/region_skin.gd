@@ -96,7 +96,11 @@ static func _add_dressing(track: Node, region: Resource) -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	mat.roughness = 1.0
 	var count := int(48.0 * clampf(float(region.dressing_density), 0.1, 2.0))
-	var ring_r := radius * 1.25
+	# Ring radius clears the terrain's CORNERS (a baked footprint is always square), not just its edges:
+	# corners sit at hypot(half_x, half_z) = 1.41x half-extent, so a max(size)*0.5 ring would dip back
+	# inside the play field on the diagonals. Base on the corner distance so every prism is beyond the edge.
+	var corner: float = Vector2(aabb.size.x, aabb.size.z).length() * 0.5
+	var ring_r := corner * 1.15
 	var base_y := aabb.position.y
 	for i in count:
 		var ang := TAU * float(i) / float(count) + rng.randf_range(-0.03, 0.03)
