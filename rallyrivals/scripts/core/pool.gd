@@ -30,9 +30,11 @@ func _init(factory: Callable, host: Node, cap: int, busy := Callable()) -> void:
 	_cap = maxi(cap, 1)
 	_busy = busy
 
-## Create up to n nodes up front (capped), so the first busy moment doesn't allocate.
+## Create up to n more nodes up front (never past cap), so the first busy moment doesn't allocate.
+## Clamped against the CURRENT size, so repeated prewarm() calls can't push the pool over cap.
 func prewarm(n: int) -> void:
-	for _i in mini(n, _cap):
+	var target := mini(_nodes.size() + n, _cap)
+	while _nodes.size() < target:
 		_grow()
 
 func size() -> int:
