@@ -8,14 +8,19 @@ extends Node
 
 const POOL_2D := 6
 const POOL_3D := 12
+const Pool = preload("res://scripts/core/pool.gd")   # generic node pool (code-core-pooling), by path
 
-var _pool_2d: Array[AudioStreamPlayer] = []
-var _pool_3d: Array[AudioStreamPlayer3D] = []
-var _steal_2d := 0
-var _steal_3d := 0
+# Players are pooled by the shared Pool: reuse an idle (not-`playing`) one, grow to cap, then steal
+# round-robin. A busy-predicate pool needs no release — a finished one-shot recycles itself.
+var _pool_2d
+var _pool_3d
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS   # UI cues must play while the game is paused
+	_pool_2d = Pool.new(func() -> Node: return AudioStreamPlayer.new(), self, POOL_2D,
+		func(p: Node) -> bool: return (p as AudioStreamPlayer).playing)
+	_pool_3d = Pool.new(func() -> Node: return AudioStreamPlayer3D.new(), self, POOL_3D,
+		func(p: Node) -> bool: return (p as AudioStreamPlayer3D).playing)
 
 func play(def: SfxDef) -> void:
 	if def == null or def.streams.is_empty():
@@ -55,28 +60,10 @@ func get_bus_volume(bus_name: String) -> float:
 	return db_to_linear(AudioServer.get_bus_volume_db(i))
 
 func _acquire_2d() -> AudioStreamPlayer:
-	for p in _pool_2d:
-		if not p.playing:
-			return p
-	if _pool_2d.size() < POOL_2D:
-		var p := AudioStreamPlayer.new()
-		add_child(p)
-		_pool_2d.append(p)
-		return p
-	_steal_2d = (_steal_2d + 1) % _pool_2d.size()
-	return _pool_2d[_steal_2d]
+	return _pool_2d.acquire() as AudioStreamPlayer
 
 func _acquire_3d() -> AudioStreamPlayer3D:
-	for p in _pool_3d:
-		if not p.playing:
-			return p
-	if _pool_3d.size() < POOL_3D:
-		var p := AudioStreamPlayer3D.new()
-		add_child(p)
-		_pool_3d.append(p)
-		return p
-	_steal_3d = (_steal_3d + 1) % _pool_3d.size()
-	return _pool_3d[_steal_3d]
+	return _pool_3d.acquire() as AudioStreamPlayer3D
 
 func _configure(p, def: SfxDef) -> void:
 	p.stream = def.streams.pick_random()
