@@ -50,7 +50,10 @@ func _draw() -> void:
 			spts[i] = pan + (overlay_polyline[i] + Vector2(0.5, 0.5)) * zoom
 		draw_polyline(spts, overlay_polyline_col, 1.0)
 	for l in overlay_lines:
-		draw_line(pan + ((l["a"] as Vector2) + Vector2(0.5, 0.5)) * zoom, pan + ((l["b"] as Vector2) + Vector2(0.5, 0.5)) * zoom, l["col"], 1.5)
+		# optional "w" = image-space thickness (props draw as a bar of their real width, floored so it
+		# stays visible); lines without "w" (race gizmos, previews) stay a thin 1.5 px.
+		var lw: float = maxf(float(l["w"]) * zoom, 4.0) if l.has("w") else 1.5
+		draw_line(pan + ((l["a"] as Vector2) + Vector2(0.5, 0.5)) * zoom, pan + ((l["b"] as Vector2) + Vector2(0.5, 0.5)) * zoom, l["col"], lw)
 	for m in overlay_rings:
 		draw_arc(pan + ((m["p"] as Vector2) + Vector2(0.5, 0.5)) * zoom, 7.0, 0.0, TAU, 24, m["col"], 1.5)
 	var font := get_theme_default_font()

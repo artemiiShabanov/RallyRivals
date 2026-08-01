@@ -628,9 +628,12 @@ func _on_prop_tool(on: bool, t: String) -> void:
 
 func _prop_click(px: Vector2i, button: int) -> void:
 	if button == MOUSE_BUTTON_RIGHT:
+		if _prop_pending != null:                # mid-aim: right-click just cancels it (no delete)
+			_prop_pending = null
+			_rebuild_prop_overlay(); _refresh_overlays()
+			return
 		_push_undo("props")
 		_delete_nearest_prop(px)
-		_prop_pending = null
 		_after_prop_edit()
 		return
 	if button != MOUSE_BUTTON_LEFT:
@@ -668,8 +671,9 @@ func _after_prop_edit() -> void:
 	_rebuild_prop_overlay()
 	_refresh_overlays()
 
-# Rebuild the prop overlay from doc.props: a dot per instance + a segment for oriented/aimed props
-# (anchor -> anchor + facing * length), plus the live aim preview while a first click is pending.
+# Rebuild the prop overlay from doc.props. Oriented props (fence/barrier) draw as a THICK BAR of their
+# fixed length along the aim (no ring); scatter + signs draw as a dot, signs get a short facing tick.
+# Plus a WYSIWYG aim preview while a first click is pending.
 func _rebuild_prop_overlay() -> void:
 	_prop_rings = []
 	_prop_lines = []
@@ -681,16 +685,32 @@ func _rebuild_prop_overlay() -> void:
 				continue
 			var anchor := Vector2(int(p["x"]), int(p["y"]))
 			var col: Color = d["color"]
-			_prop_rings.append({"p": anchor, "col": col})
-			if PropCatalog.needs_aim(t):
-				var span: float = maxf(float(d["length"]), 3.0)   # signs (length 0) get a short facing tick
-				var rad := deg_to_rad(float(p.get("deg", 0.0)))
-				var facing := Vector2(sin(rad), cos(rad))
-				_prop_lines.append({"a": anchor, "b": anchor + facing * span, "col": col})
-	# live aim preview: from the pending anchor to the cursor
+			var facing := _facing_of(float(p.get("deg", 0.0)))
+			if PropCatalog.is_oriented(t):
+				# a bar the length of the prop, its real width -> reads as the wall it bakes into
+				_prop_lines.append({"a": anchor, "b": anchor + facing * float(d["length"]), "col": col, "w": float((d["size"] as Vector3).x)})
+			else:
+				_prop_rings.append({"p": anchor, "col": col})
+				if PropCatalog.needs_aim(t):               # sign: a short facing tick off the dot
+					_prop_lines.append({"a": anchor, "b": anchor + facing * 4.0, "col": col})
+	# live aim preview from the pending anchor: oriented -> a fixed-length bar toward the cursor (WYSIWYG)
 	if _prop_pending != null and _prop_hover.x >= 0:
-		_prop_lines.append({"a": Vector2(_prop_pending), "b": Vector2(_prop_hover), "col": Color(1, 1, 0.4, 0.9)})
+		var a := Vector2(_prop_pending)
+		var to := Vector2(_prop_hover)
+		var hot := Color(1, 1, 0.4, 0.9)
+		if PropCatalog.is_oriented(_prop_mode):
+			var dd := PropCatalog.def(_prop_mode)
+			var dir := to - a
+			var face := dir.normalized() if dir.length() > 0.5 else Vector2(0, 1)
+			_prop_lines.append({"a": a, "b": a + face * float(dd["length"]), "col": hot, "w": float((dd["size"] as Vector3).x)})
+		else:
+			_prop_lines.append({"a": a, "b": to, "col": hot})
 	_prop_count.text = "%d props" % (doc.props.size() if doc != null else 0)
+
+# Image-space facing unit vector for a stored deg (matches the baker: local +Z -> (sin, cos)).
+func _facing_of(deg: float) -> Vector2:
+	var rad := deg_to_rad(deg)
+	return Vector2(sin(rad), cos(rad))
 
 func _refresh_overlays() -> void:
 	canvas.overlay_rings = _race_rings + _prop_rings + _height_rings

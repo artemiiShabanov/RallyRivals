@@ -71,3 +71,25 @@ static func save_list(dir: String, list: Array) -> Error:
 	f.store_string(JSON.stringify({"props": list}, "\t"))
 	f.close()
 	return OK
+
+## True when the track has an authored props.json (even an EMPTY one). Callers must key the legacy
+## fallback on this, NOT on an empty list — an existing empty list means "no props", not "scan markers".
+## Otherwise authoring the first prop on a legacy track would silently drop its old markers-based props.
+static func has_list(dir: String) -> bool:
+	return FileAccess.file_exists(ProjectSettings.globalize_path(dir.path_join(PROPS_FILE)))
+
+## Legacy migration: tracks authored before props.json stored props as single red(tree)/blue(rock)
+## pixels in markers.png. Scan them into instances so the baker (fallback) and the editor (on open)
+## both own them — so saving props.json preserves them instead of dropping the pixels' worth.
+static func scan_legacy_markers(img: Image) -> Array:
+	var out: Array = []
+	if img == null:
+		return out
+	for y in img.get_height():
+		for x in img.get_width():
+			var c := img.get_pixel(x, y)
+			if Vector3(c.r - 1.0, c.g, c.b).length() < 0.2:
+				out.append({"type": "tree", "x": x, "y": y})
+			elif Vector3(c.r, c.g, c.b - 1.0).length() < 0.2:
+				out.append({"type": "rock", "x": x, "y": y})
+	return out

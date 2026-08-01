@@ -52,13 +52,18 @@ static func open(p_dir: String) -> TrackDocument:
 	if doc.images.is_empty() and not has_meta:
 		return null
 	doc._load_meta()
-	doc.props = PropCatalog.load_list(p_dir)
 	if not doc.images.is_empty():
 		doc.size = (doc.images.values()[0] as Image).get_width()
 	for layer in LAYERS:   # anything missing on disk becomes a blank layer at the doc size
 		if not doc.images.has(layer):
 			doc.images[layer] = _blank_layer(layer, doc.size)
 		doc.refresh_texture(layer)
+	# props.json is authoritative if present; a legacy track (tree/rock in markers.png, no props.json)
+	# is migrated into the list on open so the editor owns its props and saving preserves them.
+	if PropCatalog.has_list(p_dir):
+		doc.props = PropCatalog.load_list(p_dir)
+	else:
+		doc.props = PropCatalog.scan_legacy_markers(doc.images.get("markers"))
 	if doc.blueprint_path != "":
 		doc.load_blueprint(doc.blueprint_path)
 	return doc

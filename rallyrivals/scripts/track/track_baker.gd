@@ -605,25 +605,14 @@ func _add_markers(root: Node3D, start_mid: Vector2) -> void:
 func _add_props(root: Node3D) -> void:
 	var props := Node3D.new(); props.name = "Props"
 	root.add_child(props)
-	var list := PropCatalog.load_list(src_dir)
-	if list.is_empty():
-		list = _legacy_props()                 # tracks with no props.json: migrate old markers.png pixels
+	# props.json is authoritative WHEN PRESENT (even if empty) — only a track that never had one falls
+	# back to the legacy markers.png scan, so authoring the first prop can't silently drop the old ones.
+	var list := PropCatalog.load_list(src_dir) if PropCatalog.has_list(src_dir) else PropCatalog.scan_legacy_markers(_mk)
 	for inst in list:
-		var node := _make_prop(inst)
-		if node != null:
-			props.add_child(node)
-
-# Legacy fallback: tracks authored before props.json scattered tree/rock as single pixels in markers.png.
-func _legacy_props() -> Array:
-	var out: Array = []
-	for y in _size:
-		for x in _size:
-			var c := _mk.get_pixel(x, y)
-			if _cdist(c, M_TREE) < 0.2:
-				out.append({"type": "tree", "x": x, "y": y})
-			elif _cdist(c, M_ROCK) < 0.2:
-				out.append({"type": "rock", "x": x, "y": y})
-	return out
+		if inst is Dictionary:                 # skip a corrupt non-dict entry rather than abort the loop
+			var node := _make_prop(inst)
+			if node != null:
+				props.add_child(node)
 
 func _make_prop(inst: Dictionary) -> Node3D:
 	var t := String(inst.get("type", ""))
