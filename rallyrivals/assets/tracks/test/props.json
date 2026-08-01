@@ -1,0 +1,85 @@
+{
+	"props": [
+		{
+			"type": "tree",
+			"x": 44,
+			"y": 64
+		},
+		{
+			"type": "tree",
+			"x": 302,
+			"y": 44
+		},
+		{
+			"type": "tree",
+			"x": 478,
+			"y": 224
+		},
+		{
+			"type": "tree",
+			"x": 352,
+			"y": 306
+		},
+		{
+			"type": "tree",
+			"x": 84,
+			"y": 330
+		},
+		{
+			"type": "rock",
+			"x": 34,
+			"y": 296
+		},
+		{
+			"type": "rock",
+			"x": 206,
+			"y": 152
+		},
+		{
+			"type": "rock",
+			"x": 470,
+			"y": 90
+		},
+		{
+			"type": "bush",
+			"x": 210,
+			"y": 158
+		},
+		{
+			"deg": 90,
+			"type": "barrier_hard",
+			"x": 60,
+			"y": 400
+		},
+		{
+			"deg": 90,
+			"type": "barrier_hard",
+			"x": 64,
+			"y": 400
+		},
+		{
+			"deg": 90,
+			"type": "barrier_hard",
+			"x": 68,
+			"y": 400
+		},
+		{
+			"deg": 0,
+			"type": "fence",
+			"x": 300,
+			"y": 60
+		},
+		{
+			"deg": 90,
+			"type": "sign_left",
+			"x": 100,
+			"y": 410
+		},
+		{
+			"deg": 90,
+			"type": "sign_right",
+			"x": 100,
+			"y": 430
+		}
+	]
+}

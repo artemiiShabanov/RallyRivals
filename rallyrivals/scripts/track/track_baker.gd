@@ -44,9 +44,13 @@ const R_DIR := Color(1, 1, 0)
 const R_GATE := Color(0, 1, 0)
 const R_FINISH := Color(0, 1, 1)
 
-# Marker colours (semantic pixels in markers.png — world props only).
+# Marker colours (LEGACY: tracks authored before props.json scattered tree/rock pixels in markers.png;
+# _legacy_props still reads them when a track has no props.json). New props live in props.json.
 const M_TREE := Color(1, 0, 0)
 const M_ROCK := Color(0, 0, 1)
+
+# Prop catalog + props.json I/O (code-track-props) — preloaded BY PATH (no class_name dependency).
+const PropCatalog := preload("res://scripts/track/prop_catalog.gd")
 
 var _hm: Image
 var _sf: Image
@@ -82,6 +86,7 @@ func bake() -> Error:
 	var ai_pts := _add_ai_line(root, spline_pts, is_loop)
 	var ngates := _add_checkpoints(root, race, curve, is_loop)
 	_add_markers(root, race["start_mid"])
+	_add_props(root)
 	if not is_loop:
 		var fm := Marker3D.new()
 		fm.name = "FinishLine"
@@ -585,29 +590,92 @@ func _gate(idx: int, a: Vector2, b: Vector2) -> CheckpointGate:
 		g.add_child(mi)
 	return g
 
-# ---------- markers: start position + placeholder props ----------
+# ---------- markers: start position ----------
 func _add_markers(root: Node3D, start_mid: Vector2) -> void:
 	var m := Marker3D.new(); m.name = "StartFinish"
 	m.position = _worldf(start_mid.x, start_mid.y) + Vector3.UP * 0.5
 	root.add_child(m)
+
+# ---------- props (code-track-props) ----------
+# Placeholder gray-box props from props.json (image px). Scatter = random yaw + seeded size/hue jitter
+# (fakes art-voxel-props' per-region x3 variety); oriented (fence/barrier) = fixed length, anchored at
+# one END, aimed by `deg`; directional (sign) = a point aimed by `deg`. Solid props are a StaticBody3D
+# on collision layer 1 (the world layer the car already masks); decor (bush/sign) is mesh-only. A wheel
+# that ends up on a prop has no surface meta, so grip falls back to base_grip — harmless.
+func _add_props(root: Node3D) -> void:
 	var props := Node3D.new(); props.name = "Props"
 	root.add_child(props)
+	var list := PropCatalog.load_list(src_dir)
+	if list.is_empty():
+		list = _legacy_props()                 # tracks with no props.json: migrate old markers.png pixels
+	for inst in list:
+		var node := _make_prop(inst)
+		if node != null:
+			props.add_child(node)
+
+# Legacy fallback: tracks authored before props.json scattered tree/rock as single pixels in markers.png.
+func _legacy_props() -> Array:
+	var out: Array = []
 	for y in _size:
 		for x in _size:
 			var c := _mk.get_pixel(x, y)
 			if _cdist(c, M_TREE) < 0.2:
-				props.add_child(_prop(Vector3(0.6, 4, 0.6), Color(0.2, 0.5, 0.15), x, y))
+				out.append({"type": "tree", "x": x, "y": y})
 			elif _cdist(c, M_ROCK) < 0.2:
-				props.add_child(_prop(Vector3(1.2, 1.2, 1.2), Color(0.5, 0.5, 0.52), x, y))
+				out.append({"type": "rock", "x": x, "y": y})
+	return out
 
-func _prop(box_size: Vector3, col: Color, px: int, py: int) -> MeshInstance3D:
+func _make_prop(inst: Dictionary) -> Node3D:
+	var t := String(inst.get("type", ""))
+	if not PropCatalog.has_type(t):
+		return null
+	var d := PropCatalog.def(t)
+	var px := int(inst.get("x", 0)); var py := int(inst.get("y", 0))
+	var size: Vector3 = d["size"]
+	var col: Color = d["color"]
+	var oriented: bool = PropCatalog.is_oriented(t)
+	var aimed: bool = PropCatalog.needs_aim(t)
+	# Seeded per-instance RNG — a given prop looks identical across bakes (deterministic .tscn output).
+	var rng := RandomNumberGenerator.new()
+	rng.seed = px * 73856093 ^ py * 19349663 ^ hash(t)
+	var jit: float = float(d.get("jitter", 0.0))
+	if jit > 0.0:
+		size = Vector3(size.x * (1.0 + rng.randf_range(-jit, jit)), size.y * (1.0 + rng.randf_range(-jit, jit)), size.z * (1.0 + rng.randf_range(-jit, jit)))
+		col = col.lerp(col.darkened(0.25) if rng.randf() < 0.5 else col.lightened(0.25), rng.randf() * 0.7)
+	var yaw: float
+	if inst.has("deg"):
+		yaw = deg_to_rad(float(inst["deg"]))
+	elif aimed:
+		yaw = 0.0                              # aimed prop saved without a direction — face +Z
+	else:
+		yaw = rng.randf() * TAU                # scatter — random spin
+	var fwd := size.z * 0.5 if oriented else 0.0   # oriented: origin is the near END, box extends forward
+	var local := Vector3(0.0, size.y * 0.5, fwd)   # lift so the box base sits on the ground
+	var body: Node3D
+	if bool(d["solid"]):
+		var sb := StaticBody3D.new()
+		sb.collision_layer = 1                 # world layer the car collides with (car mask = layers 1|2)
+		sb.collision_mask = 0
+		var cs := CollisionShape3D.new()
+		var shape := BoxShape3D.new(); shape.size = size
+		cs.shape = shape
+		cs.position = local
+		sb.add_child(cs)
+		body = sb
+	else:
+		body = Node3D.new()
+	body.name = t
+	body.set_meta("prop_type", t)              # robust type tag (survives node-name dedup; region code can read it)
+	body.position = _world(px, py)
+	body.rotation.y = yaw
 	var mi := MeshInstance3D.new()
-	var bm := BoxMesh.new(); bm.size = box_size
+	var bm := BoxMesh.new(); bm.size = size
 	mi.mesh = bm
 	var mat := StandardMaterial3D.new(); mat.albedo_color = col
 	mi.material_override = mat
-	mi.position = _world(px, py) + Vector3.UP * box_size.y * 0.5
-	return mi
+	mi.position = local
+	body.add_child(mi)
+	return body
 
 # ---------- environment ----------
 func _add_environment(root: Node3D) -> void:

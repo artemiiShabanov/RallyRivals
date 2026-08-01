@@ -25,6 +25,8 @@ const TREE := Color8(255, 0, 0)
 const ROCK := Color8(0, 0, 255)
 const GATE_HW_PX := 14
 
+const PropCatalog := preload("res://scripts/track/prop_catalog.gd")
+
 # The design: centreline control points (closed loop, image coords).
 const CTRL: Array[Vector2] = [
 	Vector2(90, 420),    #  0 start straight (drive east)
@@ -169,11 +171,10 @@ func _initialize() -> void:
 		_dot(rc, gp + gperp * GATE_HW_PX, GATE)
 		_dot(rc, gp - gperp * GATE_HW_PX, GATE)
 
-	# Markers are SINGLE pixels: the baker spawns one prop per matching pixel (no blob merge).
-	for p in TREES:
-		mk.set_pixel(int(p.x), int(p.y), TREE)
-	for p in ROCKS:
-		mk.set_pixel(int(p.x), int(p.y), ROCK)
+	# Props now live in props.json (code-track-props), not markers.png pixels — markers.png is saved
+	# blank (still a required pipeline image). _write_props migrates the tree/rock scatter + adds a few
+	# oriented demo props (an aimed barrier wall, a fence, signs) so a bake shows the full prop system.
+	_write_props(dir)
 
 	hm.save_exr(dir + "heightmap.exr")
 	sf.save_png(dir + "surface.png")
@@ -181,6 +182,23 @@ func _initialize() -> void:
 	rc.save_png(dir + "race.png")
 	print("test track authored: ", SIZE, "x", SIZE, "  lap %.0f px  -> " % _total, dir)
 	quit()
+
+# props.json: scatter (tree/rock/bush, random yaw) + oriented demo (barrier wall / fence, anchored at
+# one end, aimed by `deg`) + directional (signs). deg = atan2(aimΔx, aimΔy) in image space; here the
+# demo values are hand-set. Real props are authored in the map editor.
+func _write_props(dir: String) -> void:
+	var list: Array = []
+	for p in TREES:
+		list.append({"type": "tree", "x": int(p.x), "y": int(p.y)})
+	for p in ROCKS:
+		list.append({"type": "rock", "x": int(p.x), "y": int(p.y)})
+	list.append({"type": "bush", "x": 210, "y": 158})
+	for i in 3:                                       # a contiguous barrier wall (each 4 m, end-to-end +x)
+		list.append({"type": "barrier_hard", "x": 60 + i * 4, "y": 400, "deg": 90})
+	list.append({"type": "fence", "x": 300, "y": 60, "deg": 0})
+	list.append({"type": "sign_left", "x": 100, "y": 410, "deg": 90})
+	list.append({"type": "sign_right", "x": 100, "y": 430, "deg": 90})
+	PropCatalog.save_list(dir, list)
 
 # ---------- centreline ----------
 # Closed Catmull-Rom through CTRL, sampled every ~3 px; records arc length + control-point fracs.

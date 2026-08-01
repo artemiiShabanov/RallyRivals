@@ -19,6 +19,7 @@ const STARTDIR := Color8(255, 255, 0)
 const GATE := Color8(0, 255, 0)
 const TREE := Color8(255, 0, 0)
 const ROCK := Color8(0, 0, 255)
+const PropCatalog := preload("res://scripts/track/prop_catalog.gd")
 const GATE_HW_PX := 14      # gate dot offset from centreline — just past road colour+edge (8+4),
                             # so gates span the road plus a forgiving strip of shoulder
 
@@ -119,11 +120,13 @@ func _initialize() -> void:
 		_dot(rc, wps[i] + gp * GATE_HW_PX, GATE)
 		_dot(rc, wps[i] - gp * GATE_HW_PX, GATE)
 
-	# Markers layer: world props only.
+	# Props (code-track-props) live in props.json now, not markers.png — markers.png is saved blank.
+	var props: Array = []
 	for p in [Vector2(18, 18), Vector2(SIZE - 22, 26), Vector2(28, SIZE - 26), Vector2(SIZE * 0.5, 16)]:
-		_setpx(mk, p, TREE)
+		props.append({"type": "tree", "x": int(p.x), "y": int(p.y)})
 	for p in [Vector2(SIZE - 18, SIZE - 18), Vector2(22, SIZE * 0.5)]:
-		_setpx(mk, p, ROCK)
+		props.append({"type": "rock", "x": int(p.x), "y": int(p.y)})
+	PropCatalog.save_list(dir, props)
 
 	hm.save_exr(dir + "heightmap.exr")
 	sf.save_png(dir + "surface.png")
