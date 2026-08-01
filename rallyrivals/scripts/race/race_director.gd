@@ -24,6 +24,7 @@ static var autodrive := false           ## test/attract: a RivalDriver drives th
 
 const SLICE_RACE := "res://assets/races/test_timetrial.tres"
 const COUNT_FROM := 3
+const RegionSkin = preload("res://scripts/world/region_skin.gd")   # region reskin (code-track-regions), by path
 # Contact penalty (code-race-contact): an OFFICIALS race adds a flat time penalty for every contact
 # with another car (any side). Wilds ignore it entirely. Placeholder — balance owns the number.
 const CONTACT_PENALTY := 3.0   # seconds per car-to-car contact
@@ -106,6 +107,10 @@ func _build(track_ps: PackedScene) -> void:
 
 	var track := track_ps.instantiate()
 	add_child(track)
+
+	# Region reskin (code-track-regions): restyle the neutral baked track to the race's biome (off-road
+	# ground + prop look + dressing) BEFORE conditions — the land, then the moment on top. No-op if null.
+	RegionSkin.apply(track, _race.region)
 
 	# Venue ambience + per-race conditions (time-of-day, weather) — same as the drive harness.
 	var bed := AmbientBed.find_or_create(get_tree())

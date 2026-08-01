@@ -17,12 +17,13 @@ const BOSS_TRACK := "res://assets/tracks/track 1/baked_track.tscn"  ## point-to-
 const CP_POOL := 15           ## per-race CP pool (1st place); chapter total = 10× this feeds the boss gate
 const MONEY_POOL := 500       ## per-race money pool (1st place)
 
-# Per chapter: class band (CAMPAIGN.md mix, as low..high) + conditions for a little regional flavour.
+# Per chapter: class band (CAMPAIGN.md mix, as low..high) + conditions (the moment) + region (the
+# biome — code-track-regions, 1:1 with chapter, applied as a runtime reskin by RegionSkin).
 const CH := [
-	{low = "D", high = "C", light = "golden", weather = "clear"},
-	{low = "D", high = "B", light = "day", weather = "clear"},
-	{low = "D", high = "A", light = "night", weather = "clear"},
-	{low = "A", high = "S", light = "golden", weather = "thunder"},
+	{low = "D", high = "C", light = "golden", weather = "clear", region = "backwoods"},
+	{low = "D", high = "B", light = "day", weather = "clear", region = "dunes"},
+	{low = "D", high = "A", light = "night", weather = "clear", region = "quarry"},
+	{low = "A", high = "S", light = "golden", weather = "thunder", region = "alpine"},
 ]
 
 static var _races := {}       # id -> RaceDef (all chapters' races + bosses)
@@ -90,3 +91,4 @@ static func _ensure() -> void:
 static func _conditions(r: RaceDef, c: Dictionary) -> void:
 	r.lighting = load("res://assets/lighting/%s.tres" % c["light"]) as LightingPreset
 	r.weather = load("res://assets/weather/%s.tres" % c["weather"]) as WeatherPreset
+	r.region = load("res://assets/regions/%s.tres" % c["region"]) as Resource   # biome reskin (code-track-regions)

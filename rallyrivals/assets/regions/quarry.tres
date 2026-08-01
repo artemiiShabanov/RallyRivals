@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Resource" path="res://assets/surfaces/gravel.tres" id="1_hmx38"]
+[ext_resource type="Script" path="res://scripts/world/region_def.gd" id="2_cu0q7"]
+
+[resource]
+script = ExtResource("2_cu0q7")
+id = "quarry"
+display_name = "Quarry"
+off_road_surface = ExtResource("1_hmx38")
+prop_tints = {
+"bush": Color(0.34, 0.4, 0.32, 1),
+"rock": Color(0.38, 0.38, 0.4, 1),
+"tree": Color(0.3, 0.38, 0.3, 1)
+}
+prop_meshes = {}
+dressing_tint = Color(0.34, 0.4, 0.32, 1)
+dressing_density = 1.0

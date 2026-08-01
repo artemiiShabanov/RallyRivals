@@ -7,6 +7,9 @@ extends Node3D
 @export var baked_scene_path := "res://assets/tracks/track 1/baked_track.tscn"
 @export var car_scene: PackedScene = preload("res://scenes/vehicle/car.tscn")
 @export var race: RaceDef                ## optional: overrides the track + applies conditions
+@export var region: Resource             ## optional RegionDef to reskin with (F6 any biome); race.region wins
+
+const RegionSkin = preload("res://scripts/world/region_skin.gd")
 
 func _ready() -> void:
 	var scene_path := baked_scene_path
@@ -18,6 +21,9 @@ func _ready() -> void:
 		return
 	var track := ps.instantiate()
 	add_child(track)
+
+	# Region reskin (code-track-regions): race.region if a race is set, else the inspector override.
+	RegionSkin.apply(track, race.region if race != null and race.region != null else region)
 
 	# Venue ambience ("world" layer). Weather lays its own bed over this via WeatherFX.
 	var bed := AmbientBed.find_or_create(get_tree())

@@ -26,8 +26,13 @@ extends Resource
 @export_group("Conditions (fixed per race)")
 @export var lighting: LightingPreset
 @export var weather: WeatherPreset
-@export var season := "summer"           ## visual set (code-track-seasons)
 @export var ambience: AmbientDef         ## venue bed ("world" layer); weather brings its own
+
+@export_group("Region (biome)")
+## The visual BIOME (code-track-regions): a RegionDef Resource applied as a runtime reskin (off-road
+## ground + prop look + dressing) by RegionSkin. Persists across the per-race conditions above; null =
+## neutral (the baked track's own look). Typed as Resource so RaceDef never depends on a new class_name.
+@export var region: Resource
 
 @export_group("Time trial")
 ## Medal target times in seconds, authored gold < silver < bronze (0 = unset). A time trial has no

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Resource" path="res://assets/surfaces/dirt.tres" id="1_f06rw"]
+[ext_resource type="Script" path="res://scripts/world/region_def.gd" id="2_up4iy"]
+
+[resource]
+script = ExtResource("2_up4iy")
+id = "backwoods"
+display_name = "Backwoods"
+off_road_surface = ExtResource("1_f06rw")
+prop_tints = {
+"bush": Color(0.2, 0.46, 0.18, 1),
+"rock": Color(0.42, 0.4, 0.36, 1),
+"tree": Color(0.16, 0.44, 0.16, 1)
+}
+prop_meshes = {}
+dressing_tint = Color(0.2, 0.46, 0.18, 1)
+dressing_density = 1.0

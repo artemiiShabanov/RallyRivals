@@ -119,7 +119,8 @@ func _conditions(r: RaceDef) -> String:
 		parts.append(light)
 	if weather != "":
 		parts.append(weather)
-	parts.append(r.season.to_upper())
+	if r.region != null and String(r.region.display_name) != "":
+		parts.append(String(r.region.display_name).to_upper())   # the biome (code-track-regions)
 	return "  ·  ".join(parts)
 
 func _res_name(res: Resource) -> String:

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Resource" path="res://assets/surfaces/snow.tres" id="1_bgrta"]
+[ext_resource type="Script" path="res://scripts/world/region_def.gd" id="2_66ltp"]
+
+[resource]
+script = ExtResource("2_66ltp")
+id = "alpine"
+display_name = "Alpine"
+off_road_surface = ExtResource("1_bgrta")
+prop_tints = {
+"bush": Color(0.16, 0.34, 0.26, 1),
+"rock": Color(0.5, 0.53, 0.58, 1),
+"tree": Color(0.12, 0.3, 0.22, 1)
+}
+prop_meshes = {}
+dressing_tint = Color(0.16, 0.34, 0.26, 1)
+dressing_density = 1.0
