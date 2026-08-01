@@ -32,7 +32,7 @@ tasks:
   - {id: code-track-test-track, title: "Gray-box test track (authored images + tuned TrackPath)", type: code, group: track, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-checkpoints, title: "Checkpoint gates baked from the spline", type: code, group: track, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-bake-tool, title: "Bake tool as in-editor @tool button", type: code, group: tools, size: default, status: done, blockers: [code-track-generator]}
-  - {id: code-track-regions, title: "Apply region per race: off-road surface + prop set + dressing (RaceDef.region, replaces .season)", type: code, group: track, size: default, status: todo, blockers: [code-track-generator]}
+  - {id: code-track-regions, title: "Apply region per race (runtime reskin: off-road grip+colour + prop tints + dressing; RaceDef.region replaces .season)", type: code, group: track, size: big, status: done, blockers: [code-track-generator]}
   - {id: code-track-props, title: "Prop system: catalog + props.json (scatter/oriented) + collisions + editor authoring", type: code, group: track, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-ai-line, title: "Bake AI racing line from the spline", type: code, group: track, size: default, status: done, blockers: [code-track-generator]}
   - {id: code-track-weather-grip, title: "Weather grip modifier (stacks on surface grip)", type: code, group: track, size: small, status: done, blockers: [code-vehicle-surface-grip]}
