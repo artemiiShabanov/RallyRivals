@@ -64,7 +64,7 @@ tasks:
   - {id: code-core-camera, title: "Chase camera (promote from prototype)", type: code, group: core, size: default, status: done, blockers: [code-vehicle-controller]}
   - {id: code-core-scene-flow, title: "Scene/flow manager + pause", type: code, group: core, size: default, status: done, blockers: []}
   - {id: code-core-save, title: "Save system", type: code, group: core, size: default, status: done, blockers: [code-core-scene-flow]}
-  - {id: code-core-pooling, title: "Pooling / perf helpers (perf-first rule)", type: code, group: core, size: default, status: todo, blockers: []}
+  - {id: code-core-pooling, title: "Pooling / perf helpers (perf-first rule)", type: code, group: core, size: default, status: done, blockers: []}
   - {id: code-core-settings-apply, title: "Apply graphics/audio/control settings", type: code, group: core, size: small, status: done, blockers: [code-core-scene-flow]}
   - {id: code-race-defs, title: "RaceDef resource (track, type, culture, conditions, reward pools)", type: code, group: race, size: default, status: done, blockers: []}
   - {id: code-race-timing, title: "Lap/stage timing", type: code, group: race, size: default, status: done, blockers: [code-track-checkpoints]}
