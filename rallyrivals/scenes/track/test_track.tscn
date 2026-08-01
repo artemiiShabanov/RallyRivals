@@ -4,4 +4,4 @@
 
 [node name="TestTrack" type="Node3D"]
 script = ExtResource("1_drive")
-baked_scene_path = "res://assets/tracks/test/baked_track.tscn"
+baked_scene_path = "res://assets/tracks/5/baked_track.tscn"

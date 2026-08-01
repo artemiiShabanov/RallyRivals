@@ -1,0 +1,32 @@
+{
+	"blueprint": {
+		"opacity": 0.5,
+		"path": "",
+		"visible": true
+	},
+	"height_points": [
+		{
+			"h": 5.5,
+			"x": 366.049896240234,
+			"y": 106.473121643066
+		},
+		{
+			"h": 21.0,
+			"x": 243.349212646484,
+			"y": 482.636627197266
+		}
+	],
+	"layer_opacity": {
+		"markers": 1.0,
+		"race": 1.0,
+		"surface": 1.0,
+		"terrain": 0.7
+	},
+	"layer_visible": {
+		"markers": true,
+		"race": true,
+		"surface": true,
+		"terrain": true
+	},
+	"size": 512
+}

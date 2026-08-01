@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="SfxDef" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="SfxDef" load_steps=5 format=3 uid="uid://c7jip08r1xrdg"]
 
-[ext_resource type="Script" path="res://scripts/audio/sfx_def.gd" id="1_n5t07"]
+[ext_resource type="Script" uid="uid://dyy2r1fnsnl21" path="res://scripts/audio/sfx_def.gd" id="1_n5t07"]
 [ext_resource type="AudioStream" uid="uid://df8wu5hbhcred" path="res://assets/audio/sfx/impact_light_1.wav" id="2_hy84r"]
 [ext_resource type="AudioStream" uid="uid://f7iwynocl684" path="res://assets/audio/sfx/impact_light_2.wav" id="3_dqrgl"]
 [ext_resource type="AudioStream" uid="uid://b6earjjb6mrre" path="res://assets/audio/sfx/impact_light_3.wav" id="4_3l57e"]
