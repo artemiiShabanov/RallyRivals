@@ -8,7 +8,12 @@ extends Resource
 
 @export var surface_image_path := ""            ## res:// path to the surface splat PNG (exact colours)
 @export var surfaces: Array[SurfaceType] = []   ## road palette
-@export var off_road: SurfaceType               ## fallback / off-road surface
+@export var off_road: SurfaceType               ## fallback / off-road surface (a region reskin may swap this)
+## The off-road CLASSIFIER anchor — the colour the off-road region was painted, frozen at bake. Kept
+## SEPARATE from off_road.color so a region can swap the off_road SurfaceType (grip + look) at runtime
+## (code-track-regions) without off-road pixels re-classifying to a road surface. a<=0 = legacy bake
+## with no anchor: fall back to classifying against off_road's own colour (the old behaviour).
+@export var off_road_key := Color(0, 0, 0, 0)
 @export var mpp := 1.0                           ## metres per pixel (matches the bake)
 
 var _img: Image
@@ -56,7 +61,21 @@ func surface_at(wx: float, wz: float) -> SurfaceType:
 	var py := int(round(wz / mpp + _size * 0.5))
 	if px < 0 or py < 0 or px >= _size or py >= _size:
 		return off_road
-	return classify(_img.get_pixel(px, py), surfaces, off_road)
+	return _surface_from(_img.get_pixel(px, py))
+
+## Like classify(), but anchors off-road to the BAKED off_road_key colour instead of off_road.color, so
+## a runtime region swap of the off_road SurfaceType can't make off-road pixels re-classify as a road
+## surface. Falls back to plain classify() when no key was baked (legacy tracks).
+func _surface_from(col: Color) -> SurfaceType:
+	if off_road_key.a <= 0.0:
+		return classify(col, surfaces, off_road)
+	var best := Vector3(col.r - off_road_key.r, col.g - off_road_key.g, col.b - off_road_key.b).length()
+	var pick: SurfaceType = off_road
+	for s in surfaces:
+		var d := Vector3(col.r - s.color.r, col.g - s.color.g, col.b - s.color.b).length()
+		if d < best:
+			best = d; pick = s
+	return pick
 
 ## Grip value of the surface at a world XZ.
 func grip_at(wx: float, wz: float) -> float:

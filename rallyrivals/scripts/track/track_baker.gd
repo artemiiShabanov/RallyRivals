@@ -182,6 +182,7 @@ func _add_ground(root: Node3D) -> Dictionary:
 		typed.append(s)
 	smap.surfaces = typed
 	smap.off_road = off_road_surface
+	smap.off_road_key = off_road_surface.color   # classifier anchor — lets a region swap off_road at runtime
 	smap.mpp = mpp
 	ground.set_meta("surface_map", smap)
 
