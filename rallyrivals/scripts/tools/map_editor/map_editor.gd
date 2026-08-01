@@ -12,6 +12,7 @@ const LAYER_TITLES := {"blueprint": "Blueprint", "terrain": "Terrain", "surface"
 const UNDO_CAP := 30
 
 const SURFACES_DIR := "res://assets/surfaces"
+const PropCatalog := preload("res://scripts/track/prop_catalog.gd")
 
 var doc: TrackDocument
 var canvas: MapCanvas
@@ -37,8 +38,11 @@ var _race_summary := ""             # last validation result, shown when not mid
 var _race_hint: Label
 var _race_rings: Array = []         # overlay pieces, composed in _refresh_overlays
 var _race_lines: Array = []
-var _prop_mode := ""                # "" | "tree" | "rock"
-var _prop_rings: Array = []
+var _prop_mode := ""                # "" or a PropCatalog type id (tree/rock/.../barrier_hard/sign_left/...)
+var _prop_pending: Variant = null   # aimed props: the anchor Vector2i awaiting a second (direction) click
+var _prop_hover := Vector2i(-1, -1) # last hovered pixel — draws the live aim preview line
+var _prop_rings: Array = []         # per-instance overlay dots
+var _prop_lines: Array = []         # oriented/sign facing segments + the live aim preview
 var _prop_count: Label
 
 var _undo: Array = []               # snapshots: {"kind": layer name or "hpoints", "data": ...}
@@ -56,6 +60,8 @@ var _profile: ProfileStrip
 var _terrain_tex: ImageTexture
 
 func _ready() -> void:
+	# Dev tool: use Godot's built-in theme, not the game's stylised project theme (readable controls).
+	theme = ThemeDB.get_default_theme()
 	var split := HBoxContainer.new()
 	split.set_anchors_preset(Control.PRESET_FULL_RECT)
 	split.add_theme_constant_override("separation", 0)
@@ -185,22 +191,21 @@ func _build_panel() -> Control:
 
 	vb.add_child(HSeparator.new())
 	var props_title := Label.new()
-	props_title.text = "Props  (1 px = 1 prop; right-click = delete)"
+	props_title.text = "Props  (scatter: 1 click · fence/barrier/sign: click end, then aim · right-click: delete)"
+	props_title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vb.add_child(props_title)
-	var props_row := HBoxContainer.new()
-	for m in [["tree", "Tree"], ["rock", "Rock"]]:
+	var props_grid := GridContainer.new()
+	props_grid.columns = 2
+	for t in PropCatalog.ORDER:
 		var btn := Button.new()
-		btn.text = m[1]
+		btn.text = String(PropCatalog.def(t)["label"])
 		btn.toggle_mode = true
 		btn.button_group = _brush_group
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.toggled.connect(func(on: bool) -> void:
-			if on:
-				_prop_mode = m[0]
-			elif _prop_mode == m[0]:
-				_prop_mode = "")
-		props_row.add_child(btn)
-	vb.add_child(props_row)
+		btn.add_theme_color_override("font_color", PropCatalog.def(t)["color"])   # swatch cue per type
+		btn.toggled.connect(_on_prop_tool.bind(t))
+		props_grid.add_child(btn)
+	vb.add_child(props_grid)
 	_prop_count = Label.new()
 	_prop_count.modulate = Color(1, 1, 1, 0.7)
 	vb.add_child(_prop_count)
@@ -567,12 +572,16 @@ func _push_undo(kind: String) -> void:
 func _capture(kind: String) -> Dictionary:
 	if kind == "hpoints":
 		return {"kind": kind, "data": doc.height_points.duplicate(true)}
+	if kind == "props":
+		return {"kind": kind, "data": doc.props.duplicate(true)}
 	return {"kind": kind, "data": (doc.images[kind] as Image).duplicate()}
 
 func _restore(snap: Dictionary) -> Dictionary:
 	var current := _capture(snap["kind"])
 	if snap["kind"] == "hpoints":
 		doc.height_points = snap["data"]
+	elif snap["kind"] == "props":
+		doc.props = snap["data"]
 	else:
 		doc.images[snap["kind"]] = snap["data"]
 		doc.refresh_texture(snap["kind"])
@@ -596,56 +605,96 @@ func _after_restore(kind: String) -> void:
 		_analysis = null   # centreline may have changed
 	_hp_selected = -1
 	_race_pending.clear()
+	_prop_pending = null
 	_push_canvas()
-	_scan_props()
+	_rebuild_prop_overlay()
 	_validate_race()   # also refreshes composed overlays
 	_height_refresh()
 	_set_dirty(true)
 
-# ---------- prop stamps ----------
-# Markers layer convention (TrackBaker._add_markers): ONE pixel = ONE prop, scanned per-pixel —
-# no blob merging like race dots. So stamps write single pixels.
-func _prop_click(px: Vector2i, button: int) -> void:
-	var img: Image = doc.images["markers"]
-	if button in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
-		_push_undo("markers")
-	if button == MOUSE_BUTTON_LEFT:
-		img.set_pixel(px.x, px.y, TrackBaker.M_TREE if _prop_mode == "tree" else TrackBaker.M_ROCK)
-	elif button == MOUSE_BUTTON_RIGHT:
-		var r := 3
-		for dy in range(-r, r + 1):
-			for dx in range(-r, r + 1):
-				var x := px.x + dx; var y := px.y + dy
-				if x >= 0 and y >= 0 and x < doc.size and y < doc.size and dx * dx + dy * dy <= r * r:
-					img.set_pixel(x, y, Color.BLACK)
-	else:
-		return
-	doc.refresh_texture("markers")
-	_push_canvas()
-	_set_dirty(true)
-	_scan_props()
+# ---------- props (code-track-props) ----------
+# Props are instances in doc.props ({type, x, y, deg?}) -> props.json, NOT markers.png pixels. Scatter
+# types place with one left click (random yaw at bake); oriented (fence/barrier) + directional (sign)
+# aim with two clicks — the first anchors one END, the second sets the direction (deg). Right-click
+# deletes the nearest instance.
+func _on_prop_tool(on: bool, t: String) -> void:
+	_prop_pending = null                         # switching tool cancels a half-placed aim
+	if on:
+		_prop_mode = t
+	elif _prop_mode == t:
+		_prop_mode = ""
+	_rebuild_prop_overlay()
 	_refresh_overlays()
 
-func _scan_props() -> void:
+func _prop_click(px: Vector2i, button: int) -> void:
+	if button == MOUSE_BUTTON_RIGHT:
+		_push_undo("props")
+		_delete_nearest_prop(px)
+		_prop_pending = null
+		_after_prop_edit()
+		return
+	if button != MOUSE_BUTTON_LEFT:
+		return
+	if PropCatalog.needs_aim(_prop_mode):
+		if _prop_pending == null:
+			_prop_pending = px                   # first click: anchor one end / the spot
+			_rebuild_prop_overlay(); _refresh_overlays()
+			return
+		var a: Vector2i = _prop_pending
+		var dir := Vector2(px - a)
+		var deg := 0.0 if dir.length() < 0.5 else rad_to_deg(atan2(dir.x, dir.y))
+		_push_undo("props")
+		doc.props.append({"type": _prop_mode, "x": a.x, "y": a.y, "deg": roundf(deg)})
+		_prop_pending = null
+		_after_prop_edit()
+	else:
+		_push_undo("props")
+		doc.props.append({"type": _prop_mode, "x": px.x, "y": px.y})   # scatter: random yaw at bake
+		_after_prop_edit()
+
+func _delete_nearest_prop(px: Vector2i) -> void:
+	var best := -1
+	var best_d := 12.0 * 12.0                     # only delete within ~12 px
+	for i in doc.props.size():
+		var p: Dictionary = doc.props[i]
+		var d := Vector2(int(p["x"]) - px.x, int(p["y"]) - px.y).length_squared()
+		if d < best_d:
+			best_d = d; best = i
+	if best >= 0:
+		doc.props.remove_at(best)
+
+func _after_prop_edit() -> void:
+	_set_dirty(true)
+	_rebuild_prop_overlay()
+	_refresh_overlays()
+
+# Rebuild the prop overlay from doc.props: a dot per instance + a segment for oriented/aimed props
+# (anchor -> anchor + facing * length), plus the live aim preview while a first click is pending.
+func _rebuild_prop_overlay() -> void:
 	_prop_rings = []
-	var trees := 0
-	var rocks := 0
+	_prop_lines = []
 	if doc != null:
-		var img: Image = doc.images["markers"]
-		for y in doc.size:
-			for x in doc.size:
-				var c := img.get_pixel(x, y)
-				if Vector3(c.r - 1.0, c.g, c.b).length() < 0.2:
-					trees += 1
-					_prop_rings.append({"p": Vector2(x, y), "col": Color(0.25, 0.8, 0.3)})
-				elif Vector3(c.r, c.g, c.b - 1.0).length() < 0.2:
-					rocks += 1
-					_prop_rings.append({"p": Vector2(x, y), "col": Color(0.7, 0.7, 0.78)})
-	_prop_count.text = "%d trees, %d rocks" % [trees, rocks]
+		for p in doc.props:
+			var t := String(p.get("type", ""))
+			var d := PropCatalog.def(t)
+			if d.is_empty():
+				continue
+			var anchor := Vector2(int(p["x"]), int(p["y"]))
+			var col: Color = d["color"]
+			_prop_rings.append({"p": anchor, "col": col})
+			if PropCatalog.needs_aim(t):
+				var span: float = maxf(float(d["length"]), 3.0)   # signs (length 0) get a short facing tick
+				var rad := deg_to_rad(float(p.get("deg", 0.0)))
+				var facing := Vector2(sin(rad), cos(rad))
+				_prop_lines.append({"a": anchor, "b": anchor + facing * span, "col": col})
+	# live aim preview: from the pending anchor to the cursor
+	if _prop_pending != null and _prop_hover.x >= 0:
+		_prop_lines.append({"a": Vector2(_prop_pending), "b": Vector2(_prop_hover), "col": Color(1, 1, 0.4, 0.9)})
+	_prop_count.text = "%d props" % (doc.props.size() if doc != null else 0)
 
 func _refresh_overlays() -> void:
 	canvas.overlay_rings = _race_rings + _prop_rings + _height_rings
-	canvas.overlay_lines = _race_lines
+	canvas.overlay_lines = _race_lines + _prop_lines
 	canvas.overlay_labels = _height_labels
 	canvas.queue_redraw()
 
@@ -931,12 +980,13 @@ func _after_doc_change(status: String) -> void:
 	_analysis = null
 	_terrain_tex = null
 	_hp_selected = -1
+	_prop_pending = null
 	_height_refresh()
 	for layer in LAYER_ORDER:
 		(_layer_rows[layer]["check"] as CheckBox).set_pressed_no_signal(doc.layer_visible[layer])
 		(_layer_rows[layer]["slider"] as HSlider).set_value_no_signal(doc.layer_opacity[layer])
 	_push_canvas()
-	_scan_props()
+	_rebuild_prop_overlay()
 	_validate_race()
 	_set_status(status)
 
@@ -963,6 +1013,10 @@ func _on_pixel_hovered(px: Vector2i) -> void:
 		return
 	var inside := px.x >= 0 and px.y >= 0 and px.x < doc.size and px.y < doc.size
 	_status.text = "px (%d, %d)  zoom %d%%" % [px.x, px.y, int(canvas.zoom * 100.0)] if inside else "zoom %d%%" % int(canvas.zoom * 100.0)
+	_prop_hover = px
+	if _prop_pending != null:                     # live-update the aim preview while placing an aimed prop
+		_rebuild_prop_overlay()
+		_refresh_overlays()
 
 func _set_status(text: String) -> void:
 	_status.text = text

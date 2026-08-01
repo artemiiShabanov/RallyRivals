@@ -10,6 +10,7 @@ extends RefCounted
 
 const LAYERS := ["surface", "markers", "race"]
 const META_FILE := "editor.json"
+const PropCatalog := preload("res://scripts/track/prop_catalog.gd")   # props.json I/O (code-track-props)
 
 var dir := ""
 var size := 512
@@ -18,6 +19,7 @@ var textures := {}               # layer -> ImageTexture (display; black-empty l
 var blueprint_path := ""         # reference underlay (absolute or res:// path; never exported)
 var blueprint_texture: Texture2D
 var height_points: Array = []    # [{"x": float, "y": float, "h": float metres}] — road height anchors
+var props: Array = []            # [{"type": String, "x": int, "y": int, "deg"?: float}] — prop instances (props.json)
 var layer_visible := {"blueprint": true, "terrain": true, "surface": true, "markers": true, "race": true}
 var layer_opacity := {"blueprint": 0.5, "terrain": 0.7, "surface": 1.0, "markers": 1.0, "race": 1.0}
 
@@ -50,6 +52,7 @@ static func open(p_dir: String) -> TrackDocument:
 	if doc.images.is_empty() and not has_meta:
 		return null
 	doc._load_meta()
+	doc.props = PropCatalog.load_list(p_dir)
 	if not doc.images.is_empty():
 		doc.size = (doc.images.values()[0] as Image).get_width()
 	for layer in LAYERS:   # anything missing on disk becomes a blank layer at the doc size
@@ -73,6 +76,9 @@ func save() -> Error:
 		var err: Error = (images[layer] as Image).save_png(ProjectSettings.globalize_path(dir.path_join(layer + ".png")))
 		if err != OK:
 			return err
+	var perr := PropCatalog.save_list(dir, props)   # props.json — the baker reads this
+	if perr != OK:
+		return perr
 	var vis := {}
 	var opa := {}
 	for layer in LAYERS + ["terrain"]:
