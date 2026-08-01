@@ -7,12 +7,13 @@
 script = ExtResource("2_a0pfs")
 id = "dunes"
 display_name = "Dunes"
+vibe = "Salt lake + desert, Mexico vibe — cactus scrub, sandstone mesas, a pale salt-flat horizon under warm haze."
 off_road_surface = ExtResource("1_fc4pb")
 prop_tints = {
-"bush": Color(0.52, 0.5, 0.28, 1),
-"rock": Color(0.68, 0.6, 0.44, 1),
-"tree": Color(0.45, 0.48, 0.22, 1)
+"bush": Color(0.56, 0.55, 0.33, 1),
+"rock": Color(0.72, 0.58, 0.4, 1),
+"tree": Color(0.42, 0.5, 0.26, 1)
 }
 prop_meshes = {}
-dressing_tint = Color(0.52, 0.5, 0.28, 1)
+dressing_tint = Color(0.66, 0.6, 0.42, 1)
 dressing_density = 1.0

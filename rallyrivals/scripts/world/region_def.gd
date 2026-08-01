@@ -13,6 +13,7 @@ extends Resource
 
 @export var id := ""
 @export var display_name := ""
+@export_multiline var vibe := ""   ## art-direction note (dressing/look intent) for art-world-regions + Stage 3
 
 @export_group("Off-road ground (Stage 2 reskin)")
 ## The biome's off-road SurfaceType — carries BOTH grip (sand 5.0 / snow 4.x …) and ground colour.

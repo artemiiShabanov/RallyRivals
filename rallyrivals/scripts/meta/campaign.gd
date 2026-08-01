@@ -17,14 +17,17 @@ const BOSS_TRACK := "res://assets/tracks/track 1/baked_track.tscn"  ## point-to-
 const CP_POOL := 15           ## per-race CP pool (1st place); chapter total = 10× this feeds the boss gate
 const MONEY_POOL := 500       ## per-race money pool (1st place)
 
-# Per chapter: class band (CAMPAIGN.md mix, as low..high) + conditions (the moment) + region (the
-# biome — code-track-regions, 1:1 with chapter, applied as a runtime reskin by RegionSkin).
+# Per chapter: class band (CAMPAIGN.md mix, as low..high) + conditions (the moment).
 const CH := [
-	{low = "D", high = "C", light = "golden", weather = "clear", region = "backwoods"},
-	{low = "D", high = "B", light = "day", weather = "clear", region = "dunes"},
-	{low = "D", high = "A", light = "night", weather = "clear", region = "quarry"},
-	{low = "A", high = "S", light = "golden", weather = "thunder", region = "alpine"},
+	{low = "D", high = "C", light = "golden", weather = "clear"},
+	{low = "D", high = "B", light = "day", weather = "clear"},
+	{low = "D", high = "A", light = "night", weather = "clear"},
+	{low = "A", high = "S", light = "golden", weather = "thunder"},
 ]
+
+# Regions (biomes) are NOT chapter-locked — a chapter mixes them (code-track-regions). The placeholder
+# campaign spreads the four across each chapter's races; content-tracks-campaign authors the real mix.
+const REGION_IDS := ["backwoods", "dunes", "island", "alpine"]
 
 static var _races := {}       # id -> RaceDef (all chapters' races + bosses)
 static var _built := false
@@ -77,6 +80,7 @@ static func _ensure() -> void:
 			r.money_pool = MONEY_POOL
 			r.cp_pool = CP_POOL
 			_conditions(r, c)
+			r.region = _region(REGION_IDS[m % REGION_IDS.size()])   # biomes mixed across the chapter
 			_races[r.id] = r
 		var b := RaceDef.new()
 		b.id = "c%d_boss" % (ch + 1)
@@ -86,9 +90,13 @@ static func _ensure() -> void:
 		b.culture = "wilds"          # bump the boss freely (rattles the brittle ones); the AI never rams back
 		b.boss_chapter = ch + 1
 		_conditions(b, c)
+		b.region = _region(REGION_IDS[ch % REGION_IDS.size()])   # each chapter's boss gets a signature biome
 		_races[b.id] = b
 
 static func _conditions(r: RaceDef, c: Dictionary) -> void:
 	r.lighting = load("res://assets/lighting/%s.tres" % c["light"]) as LightingPreset
 	r.weather = load("res://assets/weather/%s.tres" % c["weather"]) as WeatherPreset
-	r.region = load("res://assets/regions/%s.tres" % c["region"]) as Resource   # biome reskin (code-track-regions)
+
+## A region (biome) by id — the runtime reskin RegionSkin applies (code-track-regions).
+static func _region(id: String) -> Resource:
+	return load("res://assets/regions/%s.tres" % id) as Resource

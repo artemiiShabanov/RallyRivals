@@ -1,0 +1,19 @@
+[gd_resource type="Resource" load_steps=3 format=3]
+
+[ext_resource type="Resource" path="res://assets/surfaces/grass.tres" id="1_tjqem"]
+[ext_resource type="Script" path="res://scripts/world/region_def.gd" id="2_s3d3m"]
+
+[resource]
+script = ExtResource("2_s3d3m")
+id = "island"
+display_name = "Island"
+vibe = "Iceland + volcanic, water on the horizon — vivid moss-green fields, black basalt rock, sea/lake at the edge."
+off_road_surface = ExtResource("1_tjqem")
+prop_tints = {
+"bush": Color(0.24, 0.52, 0.26, 1),
+"rock": Color(0.19, 0.19, 0.21, 1),
+"tree": Color(0.18, 0.5, 0.24, 1)
+}
+prop_meshes = {}
+dressing_tint = Color(0.22, 0.48, 0.26, 1)
+dressing_density = 1.0

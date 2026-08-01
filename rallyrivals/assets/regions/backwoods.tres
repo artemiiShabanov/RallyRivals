@@ -7,12 +7,13 @@
 script = ExtResource("2_up4iy")
 id = "backwoods"
 display_name = "Backwoods"
+vibe = "Forest + Eastern-European countryside — dense conifers, log fences, muddy tracks, a treeline horizon."
 off_road_surface = ExtResource("1_f06rw")
 prop_tints = {
-"bush": Color(0.2, 0.46, 0.18, 1),
+"bush": Color(0.19, 0.45, 0.17, 1),
 "rock": Color(0.42, 0.4, 0.36, 1),
-"tree": Color(0.16, 0.44, 0.16, 1)
+"tree": Color(0.15, 0.42, 0.15, 1)
 }
 prop_meshes = {}
-dressing_tint = Color(0.2, 0.46, 0.18, 1)
+dressing_tint = Color(0.17, 0.4, 0.16, 1)
 dressing_density = 1.0
