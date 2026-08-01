@@ -410,7 +410,9 @@ func _finish() -> void:
 		# crossed first, so you won). A Wilds contact penalty (if any) still folds into your `total`.
 		last_result = RaceResult.compute(_race.id, total, laps, best, [_boss_time])
 		if last_result.place == 1:
-			Chapters.on_boss_win(_race.boss_chapter)   # beating THIS chapter's boss advances the campaign
+			var won := Chapters.on_boss_win(_race.boss_chapter)   # advance the campaign + pink-slip the boss's car
+			if won != null:
+				last_result.pink_slip_car_id = won.id
 	elif _field != null:
 		# Placed against the field's SIMULATED race times (GP grid / open-race RaceGrid). Ramming a rival
 		# already folded a penalty into `total`, so contact costs you positions here.

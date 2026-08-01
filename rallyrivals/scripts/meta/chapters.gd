@@ -63,13 +63,28 @@ static func boss() -> BossDef:
 	return BossDef.for_chapter(current())
 
 ## Beating a boss (place 1 in its duel, RaceDirector). Advances ONLY when it's the CURRENT chapter's
-## boss — so debug-booting another chapter's boss can't skip you ahead. Rebases CP + persists.
-## `boss_chapter` is the RaceDef's 1-based chapter; awarding the car is code-meta-pinkslip's job.
-static func on_boss_win(boss_chapter: int) -> void:
+## boss — so debug-booting another chapter's boss can't skip you ahead. Rebases CP, pink-slips the boss's
+## car (code-meta-pinkslip), then persists once. `boss_chapter` is the RaceDef's 1-based chapter. Returns
+## the CarDef NEWLY won (null if the win didn't count or you already owned it) so results can announce it.
+static func on_boss_win(boss_chapter: int) -> CarDef:
 	if Save.active == null or is_complete():
-		return
+		return null
 	if boss_chapter - 1 != current():
-		return                                   # not this chapter's boss — no advance
+		return null                              # not this chapter's boss — no advance, no trophy
+	var won := _award_pink_slip(BossDef.for_chapter(boss_chapter - 1))
 	Save.active.chapter += 1
 	Save.active.chapter_cp_base = Save.active.cp
 	Save.write()
+	return won
+
+## Pink-slip the boss's car (code-meta-pinkslip): add it to the garage the first time it's won, so it
+## shows there (Cars.owned) and never in the shop (pink_slip_only). Returns the CarDef only when it's
+## NEWLY won — null if already owned or the id is bad — so the results screen announces the trophy once.
+static func _award_pink_slip(boss: BossDef) -> CarDef:
+	if boss == null:
+		return null
+	var cd := Cars.by_id(boss.car_id)
+	if cd == null or cd.id in Save.active.owned_cars:
+		return null
+	Save.add_car(cd.id)                          # canonical garage add: dedups, persists, emits car_changed
+	return cd

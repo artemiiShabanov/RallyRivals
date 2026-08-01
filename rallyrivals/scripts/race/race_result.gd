@@ -15,6 +15,7 @@ var penalty := 0.0       ## seconds of Officials contact penalty folded into tot
 var laps: Array = []
 var best_lap := INF
 var finished := true
+var pink_slip_car_id := ""  ## a boss's car NEWLY won this race (code-meta-pinkslip); "" = none to announce
 
 # Payout breakdown, filled by RaceEconomy.apply() at finish (code-meta-economy) for the results screen.
 var money_earned := 0
