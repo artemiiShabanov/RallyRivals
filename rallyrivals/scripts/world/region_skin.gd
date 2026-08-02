@@ -122,21 +122,47 @@ static func _add_dressing(track: Node, region: Resource) -> void:
 			node.rotation.y = atan2(center.x - node.position.x, center.z - node.position.z)   # wide face to centre
 			dress.add_child(node)
 
-	# Buildings: a seeded scatter of the region's buildings in the near off-road ring (collidable).
+	# Buildings: a seeded scatter INSIDE the footprint, sampled OFF-ROAD (so none land on the road /
+	# racing line) and sat on the ground (heightfield-sampled), collidable. Radius keys off the half-EDGE
+	# (min extent), not the half-diagonal, so they stay on the terrain.
 	var bldgs: Array = region.dressing_buildings
 	if not bldgs.is_empty():
-		var b_ring := corner * 0.9
+		var smap = ground.get_meta("surface_map") if (ground != null and ground.has_meta("surface_map")) else null
+		var half_edge: float = minf(aabb.size.x, aabb.size.z) * 0.5
 		var b_count := int(clampf(6.0 * density, 2.0, 10.0))
-		for i in b_count:
-			var mid := String(bldgs[i % bldgs.size()])
+		var placed := 0; var guard := 0
+		while placed < b_count and guard < b_count * 16:
+			guard += 1
+			var ang := rng.randf() * TAU
+			var wx := center.x + cos(ang) * half_edge * rng.randf_range(0.5, 0.9)
+			var wz := center.z + sin(ang) * half_edge * rng.randf_range(0.5, 0.9)
+			if smap != null and smap.surface_at(wx, wz) != smap.off_road:
+				continue                                    # on the road / racing line — reject
+			var mid := String(bldgs[placed % bldgs.size()])
 			if not EnvCatalog.has(mid):
-				continue
-			var ang := TAU * (float(i) + rng.randf_range(0.15, 0.85)) / float(b_count)
-			var rr := b_ring * rng.randf_range(0.9, 1.12)
+				placed += 1; continue
+			var gy := _ground_height_at(ground, smap, wx, wz)
 			var node := _env_node(mid, region, EnvCatalog.is_solid(mid))
-			node.position = center + Vector3(cos(ang) * rr, base_y - center.y, sin(ang) * rr)
+			node.position = Vector3(wx, gy if not is_nan(gy) else base_y, wz)
 			node.rotation.y = rng.randf() * TAU
 			dress.add_child(node)
+			placed += 1
+
+# Ground height at a world XZ from the baked heightfield (so a building sits ON the ground, not the
+# footprint's low point). NAN when there's no heightfield / out of bounds -> caller uses base_y.
+static func _ground_height_at(ground: Node, smap, wx: float, wz: float) -> float:
+	if ground == null or smap == null:
+		return NAN
+	var col := ground.get_node_or_null("Col") as CollisionShape3D
+	if col == null or not (col.shape is HeightMapShape3D):
+		return NAN
+	var hs := col.shape as HeightMapShape3D
+	var mpp: float = maxf(float(smap.mpp), 0.0001)
+	var px := int(round(wx / mpp + hs.map_width * 0.5))
+	var pz := int(round(wz / mpp + hs.map_depth * 0.5))
+	if px < 0 or pz < 0 or px >= hs.map_width or pz >= hs.map_depth:
+		return NAN
+	return hs.map_data[pz * hs.map_width + px]
 
 # One scenery node: the imported .obj mesh (base at y=0) or, until it's imported, a tinted box fallback
 # the model's size. Solid models are wrapped in a StaticBody (box collider, layer 1 the car hits).
