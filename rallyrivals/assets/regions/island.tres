@@ -1,7 +1,7 @@
-[gd_resource type="Resource" load_steps=3 format=3]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://b5tu1fadvw3tm"]
 
 [ext_resource type="Resource" path="res://assets/surfaces/grass.tres" id="1_tjqem"]
-[ext_resource type="Script" path="res://scripts/world/region_def.gd" id="2_s3d3m"]
+[ext_resource type="Script" uid="uid://bhjoan1dtaow3" path="res://scripts/world/region_def.gd" id="2_s3d3m"]
 
 [resource]
 script = ExtResource("2_s3d3m")

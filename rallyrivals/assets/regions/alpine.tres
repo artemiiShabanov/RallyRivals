@@ -1,7 +1,7 @@
-[gd_resource type="Resource" load_steps=3 format=3]
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://ih8diewhqe17"]
 
-[ext_resource type="Resource" path="res://assets/surfaces/snow.tres" id="1_bgrta"]
-[ext_resource type="Script" path="res://scripts/world/region_def.gd" id="2_66ltp"]
+[ext_resource type="Resource" uid="uid://cnydal1hbb5mf" path="res://assets/surfaces/snow.tres" id="1_bgrta"]
+[ext_resource type="Script" uid="uid://bhjoan1dtaow3" path="res://scripts/world/region_def.gd" id="2_66ltp"]
 
 [resource]
 script = ExtResource("2_66ltp")
