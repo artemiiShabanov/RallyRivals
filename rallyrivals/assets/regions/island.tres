@@ -17,3 +17,6 @@ prop_tints = {
 prop_meshes = {}
 dressing_tint = Color(0.22, 0.48, 0.26, 1)
 dressing_density = 1.0
+dressing_backdrop = "ridge_volcanic"
+dressing_buildings = ["house", "tower"]
+dressing_water = true

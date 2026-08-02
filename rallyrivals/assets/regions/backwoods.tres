@@ -17,3 +17,6 @@ prop_tints = {
 prop_meshes = {}
 dressing_tint = Color(0.17, 0.4, 0.16, 1)
 dressing_density = 1.0
+dressing_backdrop = "treeline"
+dressing_buildings = ["house", "hall"]
+dressing_water = false

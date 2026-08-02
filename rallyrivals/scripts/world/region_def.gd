@@ -28,9 +28,12 @@ extends Resource
 ## Optional real variant meshes per type (art authors ×3). Empty = keep the baked placeholder box.
 @export var prop_meshes: Dictionary = {}
 
-@export_group("Dressing (Stage 3 — placeholder until art-voxel-environment)")
-@export var dressing_tint := Color(0.20, 0.40, 0.18)   ## vegetation-fill / backdrop colour
-@export var dressing_density := 1.0                    ## 0 = no fill
+@export_group("Dressing (scenery — art-voxel-environment models via EnvCatalog)")
+@export var dressing_tint := Color(0.20, 0.40, 0.18)   ## box-fallback / water tint; 0-density = no dressing
+@export var dressing_density := 1.0                    ## 0 = no dressing
+@export var dressing_backdrop := ""                    ## EnvCatalog id tiled around the horizon (ridge/mesa/treeline)
+@export var dressing_buildings: Array = []             ## EnvCatalog ids scattered as off-road buildings (house/hall/tower)
+@export var dressing_water := false                    ## a flat water plane at the horizon (Island)
 
 ## The placeholder colour for a prop type in this region, or `fallback` (the catalog colour) if unset.
 func prop_tint(type_id: String, fallback: Color) -> Color:

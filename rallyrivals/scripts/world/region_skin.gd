@@ -1,4 +1,5 @@
 extends RefCounted
+const EnvCatalog := preload("res://scripts/world/env_catalog.gd")   # scenery models (art-voxel-environment)
 ## Runtime region reskin (code-track-regions). Given a freshly-instanced baked track and a RegionDef,
 ## restyles the track to the region's biome IN PLACE — no rebake — so one baked track reads as any
 ## region ("same track, new place", CAMPAIGN.md). Called at track-load (RaceDirector._build,
@@ -84,35 +85,84 @@ static func _add_dressing(track: Node, region: Resource) -> void:
 	if aabb.size == Vector3.ZERO:
 		return
 	var center := aabb.get_center()
-	var radius: float = maxf(aabb.size.x, aabb.size.z) * 0.5
-	if radius <= 1.0:
+	var corner: float = Vector2(aabb.size.x, aabb.size.z).length() * 0.5   # to the square footprint's corner
+	if corner <= 1.0:
 		return
+	var base_y := aabb.position.y                                          # ground floor (footprint low point)
+	var density := clampf(float(region.dressing_density), 0.1, 2.0)
 	var dress := Node3D.new(); dress.name = "Dressing"
 	track.add_child(dress)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(String(region.id)) if String(region.id) != "" else 20260801
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = region.dressing_tint
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
-	mat.roughness = 1.0
-	var count := int(48.0 * clampf(float(region.dressing_density), 0.1, 2.0))
-	# Ring radius clears the terrain's CORNERS (a baked footprint is always square), not just its edges:
-	# corners sit at hypot(half_x, half_z) = 1.41x half-extent, so a max(size)*0.5 ring would dip back
-	# inside the play field on the diagonals. Base on the corner distance so every prism is beyond the edge.
-	var corner: float = Vector2(aabb.size.x, aabb.size.z).length() * 0.5
-	var ring_r := corner * 1.15
-	var base_y := aabb.position.y
-	for i in count:
-		var ang := TAU * float(i) / float(count) + rng.randf_range(-0.03, 0.03)
-		var h := rng.randf_range(radius * 0.10, radius * 0.38)
-		var w := rng.randf_range(radius * 0.06, radius * 0.15)
-		var mi := MeshInstance3D.new()
-		var bm := BoxMesh.new(); bm.size = Vector3(w, h, w)
+
+	# Water plane at the far horizon (Island) — a big flat tinted sheet just under the ground floor.
+	if bool(region.dressing_water):
+		var water := MeshInstance3D.new()
+		var pm := PlaneMesh.new(); pm.size = Vector2(corner * 8.0, corner * 8.0)
+		water.mesh = pm
+		var wmat := StandardMaterial3D.new()
+		wmat.albedo_color = Color(0.16, 0.34, 0.55); wmat.roughness = 0.25; wmat.metallic = 0.1
+		water.material_override = wmat
+		water.position = Vector3(center.x, base_y - corner * 0.05, center.z)
+		dress.add_child(water)
+
+	# Backdrop: tile the region's silhouette model around the corner-cleared horizon ring, facing centre.
+	var bid := String(region.dressing_backdrop)
+	if EnvCatalog.has(bid):
+		var ring_r := corner * 1.2
+		var target_h := corner * 0.22                                     # ~a fifth of the track radius tall
+		var scl := maxf(target_h / maxf(EnvCatalog.size(bid).y, 0.1), 1.0)
+		var count := int(clampf(TAU * ring_r / maxf(EnvCatalog.size(bid).x * scl * 0.85, 1.0), 8.0, 40.0))
+		for i in count:
+			var ang := TAU * float(i) / float(count) + rng.randf_range(-0.04, 0.04)
+			var s := scl * rng.randf_range(0.8, 1.25)
+			var node := _env_node(bid, region, false)
+			node.scale = Vector3(s, s, s)
+			node.position = center + Vector3(cos(ang) * ring_r, base_y - center.y, sin(ang) * ring_r)
+			node.rotation.y = atan2(center.x - node.position.x, center.z - node.position.z)   # wide face to centre
+			dress.add_child(node)
+
+	# Buildings: a seeded scatter of the region's buildings in the near off-road ring (collidable).
+	var bldgs: Array = region.dressing_buildings
+	if not bldgs.is_empty():
+		var b_ring := corner * 0.9
+		var b_count := int(clampf(6.0 * density, 2.0, 10.0))
+		for i in b_count:
+			var mid := String(bldgs[i % bldgs.size()])
+			if not EnvCatalog.has(mid):
+				continue
+			var ang := TAU * (float(i) + rng.randf_range(0.15, 0.85)) / float(b_count)
+			var rr := b_ring * rng.randf_range(0.9, 1.12)
+			var node := _env_node(mid, region, EnvCatalog.is_solid(mid))
+			node.position = center + Vector3(cos(ang) * rr, base_y - center.y, sin(ang) * rr)
+			node.rotation.y = rng.randf() * TAU
+			dress.add_child(node)
+
+# One scenery node: the imported .obj mesh (base at y=0) or, until it's imported, a tinted box fallback
+# the model's size. Solid models are wrapped in a StaticBody (box collider, layer 1 the car hits).
+static func _env_node(id: String, region: Resource, solid: bool) -> Node3D:
+	var mesh := EnvCatalog.mesh(id)
+	var sz := EnvCatalog.size(id)
+	var mi := MeshInstance3D.new()
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	if mesh != null:
+		mi.mesh = mesh
+	else:
+		var bm := BoxMesh.new(); bm.size = sz
 		mi.mesh = bm
+		mi.position.y = sz.y * 0.5                                        # box centred -> base at y=0
+		var mat := StandardMaterial3D.new(); mat.albedo_color = region.dressing_tint; mat.roughness = 1.0
 		mi.material_override = mat
-		mi.position = center + Vector3(cos(ang) * ring_r, base_y + h * 0.5 - center.y, sin(ang) * ring_r)
-		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		dress.add_child(mi)
+	if not solid:
+		return mi
+	var body := StaticBody3D.new()
+	body.collision_layer = 1; body.collision_mask = 0
+	var cs := CollisionShape3D.new()
+	var shape := BoxShape3D.new(); shape.size = sz
+	cs.shape = shape; cs.position = Vector3(0.0, sz.y * 0.5, 0.0)
+	body.add_child(cs)
+	body.add_child(mi)
+	return body
 
 # The shared terrain ShaderMaterial (every Ground/Mesh_* carries the same one as material_override).
 static func _terrain_mat(ground: Node) -> ShaderMaterial:
