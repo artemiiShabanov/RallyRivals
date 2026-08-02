@@ -27,20 +27,26 @@ func _initialize() -> void:
 	var timber := _slot(Color(0.50, 0.34, 0.20))
 	var roof := _slot(Color(0.55, 0.22, 0.18))
 	var metal := _slot(Color(0.60, 0.62, 0.66))
-	var window := _slot(Color(0.52, 0.66, 0.82))
+	var window := _slot(Color(0.60, 0.74, 0.90))
 	var door := _slot(Color(0.28, 0.19, 0.11))
+	var wall2 := _slot(Color(0.64, 0.56, 0.42))
+	var white := _slot(Color(0.92, 0.93, 0.96))
+	var red := _slot(Color(0.72, 0.20, 0.17))
+	var stone := _slot(Color(0.50, 0.48, 0.46))
 
 	# --- backdrop silhouettes ---
-	_build_ridge(rock, snow, 7);      _emit(dir, "ridge", 96, 24, 52)          # varied peaks (Alpine)
+	_build_ridge(rock, snow, 7);      _emit(dir, "ridge", 96, 24, 52)          # smoother, snowier (Alpine)
 	_build_ridge(rock_dark, rock, 3); _emit(dir, "ridge_volcanic", 96, 24, 52) # (Island)
-	_build_mesa(sand);                _emit(dir, "mesa", 168, 60, 16)          # 3x wider, 3x lower, eroded (Dunes)
+	_build_mesa(sand);                _emit(dir, "mesa", 168, 60, 16)          # wide, low, eroded (Dunes)
 	_build_treeline(foliage, trunk);  _emit(dir, "treeline", 88, 52, 16)       # small round conifers, 4 rows (Backwoods)
-	# --- buildings (bigger + detailed; scaled up at placement) ---
-	_build_house(wall, roof, window, door);  _emit(dir, "house", 48, 60, 96)
-	_build_hall(timber, roof, window, door); _emit(dir, "hall", 72, 120, 60)
-	_build_tower(metal, roof, window);       _emit(dir, "tower", 30, 30, 152)
+	# --- buildings ---
+	_build_house(wall, wall2, roof, window, door);  _emit(dir, "house", 48, 60, 96)
+	_build_hall(timber, roof, window, door);        _emit(dir, "hall", 72, 120, 60)
+	_build_tower(metal, roof, window);              _emit(dir, "tower", 30, 30, 152)
+	_build_lighthouse(white, red, window);          _emit(dir, "lighthouse", 28, 28, 140)   # Island
+	_build_chalet(timber, stone, roof, window);     _emit(dir, "chalet", 50, 58, 94)        # Alpine village
 
-	print("env voxels: 7 models -> ", dir)
+	print("env voxels: 9 models -> ", dir)
 	quit()
 
 # ---------- models (grid: x=width, y=height, z=depth) ----------
@@ -53,12 +59,12 @@ func _build_ridge(rock: int, cap: int, oct: int) -> void:
 		var edge: float = minf(float(x), float(w - 1 - x)) / (w * 0.5)   # taper the ends down
 		for z in d:
 			var dz: float = 1.0 - absf(z + 0.5 - d * 0.5) / (d * 0.5)    # thin front-to-back
-			var h := 26.0 + 18.0 * sin(x * 0.09) + 9.0 * sin(x * 0.31 + 1.3)
-			h += 6.0 * sin(x * 0.7 + float(oct)) + 4.0 * sin(x * 1.5 + 2.1)   # extra octaves -> varied peaks
+			var h := 30.0 + 15.0 * sin(x * 0.06) + 7.0 * sin(x * 0.15 + 1.3)   # low freqs -> rounded, less zigzag
+			h += 3.0 * sin(x * 0.4 + float(oct))                              # a little variation between models
 			h = h * clampf(0.3 + 0.7 * edge, 0.0, 1.0) * (0.5 + 0.5 * dz)
 			var hi := clampi(int(h), 1, 51)
 			for y in hi:
-				grid[Vector3i(x, y, z)] = cap if (y >= hi - 5 and hi > 30) else rock
+				grid[Vector3i(x, y, z)] = cap if (y >= hi - 14 and hi > 22) else rock   # deeper snow caps
 
 # A wide, low, eroded butte: rolling top with gullies + battered sides (Dunes salt-flat mesas).
 func _build_mesa(rock: int) -> void:
@@ -91,12 +97,15 @@ func _conifer(cx: int, cz: int, foliage: int, trunk: int, top: int) -> void:
 		var r := (1.0 - float(l) / float(top)) * 3.5 + 0.6   # smooth round taper -> detail
 		_disc(float(cx) + 0.5, float(cz) + 0.5, r, 2 + l, foliage)
 
-# A tall multi-storey house: window rows per floor on all four walls, a door, a pitched roof.
-func _build_house(wall: int, roof: int, window: int, door: int) -> void:
+# A tall multi-storey house: two wall tones (floor-line bands), window rows per floor, a door, a roof.
+func _build_house(wall: int, wall2: int, roof: int, window: int, door: int) -> void:
 	grid = {}
 	var w := 48; var d := 60; var floors := 3; var fh := 24
 	var top := floors * fh
 	_fill(2, w - 3, 0, top, 2, d - 3, wall)
+	for fl in range(1, floors):                                  # a contrasting band at each floor line
+		_paint(2, w - 3, fl * fh - 1, fl * fh, 2, d - 3, wall2)
+	_paint(2, w - 3, 0, 3, 2, d - 3, wall2)                       # plinth
 	for fl in floors:
 		var yb := 8 + fl * fh
 		for wx in range(7, w - 7, 11):
@@ -132,6 +141,35 @@ func _build_tower(body: int, cap: int, window: int) -> void:
 		_disc(c, c, 13.0, 23 + k * 18, window)
 	for k in 14:
 		_disc(c, c, 13.0 - k * 0.9, 138 + k, cap)
+
+# A lighthouse: tapered WHITE tower with RED bands, a glass lantern head, a red dome cap.
+func _build_lighthouse(white: int, red: int, glass: int) -> void:
+	grid = {}
+	var c := 13.5
+	for y in 108:
+		_disc(c, c, 12.0 - y * 0.03, y, white)          # tapered white shaft
+	for k in 4:                                          # red bands
+		for yy in 8:
+			var yb := 16 + k * 24 + yy
+			_disc(c, c, 12.0 - yb * 0.03, yb, red)
+	_disc(c, c, 11.0, 108, red); _disc(c, c, 11.0, 109, red)   # gallery rim
+	for y in range(111, 126):
+		_disc(c, c, 8.0, y, glass)                       # lantern room (glass)
+	for k in 10:
+		_disc(c, c, 9.0 - k, 126 + k, red)               # red dome
+
+# An alpine chalet: stone base, timber upper with window rows, a steep gable roof.
+func _build_chalet(timber: int, stone: int, roof: int, window: int) -> void:
+	grid = {}
+	var w := 50; var d := 58
+	_fill(2, w - 3, 0, 14, 2, d - 3, stone)
+	_fill(2, w - 3, 14, 46, 2, d - 3, timber)
+	for wx in range(9, w - 9, 12):
+		_paint(wx, wx + 5, 20, 34, 2, 2, window)
+		_paint(wx, wx + 5, 20, 34, d - 3, d - 3, window)
+	_paint(int(w / 2) - 4, int(w / 2) + 4, 0, 18, 2, 2, timber)   # door
+	for dy in 30:                                        # steep gable
+		_fill(2 + dy, w - 3 - dy, 46 + dy, 46 + dy, 0, d - 1, roof)
 
 func _disc(cx: float, cz: float, r: float, y: int, slot: int) -> void:
 	var ri := int(ceil(r))

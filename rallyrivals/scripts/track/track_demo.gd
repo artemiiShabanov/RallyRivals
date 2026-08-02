@@ -23,7 +23,8 @@ func _ready() -> void:
 	add_child(track)
 
 	# Region reskin (code-track-regions): race.region if a race is set, else the inspector override.
-	RegionSkin.apply(track, race.region if race != null and race.region != null else region)
+	var reg: Resource = race.region if race != null and race.region != null else region
+	RegionSkin.apply(track, reg)
 
 	# Venue ambience ("world" layer). Weather lays its own bed over this via WeatherFX.
 	var bed := AmbientBed.find_or_create(get_tree())
@@ -41,6 +42,7 @@ func _ready() -> void:
 			fx.name = "WeatherFX"
 			add_child(fx)
 			fx.apply(race.weather)
+	RegionSkin.apply_sky(track, reg)   # region owns the sky ground band — after weather so it wins
 
 	# Checkpoint + timing debug: gate passes, lap times, stage time (cut a corner -> no lap).
 	var cps := track.get_node_or_null("Checkpoints") as TrackCheckpoints

@@ -17,9 +17,26 @@ const EnvCatalog := preload("res://scripts/world/env_catalog.gd")   # scenery mo
 static func apply(track: Node, region: Resource) -> void:
 	if track == null or region == null:
 		return
-	_reskin_ground(track, region)   # Stage 2: off-road grip + ground colour
-	_reskin_props(track, region)    # Stage 1: prop tints
-	_add_dressing(track, region)    # Stage 3: placeholder scenery backdrop
+	_reskin_ground(track, region)   # off-road grip + ground colour
+	_reskin_props(track, region)    # prop tints
+	_add_dressing(track, region)    # scenery backdrop + buildings
+
+## Set the sky's BOTTOM-hemisphere colour to the region's ground (or its sky_ground, e.g. Island water)
+## so the horizon blends into the terrain. Call AFTER weather/lighting (weather owns the sky gradient),
+## so this override wins. Safe no-op without a WorldEnvironment.
+static func apply_sky(track: Node, region: Resource) -> void:
+	if track == null or region == null:
+		return
+	var we := track.get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if we == null or we.environment == null:
+		return
+	var mat := VhsSky.ensure(we.environment)
+	if mat == null:
+		return
+	var c: Color = region.sky_ground
+	if c.a <= 0.0:
+		c = region.off_road_surface.color if region.off_road_surface != null else Color(0.34, 0.36, 0.42)
+	mat.set_shader_parameter("ground_color", Vector3(c.r, c.g, c.b))
 
 # Recolour every baked prop whose type the region tints. Reads the `prop_type` meta (TrackBaker sets it
 # on each prop body); leaves collision + transform untouched — a region changes only how props LOOK.
@@ -31,7 +48,12 @@ static func _reskin_props(track: Node, region: Resource) -> void:
 		var t := String(prop.get_meta("prop_type", ""))
 		if not region.prop_tints.has(t):
 			continue                                  # infrastructure / untinted types keep their look
-		var col: Color = region.prop_tints[t]
+		# per-instance brightness variation so a stand of trees isn't one flat colour (seeded by position)
+		var base: Color = region.prop_tints[t]
+		var rng := RandomNumberGenerator.new()
+		rng.seed = int(prop.position.x * 71.0) ^ int(prop.position.z * 37.0)
+		var v := 1.0 + rng.randf_range(-0.2, 0.2)
+		var col := Color(clampf(base.r * v, 0.0, 1.0), clampf(base.g * v, 0.0, 1.0), clampf(base.b * v, 0.0, 1.0))
 		for child in prop.get_children():
 			if child is MeshInstance3D:
 				var mesh_inst := child as MeshInstance3D
@@ -101,7 +123,7 @@ static func _add_dressing(track: Node, region: Resource) -> void:
 		var pm := PlaneMesh.new(); pm.size = Vector2(corner * 8.0, corner * 8.0)
 		water.mesh = pm
 		var wmat := StandardMaterial3D.new()
-		wmat.albedo_color = Color(0.16, 0.34, 0.55); wmat.roughness = 0.25; wmat.metallic = 0.1
+		wmat.albedo_color = Color(0.06, 0.20, 0.44); wmat.roughness = 0.22; wmat.metallic = 0.15   # deep blue
 		water.material_override = wmat
 		water.position = Vector3(center.x, base_y - corner * 0.05, center.z)
 		dress.add_child(water)
@@ -119,6 +141,9 @@ static func _add_dressing(track: Node, region: Resource) -> void:
 			var ang := TAU * float(i) / float(count) + rng.randf_range(-0.05, 0.05)
 			var s := scl * rng.randf_range(0.8, 1.3)
 			var node := _env_node(bid, region, false)
+			if region.backdrop_tint.a > 0.0 and node is MeshInstance3D:   # match a ground backdrop to the surface (Dunes)
+				var fm := StandardMaterial3D.new(); fm.albedo_color = region.backdrop_tint; fm.roughness = 1.0
+				(node as MeshInstance3D).material_override = fm
 			node.scale = Vector3(s, s, s)
 			node.position = center + Vector3(cos(ang) * ring_r, base_y - center.y, sin(ang) * ring_r)
 			node.rotation.y = atan2(center.x - node.position.x, center.z - node.position.z)   # wide face to centre

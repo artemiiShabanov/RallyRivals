@@ -123,6 +123,7 @@ func _build(track_ps: PackedScene) -> void:
 		fx.name = "WeatherFX"
 		add_child(fx)
 		fx.apply(_race.weather)
+	RegionSkin.apply_sky(track, _race.region)   # region owns the sky's ground band — AFTER weather so it wins
 
 	# Checkpoints + timing.
 	_cps = track.get_node_or_null("Checkpoints") as TrackCheckpoints

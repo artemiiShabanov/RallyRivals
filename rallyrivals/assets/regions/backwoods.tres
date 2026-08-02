@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 
-[ext_resource type="Resource" path="res://assets/surfaces/dirt.tres" id="1_f06rw"]
+[ext_resource type="Resource" path="res://assets/surfaces/dirt_dark.tres" id="1_f06rw"]
 [ext_resource type="Script" path="res://scripts/world/region_def.gd" id="2_up4iy"]
 
 [resource]
@@ -24,3 +24,5 @@ backdrop_scale = 1.0
 backdrop_dist = 1.0
 backdrop_count = 1.0
 building_scale = 4.0
+sky_ground = Color(0, 0, 0, 0)
+backdrop_tint = Color(0, 0, 0, 0)

@@ -16,6 +16,8 @@ const MODELS := {
 	"house":          {"category": "building", "collision": true,  "size": Vector3(4.0, 4.6, 5.0)},
 	"hall":           {"category": "building", "collision": true,  "size": Vector3(6.0, 4.8, 9.6)},
 	"tower":          {"category": "building", "collision": true,  "size": Vector3(2.4, 10.0, 2.4)},
+	"lighthouse":     {"category": "building", "collision": true,  "size": Vector3(2.8, 14.0, 2.8)},
+	"chalet":         {"category": "building", "collision": true,  "size": Vector3(5.0, 9.4, 5.8)},
 }
 
 static func has(id: String) -> bool:

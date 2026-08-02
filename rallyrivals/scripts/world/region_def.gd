@@ -38,6 +38,12 @@ extends Resource
 @export var backdrop_dist := 1.0                       ## backdrop ring distance multiplier (Alpine x2 further)
 @export var backdrop_count := 1.0                      ## backdrop segment-count multiplier (Island/Dunes fewer)
 @export var building_scale := 4.0                      ## building size multiplier (they ring outside the track)
+## Sky BOTTOM-hemisphere colour (the band below the horizon). a<=0 = use off_road_surface.color, so the
+## distant ground blends into the horizon; set explicitly for a water region (Island -> deep blue).
+@export var sky_ground := Color(0, 0, 0, 0)
+## Recolour the backdrop model to this flat colour (a<=0 = keep the model's own palette). Use it to
+## match a ground-type backdrop to the surface — e.g. Dunes mesas = sand — so bg + ground read as one.
+@export var backdrop_tint := Color(0, 0, 0, 0)
 
 ## The placeholder colour for a prop type in this region, or `fallback` (the catalog colour) if unset.
 func prop_tint(type_id: String, fallback: Color) -> Color:
