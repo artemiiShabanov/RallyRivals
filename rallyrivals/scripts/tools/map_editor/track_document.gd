@@ -24,7 +24,7 @@ var layer_visible := {"blueprint": true, "terrain": true, "surface": true, "mark
 var layer_opacity := {"blueprint": 0.5, "terrain": 0.7, "surface": 1.0, "markers": 1.0, "race": 1.0}
 
 static func _off_road_color() -> Color:
-	return (load("res://assets/surfaces/sand.tres") as SurfaceType).color
+	return (load("res://assets/surfaces/blueprint.tres") as SurfaceType).color
 
 ## Fresh blank document (surface = all off-road, markers/race = empty).
 static func create(p_dir: String, p_size: int) -> TrackDocument:

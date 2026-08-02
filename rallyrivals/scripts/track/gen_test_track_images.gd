@@ -86,7 +86,7 @@ func _initialize() -> void:
 	_asphalt = (load("res://assets/surfaces/asphalt.tres") as SurfaceType).color
 	_dirt = (load("res://assets/surfaces/dirt.tres") as SurfaceType).color
 	_ice = (load("res://assets/surfaces/ice.tres") as SurfaceType).color
-	_offroad = (load("res://assets/surfaces/sand.tres") as SurfaceType).color
+	_offroad = (load("res://assets/surfaces/blueprint.tres") as SurfaceType).color
 	_sample_centreline()
 
 	var hm := Image.create(SIZE, SIZE, false, Image.FORMAT_RF)

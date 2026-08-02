@@ -18,7 +18,7 @@ func _initialize() -> void:
 		load("res://assets/surfaces/snow.tres"),
 		load("res://assets/surfaces/ice.tres"),
 	]
-	baker.off_road_surface = load("res://assets/surfaces/sand.tres")
+	baker.off_road_surface = load("res://assets/surfaces/blueprint.tres")   # editor/authoring default; regions reskin it at runtime
 	var err := baker.bake()
 	if err != OK:
 		push_error("bake failed: %d" % err)

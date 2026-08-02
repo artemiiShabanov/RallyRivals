@@ -26,7 +26,7 @@ var _open_dialog: FileDialog
 var _bp_dialog: FileDialog
 
 var _surfaces: Array[SurfaceType] = []
-var _off_road: SurfaceType          # the "eraser" surface (sand): right-drag paints this
+var _off_road: SurfaceType          # the "eraser" surface (blueprint — high-contrast authoring default): right-drag paints this
 var _brush_surface: SurfaceType     # null = no paint tool active
 var _brush_group := ButtonGroup.new()   # shared by swatches AND race tools — one active tool total
 var _brush_slider: HSlider
@@ -314,7 +314,7 @@ func _load_palette() -> void:
 			var s := load(SURFACES_DIR.path_join(f)) as SurfaceType
 			if s != null:
 				_surfaces.append(s)
-				if s.id == "sand":
+				if s.id == "blueprint":
 					_off_road = s
 	if _off_road == null and not _surfaces.is_empty():
 		_off_road = _surfaces[0]

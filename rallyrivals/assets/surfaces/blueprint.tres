@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SurfaceType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
+
+[resource]
+script = ExtResource("1_st")
+id = "blueprint"
+grip = 5.0
+color = Color(0.13, 0.35, 0.7, 1)
+tint_variation = 0.05
+roughness = 1.0
+chunkiness = 0.08
+mark_color = Color(0.08, 0.2, 0.45, 0.4)
+mark_baseline = 0.14
+dust_amount = 160
+dust_color = Color(0.16, 0.34, 0.6, 0.7)
+dust_size = 0.03
+dust_growth = 1.0
+dust_baseline = 0.16
+dust_rise = 2.0
+dust_gravity = -2.6
+dust_spread = 70.0
+dust_lifetime = 0.26

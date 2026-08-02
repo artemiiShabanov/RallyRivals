@@ -7,7 +7,7 @@
 [ext_resource type="Resource" path="res://assets/surfaces/gravel.tres" id="5_rpvrh"]
 [ext_resource type="Resource" path="res://assets/surfaces/snow.tres" id="6_yqo45"]
 [ext_resource type="Resource" path="res://assets/surfaces/ice.tres" id="7_8htel"]
-[ext_resource type="Resource" path="res://assets/surfaces/sand.tres" id="8_eidga"]
+[ext_resource type="Resource" path="res://assets/surfaces/blueprint.tres" id="8_eidga"]
 
 [node name="TrackBake" type="Node"]
 script = ExtResource("1_bondn")
