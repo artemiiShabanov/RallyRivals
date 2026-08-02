@@ -159,7 +159,6 @@ tasks:
   - {id: art-world-palette, title: "Master colour palette (voxel + terrain ramps, ADR-003)", type: art, group: world, size: small, status: done, blockers: []}
   - {id: art-world-skybox, title: "Weather-driven sky sets (VHS banded sky shader)", type: art, group: world, size: default, status: done, blockers: [art-vfx-weather]}
   - {id: art-world-lighting, title: "Time-of-day lighting presets", type: art, group: world, size: default, status: done, blockers: []}
-  - {id: art-world-regions, title: "Region theme sets (look + off-road surface + per-region prop/dressing variants)", type: art, group: world, size: big, status: todo, blockers: [art-voxel-environment, art-voxel-props]}
   - {id: art-shader-surface, title: "Terrain surface/splat-blend shader", type: art, group: shader, size: default, status: done, blockers: [code-track-generator]}
   - {id: art-shader-road, title: "Per-surface material response: matte/gloss + fake blocky relief", type: art, group: shader, size: default, status: done, blockers: [code-track-generator]}
   - {id: art-shader-vhs, title: "VHS tape post-process (grain/bleed/tracking; intensity slider + off switch)", type: art, group: shader, size: default, status: done, blockers: []}

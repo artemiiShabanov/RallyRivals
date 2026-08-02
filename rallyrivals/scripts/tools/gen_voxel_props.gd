@@ -54,6 +54,8 @@ func _initialize() -> void:
 		"stripe_w": _slot(Color(0.90, 0.90, 0.92)), "tire": _slot(Color(0.13, 0.13, 0.14)),
 		"sign_y": _slot(Color(0.92, 0.78, 0.20)), "sign_b": _slot(Color(0.26, 0.58, 0.90)),
 		"post": _slot(Color(0.58, 0.60, 0.63)), "ink": _slot(Color(0.10, 0.10, 0.12)),
+		"gblack": _slot(Color(0.06, 0.06, 0.09)), "gwhite": _slot(Color(0.93, 0.94, 0.97)),
+		"gamber": _slot(Color(0.96, 0.56, 0.12)), "gdark": _slot(Color(0.22, 0.22, 0.26)),
 	}
 
 	# --- trees (9) --- dense conifer/broadleaf crowns COARSE; sparse cactus/snag FINE
@@ -90,6 +92,9 @@ func _initialize() -> void:
 	_barrier_hard("barrier_hard_0", false); _barrier_hard("barrier_hard_1", true)
 	_barrier_soft("barrier_soft_0")
 	_sign("sign_left", -1); _sign("sign_right", 1)
+	# --- gate poles (region-neutral; TrackBaker._gate places one at each track edge) ---
+	_gate_pole("gate_pole_start", true)          # checkered black/white = start/finish
+	_gate_pole("gate_pole_checkpoint", false)    # solid amber = checkpoint
 
 	# --- contact sheets ---
 	_sheet("sheet_trees", [["tree_backwoods_0", "tree_backwoods_1", "tree_backwoods_2"],
@@ -104,6 +109,7 @@ func _initialize() -> void:
 		["fence_dunes_0", "fence_dunes_1", ""], ["fence_island_0", "fence_island_1", ""],
 		["fence_alpine_0", "fence_alpine_1", ""], ["barrier_hard_0", "barrier_hard_1", "barrier_soft_0"],
 		["sign_left", "sign_right", ""]])
+	_sheet("sheet_gates", [["gate_pole_start", "gate_pole_checkpoint", ""]])
 
 	print("props: %d models @ %.0f mm/vox -> %s (obj=%s)" % [_cells.size(), VOX * 1000.0, _dir, EMIT_OBJ])
 	quit()
@@ -440,6 +446,36 @@ func _sign(nm: String, dir: int) -> void:
 		var w := int(round(float(k) / float(maxi(hlen, 1)) * float(_rz(0.20))))
 		for yy in range(midy - w, midy + w + 1):
 			_recolor(tipx - dir * k, yy, fz, S.ink)
+	_emit(nm)
+
+# Rally gate marker pole (region-neutral): a banded vertical post, a triangular pennant near the top and
+# a bright beacon cap. checkered=true -> black/white bands + checkered flag (start/finish); false -> amber
+# bands + solid amber flag (checkpoint). TrackBaker._gate stamps one at each track edge.
+func _gate_pole(nm: String, checkered: bool) -> void:
+	grid = {}
+	var h := 4.6
+	var pr := _rz(0.09)                                # post half-width
+	var ci := _rz(1.25) + 3                            # centre; margin for the pennant reach
+	var rows := _rz(h)
+	var band := maxi(_rz(0.4), 1)
+	var a: int = S.gblack if checkered else S.gamber
+	var b: int = S.gwhite if checkered else S.gdark
+	for yi in rows:                                    # banded post
+		var col: int = a if (int(yi / band) % 2 == 0) else b
+		_fillb(ci - pr, ci + pr, yi, yi, ci - pr, ci + pr, col)
+	# pennant: a triangle off the post's +X face near the top, tapering to a point; thin in Z
+	var fy0 := rows - _rz(1.3); var fy1 := rows - _rz(0.35)
+	var flen := maxi(_rz(1.0), 1); var midy := (fy0 + fy1) / 2; var bh := (fy1 - fy0) / 2
+	var cell := maxi(_rz(0.16), 1); var zt := _rz(0.03)
+	for dx in range(0, flen):
+		var half := int(round((1.0 - float(dx) / float(flen)) * bh))
+		for yy in range(midy - half, midy + half + 1):
+			var xx := ci + pr + 1 + dx
+			var fc: int = S.gamber
+			if checkered: fc = S.gblack if ((int(xx / cell) + int(yy / cell)) % 2 == 0) else S.gwhite
+			_fillb(xx, xx, yy, yy, ci - zt, ci + zt, fc)
+	var beacon: int = S.gwhite if checkered else S.gamber   # bright cap
+	_fillb(ci - _rz(0.11), ci + _rz(0.11), rows, rows + _rz(0.22), ci - _rz(0.11), ci + _rz(0.11), beacon)
 	_emit(nm)
 
 # ============================ IMPERFECTION TOOLKIT ============================

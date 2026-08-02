@@ -551,14 +551,15 @@ func _add_checkpoints(root: Node3D, race: Dictionary, curve: Curve3D, is_loop :=
 	if not is_loop:
 		entries.append([INF, race["finish_a"], race["finish_b"]])   # finish = the last gate
 	for i in entries.size():
-		cps.add_child(_gate(i, entries[i][1], entries[i][2]))
+		var terminal := i == 0 or (not is_loop and i == entries.size() - 1)   # start (0) + finish (last, point-to-point)
+		cps.add_child(_gate(i, entries[i][1], entries[i][2], terminal))
 	return entries.size()
 
 func _pair_mid_world(a: Vector2, b: Vector2) -> Vector3:
 	var m := (a + b) * 0.5
 	return _worldf(m.x, m.y)
 
-func _gate(idx: int, a: Vector2, b: Vector2) -> CheckpointGate:
+func _gate(idx: int, a: Vector2, b: Vector2, terminal: bool) -> CheckpointGate:
 	var g := CheckpointGate.new()
 	g.name = "Gate%d" % idx
 	g.index = idx
@@ -575,19 +576,27 @@ func _gate(idx: int, a: Vector2, b: Vector2) -> CheckpointGate:
 	shape.size = Vector3(width, gate_height, gate_depth)
 	var cs := CollisionShape3D.new(); cs.name = "Shape"; cs.shape = shape
 	g.add_child(cs)
-	# Placeholder visuals: a pole at each end (white = start/finish, orange = checkpoint), children
-	# of the gate so hand-moved gates carry them. Real gate props come with code-track-props/art.
-	var pole_h := 4.0
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.92, 0.92, 0.88) if idx == 0 else Color(1.0, 0.45, 0.05)
-	var pm := BoxMesh.new(); pm.size = Vector3(0.4, pole_h, 0.4); pm.material = mat
-	for e in [["PoleA", wa, -width * 0.5], ["PoleB", wb, width * 0.5]]:
+	# A rally marker pole at each track edge — checkered (start/finish) or amber (checkpoint), region-
+	# neutral voxel art (art-voxel-props gate_pole_*). Children of the gate so hand-moved gates carry them.
+	# The .obj base sits at y=0; if it isn't imported yet (headless bake) fall back to a coloured box.
+	var pmesh := PropCatalog.mesh("gate_pole_start" if terminal else "gate_pole_checkpoint")
+	var pole_h := 4.6
+	var box_mat: StandardMaterial3D = null
+	if pmesh == null:
+		box_mat = StandardMaterial3D.new()
+		box_mat.albedo_color = Color(0.92, 0.92, 0.88) if terminal else Color(0.96, 0.56, 0.12)
+	for e in [["PoleA", wa, -width * 0.5, 1.0], ["PoleB", wb, width * 0.5, -1.0]]:
 		var mi := MeshInstance3D.new()
 		mi.name = e[0]
-		mi.mesh = pm
-		# Stand on the terrain at this end (dots sit on the shoulders, whose height differs from
-		# the road centre the gate itself is anchored to), sunk 0.4 m against slope.
-		mi.position = Vector3(e[2], (e[1] as Vector3).y + pole_h * 0.5 - 0.4 - g.position.y, 0.0)
+		var edge_y: float = (e[1] as Vector3).y                    # terrain height at this shoulder
+		if pmesh != null:
+			mi.mesh = pmesh
+			mi.scale = Vector3(e[3], 1.0, 1.0)                     # mirror PoleB so both pennants face inward
+			mi.position = Vector3(e[2], edge_y - 0.3 - g.position.y, 0.0)   # base on terrain, slight sink vs slope
+		else:
+			var pm := BoxMesh.new(); pm.size = Vector3(0.4, pole_h, 0.4); pm.material = box_mat
+			mi.mesh = pm
+			mi.position = Vector3(e[2], edge_y + pole_h * 0.5 - 0.4 - g.position.y, 0.0)
 		g.add_child(mi)
 	return g
 
