@@ -1,8 +1,9 @@
 [gd_scene load_steps=3 format=3 uid="uid://b4nwmn04r4lc"]
 
 [ext_resource type="Script" uid="uid://dlqocyj8xo13r" path="res://scripts/track/track_demo.gd" id="1_demo"]
-[ext_resource type="PackedScene" path="res://assets/tracks/5/baked_track.tscn" id="2_rxhkr"]
+[ext_resource type="Resource" uid="uid://ih8diewhqe17" path="res://assets/regions/alpine.tres" id="3_8q110"]
 
 [node name="TrackDemo" type="Node3D"]
 script = ExtResource("1_demo")
-car_scene = ExtResource("2_rxhkr")
+baked_scene_path = "res://assets/tracks/test/baked_track.tscn"
+region = ExtResource("3_8q110")
