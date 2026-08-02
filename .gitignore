@@ -35,3 +35,6 @@ rallyrivals/assets/fonts/candidates/
 
 # music WAV masters — the .ogg is what ships
 rallyrivals/assets/audio/music/_masters/
+
+# art-voxel-props: throwaway preview contact sheets (not assets)
+rallyrivals/assets/voxels/props/_review/

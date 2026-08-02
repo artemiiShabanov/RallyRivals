@@ -32,6 +32,28 @@ const TYPES := {
 ## Editor palette / tool order.
 const ORDER := ["tree", "rock", "bush", "fence", "barrier_hard", "barrier_soft", "sign_left", "sign_right"]
 
+# --- voxel variant meshes (art-voxel-props) ---
+const MESH_DIR := "res://assets/voxels/props/"
+
+## Region-NEUTRAL prop meshes — race gear that looks the same in every biome. Scatter (tree/rock/bush)
+## and fence variants are region-SPECIFIC and live on RegionDef.prop_meshes instead; RegionSkin picks a
+## per-instance variant from whichever list applies (baked `variant` meta modulo the list length).
+const NEUTRAL_MESHES := {
+	"barrier_hard": ["barrier_hard_0", "barrier_hard_1"],
+	"barrier_soft": ["barrier_soft_0"],
+	"sign_left": ["sign_left"],
+	"sign_right": ["sign_right"],
+}
+
+## The imported .obj mesh for a variant id, or null if it isn't imported yet (fresh headless run, before
+## the editor scans) / missing — the caller then keeps the placeholder box so props always show.
+static func mesh(id: String) -> Mesh:
+	var p := MESH_DIR + id + ".obj"
+	if not ResourceLoader.exists(p):
+		return null
+	var res = load(p)
+	return res if res is Mesh else null
+
 static func has_type(t: String) -> bool:
 	return TYPES.has(t)
 

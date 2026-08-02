@@ -1,5 +1,6 @@
 extends RefCounted
 const EnvCatalog := preload("res://scripts/world/env_catalog.gd")   # scenery models (art-voxel-environment)
+const PropCatalog := preload("res://scripts/track/prop_catalog.gd")  # prop variant meshes (art-voxel-props)
 ## Runtime region reskin (code-track-regions). Given a freshly-instanced baked track and a RegionDef,
 ## restyles the track to the region's biome IN PLACE — no rebake — so one baked track reads as any
 ## region ("same track, new place", CAMPAIGN.md). Called at track-load (RaceDirector._build,
@@ -38,32 +39,66 @@ static func apply_sky(track: Node, region: Resource) -> void:
 		c = region.off_road_surface.color if region.off_road_surface != null else Color(0.34, 0.36, 0.42)
 	mat.set_shader_parameter("ground_color", Vector3(c.r, c.g, c.b))
 
-# Recolour every baked prop whose type the region tints. Reads the `prop_type` meta (TrackBaker sets it
-# on each prop body); leaves collision + transform untouched — a region changes only how props LOOK.
+# Give each baked prop its region's real voxel VARIANT mesh (art-voxel-props). Reads `prop_type` +
+# `variant` meta (TrackBaker sets both). The mesh carries the biome identity (spruce vs cactus), so we
+# swap the placeholder box for it and drop the tint. Until the .obj is imported (fresh headless run)
+# mesh() returns null and we keep the region-tinted placeholder box, so props always show. Collision +
+# body transform are untouched — a region changes only how a prop LOOKS.
 static func _reskin_props(track: Node, region: Resource) -> void:
 	var props := track.get_node_or_null("Props")
-	if props == null or region.prop_tints.is_empty():
+	if props == null:
 		return
 	for prop in props.get_children():
 		var t := String(prop.get_meta("prop_type", ""))
-		if not region.prop_tints.has(t):
-			continue                                  # infrastructure / untinted types keep their look
-		# per-instance brightness variation so a stand of trees isn't one flat colour (seeded by position)
-		var base: Color = region.prop_tints[t]
-		var rng := RandomNumberGenerator.new()
-		rng.seed = int(prop.position.x * 71.0) ^ int(prop.position.z * 37.0)
-		var v := 1.0 + rng.randf_range(-0.2, 0.2)
-		var col := Color(clampf(base.r * v, 0.0, 1.0), clampf(base.g * v, 0.0, 1.0), clampf(base.b * v, 0.0, 1.0))
-		for child in prop.get_children():
-			if child is MeshInstance3D:
-				var mesh_inst := child as MeshInstance3D
-				# Each baked prop owns its StandardMaterial3D (per-instance), so tint it directly; dup
-				# defensively in case a future baker shares one, so we never mutate a shared resource.
-				var mat := mesh_inst.material_override
-				if mat is StandardMaterial3D:
-					var m := (mat as StandardMaterial3D).duplicate() as StandardMaterial3D
-					m.albedo_color = col
-					mesh_inst.material_override = m
+		var mi := _prop_mesh(prop)
+		if mi == null:
+			continue
+		var ids: Array = _variant_ids(region, t)
+		var mesh: Mesh = null
+		if not ids.is_empty():
+			mesh = PropCatalog.mesh(String(ids[_variant_of(prop) % ids.size()]))
+		if mesh != null:
+			mi.mesh = mesh
+			mi.material_override = null                        # show the .obj's own palette texture
+			# the .obj sits base-at-0, centred in x/z (the box sat centre-at-origin). Re-anchor to the
+			# ground; keep the forward offset for an oriented run (it extends from its near end).
+			var sz: Vector3 = PropCatalog.def(t).get("size", Vector3.ONE)
+			mi.position = Vector3(0.0, 0.0, sz.z * 0.5 if PropCatalog.is_oriented(t) else 0.0)
+			continue
+		if region.prop_tints.has(t):                          # placeholder box: region-tint the natural scatter
+			var base: Color = region.prop_tints[t]
+			var rng := RandomNumberGenerator.new()
+			rng.seed = int(prop.position.x * 71.0) ^ int(prop.position.z * 37.0)
+			var v := 1.0 + rng.randf_range(-0.2, 0.2)
+			var col := Color(clampf(base.r * v, 0.0, 1.0), clampf(base.g * v, 0.0, 1.0), clampf(base.b * v, 0.0, 1.0))
+			var mat := mi.material_override
+			if mat is StandardMaterial3D:
+				var m := (mat as StandardMaterial3D).duplicate() as StandardMaterial3D
+				m.albedo_color = col
+				mi.material_override = m
+
+# Per-instance variant index. Uses the baked `variant` meta; a legacy track baked before variant existed
+# (its props carry only prop_type) falls back to a position hash so it still varies, not all variant 0.
+static func _variant_of(prop: Node) -> int:
+	if prop.has_meta("variant"):
+		return absi(int(prop.get_meta("variant")))
+	return absi(int(prop.position.x * 71.0) ^ int(prop.position.z * 37.0))
+
+# The prop's visual MeshInstance (direct child of the prop body — the baker adds exactly one).
+static func _prop_mesh(prop: Node) -> MeshInstance3D:
+	for c in prop.get_children():
+		if c is MeshInstance3D:
+			return c as MeshInstance3D
+	return null
+
+# The variant-id list for a type in this region: region-specific (tree/rock/bush/fence) from the RegionDef,
+# else the neutral race-gear list (barriers/signs), else empty (keep the placeholder box).
+static func _variant_ids(region: Resource, t: String) -> Array:
+	if region.prop_meshes.has(t):
+		return region.prop_meshes[t]
+	if PropCatalog.NEUTRAL_MESHES.has(t):
+		return PropCatalog.NEUTRAL_MESHES[t]
+	return []
 
 # Stage 2 — off-road GROUND: swap grip (the SurfaceMap's off_road SurfaceType) and the ground COLOUR
 # (the off-road slot of the shared terrain palette uniform). Both the SurfaceMap and the terrain

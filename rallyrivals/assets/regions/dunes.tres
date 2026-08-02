@@ -14,7 +14,12 @@ prop_tints = {
 "rock": Color(0.72, 0.58, 0.4, 1),
 "tree": Color(0.42, 0.5, 0.26, 1)
 }
-prop_meshes = {}
+prop_meshes = {
+"bush": ["bush_dunes_0", "bush_dunes_1", "bush_dunes_2"],
+"fence": ["fence_dunes_0", "fence_dunes_1"],
+"rock": ["rock_dunes_0", "rock_dunes_1", "rock_dunes_2"],
+"tree": ["tree_dunes_0", "tree_dunes_1", "tree_dunes_2"]
+}
 dressing_tint = Color(0.52, 0.42, 0.24, 1)
 dressing_density = 1.0
 dressing_backdrop = "mesa"

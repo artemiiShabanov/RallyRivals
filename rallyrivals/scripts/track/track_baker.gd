@@ -656,6 +656,7 @@ func _make_prop(inst: Dictionary) -> Node3D:
 		body = Node3D.new()
 	body.name = t
 	body.set_meta("prop_type", t)              # robust type tag (survives node-name dedup; region code can read it)
+	body.set_meta("variant", absi(rng.randi()))  # stable per-instance variant; RegionSkin picks a region mesh (mod list len)
 	body.position = _world(px, py)
 	body.rotation.y = yaw
 	var mi := MeshInstance3D.new()

@@ -14,25 +14,26 @@ func _initialize() -> void:
 	_write(dir, "backwoods", "Backwoods", "dirt_dark",
 		"Forest + Eastern-European countryside — dense conifers, log fences, muddy tracks, a treeline horizon.",
 		{"tree": Color(0.15, 0.42, 0.15), "rock": Color(0.42, 0.40, 0.36), "bush": Color(0.19, 0.45, 0.17)},
-		Color(0.17, 0.40, 0.16), "treeline", ["house", "hall"], false, {})
+		Color(0.17, 0.40, 0.16), "treeline", ["house", "hall"], false, {prop_meshes = _pm("backwoods", true)})
 	# Dunes — sand — salt lake + desert, Mexico vibe: dusty olive scrub, sandstone, pale flats.
 	_write(dir, "dunes", "Dunes", "sand_dark",
 		"Salt lake + desert, Mexico vibe — cactus scrub, sandstone mesas, a pale salt-flat horizon under warm haze.",
 		{"tree": Color(0.42, 0.50, 0.26), "rock": Color(0.72, 0.58, 0.40), "bush": Color(0.56, 0.55, 0.33)},
-		Color(0.52, 0.42, 0.24), "mesa", [], false, {bcount = 0.16, backdrop_tint = _sc("sand_dark")})
+		Color(0.52, 0.42, 0.24), "mesa", [], false, {bcount = 0.16, backdrop_tint = _sc("sand_dark"), prop_meshes = _pm("dunes", true)})
 	# Island — grass — Iceland + volcanic, water on the horizon: vivid moss-green, black volcanic rock.
+	# Treeless (Iceland): no "tree" variant mesh — tree props fall back to the tinted placeholder box.
 	_write(dir, "island", "Island", "grass",
 		"Iceland + volcanic, water on the horizon — vivid moss-green fields, black basalt rock, sea/lake at the edge.",
 		{"tree": Color(0.18, 0.50, 0.24), "rock": Color(0.19, 0.19, 0.21), "bush": Color(0.24, 0.52, 0.26)},
 		Color(0.22, 0.48, 0.26), "ridge_volcanic", ["lighthouse"], true,
 		{bcount = 0.2, bscale = 0.6, building_count = 2, sky_ground = Color(0.06, 0.20, 0.44),
-		backdrops = ["ridge_volcanic", "ridge_volcanic_b", "ridge_volcanic_c"]})
+		backdrops = ["ridge_volcanic", "ridge_volcanic_b", "ridge_volcanic_c"], prop_meshes = _pm("island", false)})
 	# Alpine — snow — mountains + alpine village: dark pines on white, slate rock.
 	_write(dir, "alpine", "Alpine", "snow",
 		"Mountains + alpine village — dark pines on white, slate outcrops, timber chalets, a peaked skyline.",
 		{"tree": Color(0.12, 0.30, 0.22), "rock": Color(0.50, 0.53, 0.58), "bush": Color(0.16, 0.34, 0.26)},
 		Color(0.62, 0.68, 0.76), "ridge", ["chalet"], false,
-		{bscale = 2.0, bdist = 2.0, backdrops = ["ridge", "ridge_b", "ridge_c"]})
+		{bscale = 2.0, bdist = 2.0, backdrops = ["ridge", "ridge_b", "ridge_c"], prop_meshes = _pm("alpine", true)})
 
 	# quarry was Stage 1's placeholder — replaced by island; remove the stale .tres.
 	var stale := ProjectSettings.globalize_path(dir + "quarry.tres")
@@ -61,9 +62,25 @@ func _write(dir: String, id: String, name: String, off_road: String, vibe: Strin
 	r.backdrop_tint = tune.get("backdrop_tint", Color(0, 0, 0, 0))
 	r.dressing_backdrops = tune.get("backdrops", [])
 	r.building_count = tune.get("building_count", 6)
+	r.prop_meshes = tune.get("prop_meshes", {})
 	var err := ResourceSaver.save(r, dir + id + ".tres")
 	if err != OK:
 		push_error("gen_region_defs: save %s failed (%d)" % [id, err])
 
 func _sc(id: String) -> Color:
 	return (load("res://assets/surfaces/%s.tres" % id) as SurfaceType).color
+
+# The region's per-type voxel variant-mesh lists (art-voxel-props): scatter x3 + fence x2, region-tagged.
+# has_tree=false for treeless Island (its tree props fall back to the placeholder box). Barriers/signs are
+# region-neutral and live in PropCatalog.NEUTRAL_MESHES instead.
+func _pm(rid: String, has_tree: bool) -> Dictionary:
+	var d := {"rock": _ids("rock", rid, 3), "bush": _ids("bush", rid, 3), "fence": _ids("fence", rid, 2)}
+	if has_tree:
+		d["tree"] = _ids("tree", rid, 3)
+	return d
+
+func _ids(kind: String, rid: String, n: int) -> Array:
+	var a: Array = []
+	for i in n:
+		a.append("%s_%s_%d" % [kind, rid, i])
+	return a
