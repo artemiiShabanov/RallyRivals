@@ -19,9 +19,9 @@ extends RefCounted
 const PROPS_FILE := "props.json"
 
 const TYPES := {
-	"tree":         {"label": "Tree",     "category": "scatter",     "solid": true,  "length": 0.0, "size": Vector3(0.7, 4.2, 0.7), "color": Color(0.20, 0.48, 0.16), "jitter": 0.28},
-	"rock":         {"label": "Rock",     "category": "scatter",     "solid": true,  "length": 0.0, "size": Vector3(1.3, 1.1, 1.3), "color": Color(0.48, 0.48, 0.52), "jitter": 0.30},
-	"bush":         {"label": "Bush",     "category": "scatter",     "solid": false, "length": 0.0, "size": Vector3(1.1, 0.7, 1.1), "color": Color(0.16, 0.40, 0.14), "jitter": 0.30},
+	"tree":         {"label": "Tree",     "category": "scatter",     "solid": true,  "length": 0.0, "size": Vector3(0.4, 4.2, 0.4), "color": Color(0.20, 0.48, 0.16), "jitter": 0.28, "scale": 5.0},
+	"rock":         {"label": "Rock",     "category": "scatter",     "solid": true,  "length": 0.0, "size": Vector3(1.3, 1.1, 1.3), "color": Color(0.48, 0.48, 0.52), "jitter": 0.30, "scale": 2.0},
+	"bush":         {"label": "Bush",     "category": "scatter",     "solid": false, "length": 0.0, "size": Vector3(1.1, 0.7, 1.1), "color": Color(0.16, 0.40, 0.14), "jitter": 0.30, "scale": 2.0},
 	"fence":        {"label": "Fence",    "category": "oriented",    "solid": true,  "length": 4.0, "size": Vector3(0.15, 1.2, 4.0), "color": Color(0.55, 0.40, 0.24), "jitter": 0.0},
 	"barrier_hard": {"label": "Barrier",  "category": "oriented",    "solid": true,  "length": 4.0, "size": Vector3(0.40, 0.9, 4.0), "color": Color(0.70, 0.70, 0.72), "jitter": 0.0},
 	"barrier_soft": {"label": "Tirewall", "category": "oriented",    "solid": true,  "length": 3.0, "size": Vector3(0.50, 0.8, 3.0), "color": Color(0.80, 0.28, 0.24), "jitter": 0.0},
@@ -62,6 +62,11 @@ static func def(t: String) -> Dictionary:
 
 static func category(t: String) -> String:
 	return String(def(t).get("category", ""))
+
+## Uniform display scale for a type — applied to BOTH the baked collision box and the runtime mesh, so a
+## prop is bigger without re-authoring the voxels (trees read as tall scenery, not saplings). Default 1.
+static func scale(t: String) -> float:
+	return float(def(t).get("scale", 1.0))
 
 ## Oriented props are fixed-length and anchored at one END (their box extends forward by `length`).
 static func is_oriented(t: String) -> bool:

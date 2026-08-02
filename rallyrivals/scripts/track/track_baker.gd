@@ -621,7 +621,7 @@ func _make_prop(inst: Dictionary) -> Node3D:
 		return null
 	var d := PropCatalog.def(t)
 	var px := int(inst.get("x", 0)); var py := int(inst.get("y", 0))
-	var size: Vector3 = d["size"]
+	var size: Vector3 = d["size"] * float(d.get("scale", 1.0))   # scale the collision box + fallback box with the mesh
 	var col: Color = d["color"]
 	var oriented: bool = PropCatalog.is_oriented(t)
 	var aimed: bool = PropCatalog.needs_aim(t)

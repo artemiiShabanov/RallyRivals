@@ -58,12 +58,14 @@ static func _reskin_props(track: Node, region: Resource) -> void:
 		if not ids.is_empty():
 			mesh = PropCatalog.mesh(String(ids[_variant_of(prop) % ids.size()]))
 		if mesh != null:
+			var sc := PropCatalog.scale(t)
 			mi.mesh = mesh
 			mi.material_override = null                        # show the .obj's own palette texture
+			mi.scale = Vector3(sc, sc, sc)                     # display scale (matches the baked collision box)
 			# the .obj sits base-at-0, centred in x/z (the box sat centre-at-origin). Re-anchor to the
 			# ground; keep the forward offset for an oriented run (it extends from its near end).
 			var sz: Vector3 = PropCatalog.def(t).get("size", Vector3.ONE)
-			mi.position = Vector3(0.0, 0.0, sz.z * 0.5 if PropCatalog.is_oriented(t) else 0.0)
+			mi.position = Vector3(0.0, 0.0, sz.z * sc * 0.5 if PropCatalog.is_oriented(t) else 0.0)
 			continue
 		if region.prop_tints.has(t):                          # placeholder box: region-tint the natural scatter
 			var base: Color = region.prop_tints[t]
