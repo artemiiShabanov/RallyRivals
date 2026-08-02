@@ -7,10 +7,10 @@
 script = ExtResource("1_st")
 id = "ice"
 grip = 3.0
-color = Color(0.78, 0.88, 0.95, 1)
+color = Color(0.72, 0.83, 0.98, 1)
 texture = ExtResource("2_t24yw")
 tint_variation = 0.04
-roughness = 0.25
+roughness = 0.1
 chunkiness = 0.0
 mark_color = Color(0.6, 0.7, 0.82, 0.16)
 mark_baseline = 0.05
