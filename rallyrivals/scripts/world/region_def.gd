@@ -31,7 +31,9 @@ extends Resource
 @export_group("Dressing (scenery — art-voxel-environment models via EnvCatalog)")
 @export var dressing_tint := Color(0.20, 0.40, 0.18)   ## box-fallback / water tint; 0-density = no dressing
 @export var dressing_density := 1.0                    ## 0 = no dressing
-@export var dressing_backdrop := ""                    ## EnvCatalog id tiled around the horizon (ridge/mesa/treeline)
+@export var dressing_backdrop := ""                    ## single backdrop id (fallback if the list below is empty)
+@export var dressing_backdrops: Array = []             ## backdrop id variants, mixed randomly around the ring
+@export var building_count := 6                        ## how many buildings to ring outside the track
 @export var dressing_buildings: Array = []             ## EnvCatalog ids ringed OUTSIDE the track (house/hall/tower)
 @export var dressing_water := false                    ## a flat water plane at the horizon (Island)
 @export var backdrop_scale := 1.0                      ## backdrop size multiplier (Alpine mountains x2)

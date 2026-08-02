@@ -35,9 +35,13 @@ func _initialize() -> void:
 	var stone := _slot(Color(0.50, 0.48, 0.46))
 
 	# --- backdrop silhouettes ---
-	_build_ridge(rock, snow, 7);      _emit(dir, "ridge", 96, 24, 52)          # smoother, snowier (Alpine)
-	_build_ridge(rock_dark, rock, 3); _emit(dir, "ridge_volcanic", 96, 24, 52) # (Island)
-	_build_mesa(sand);                _emit(dir, "mesa", 168, 60, 16)          # wide, low, eroded (Dunes)
+	var snow_names := ["ridge", "ridge_b", "ridge_c"]              # 3 Alpine mountain variants (mixed at runtime)
+	var volc_names := ["ridge_volcanic", "ridge_volcanic_b", "ridge_volcanic_c"]   # 3 Island variants
+	for v in 3:
+		_build_ridge(rock, snow, v); _emit(dir, snow_names[v], 96, 24, 52)
+	for v in 3:
+		_build_ridge(rock_dark, rock, v); _emit(dir, volc_names[v], 96, 24, 52)
+	_build_mesa(sand);                _emit(dir, "mesa", 168, 60, 16)          # wide, low, smooth (Dunes)
 	_build_treeline(foliage, trunk);  _emit(dir, "treeline", 88, 52, 16)       # small round conifers, 4 rows (Backwoods)
 	# --- buildings ---
 	_build_house(wall, wall2, roof, window, door);  _emit(dir, "house", 48, 60, 96)
@@ -46,21 +50,25 @@ func _initialize() -> void:
 	_build_lighthouse(white, red, window);          _emit(dir, "lighthouse", 28, 28, 140)   # Island
 	_build_chalet(timber, stone, roof, window);     _emit(dir, "chalet", 50, 58, 94)        # Alpine village
 
-	print("env voxels: 9 models -> ", dir)
+	print("env voxels: 13 models -> ", dir)
 	quit()
 
 # ---------- models (grid: x=width, y=height, z=depth) ----------
 # A jagged mountain-wall segment: a heightfield ridge, snow-capped on the tall peaks. `oct` shifts the
 # high-frequency octave so ridge vs ridge_volcanic read as different mountains (variety).
-func _build_ridge(rock: int, cap: int, oct: int) -> void:
+func _build_ridge(rock: int, cap: int, variant: int) -> void:
 	grid = {}
 	var w := 96; var d := 24
+	var f0: float = [0.060, 0.048, 0.075][variant]      # distinct low frequencies -> 3 different mountains
+	var f1: float = [0.150, 0.110, 0.190][variant]
+	var a0: float = [15.0, 17.0, 13.0][variant]
+	var ph: float = [0.0, 1.7, 3.4][variant]
 	for x in w:
 		var edge: float = minf(float(x), float(w - 1 - x)) / (w * 0.5)   # taper the ends down
 		for z in d:
 			var dz: float = 1.0 - absf(z + 0.5 - d * 0.5) / (d * 0.5)    # thin front-to-back
-			var h := 30.0 + 15.0 * sin(x * 0.06) + 7.0 * sin(x * 0.15 + 1.3)   # low freqs -> rounded, less zigzag
-			h += 3.0 * sin(x * 0.4 + float(oct))                              # a little variation between models
+			var h := 30.0 + a0 * sin(x * f0 + ph) + 7.0 * sin(x * f1 + 1.3)   # low freqs -> rounded, less zigzag
+			h += 3.0 * sin(x * 0.4 + ph)
 			h = h * clampf(0.3 + 0.7 * edge, 0.0, 1.0) * (0.5 + 0.5 * dz)
 			var hi := clampi(int(h), 1, 51)
 			for y in hi:
@@ -72,10 +80,9 @@ func _build_mesa(rock: int) -> void:
 	var w := 168; var d := 60; var h := 16
 	for x in w:
 		for z in d:
-			var e := 12.0 + 2.5 * sin(x * 0.13) + 2.0 * sin(z * 0.2 + 1.0)          # rolling top
-			e -= 4.0 * maxf(0.0, sin(x * 0.5) * sin(z * 0.4))                        # gullies (erosion)
+			var e := 12.0 + 1.4 * sin(x * 0.08) + 1.0 * sin(z * 0.12 + 1.0)          # gentle rolling top
 			var edge: float = minf(minf(float(x), float(w - 1 - x)), minf(float(z), float(d - 1 - z)))
-			e *= clampf(edge / 6.0, 0.0, 1.0)                                        # battered sides
+			e *= smoothstep(0.0, 14.0, edge)                                         # wide, soft, smooth batter
 			var hi := clampi(int(e), 0, h)
 			for y in hi:
 				grid[Vector3i(x, y, z)] = rock

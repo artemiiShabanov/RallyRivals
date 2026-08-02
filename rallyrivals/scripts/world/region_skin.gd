@@ -128,25 +128,30 @@ static func _add_dressing(track: Node, region: Resource) -> void:
 		water.position = Vector3(center.x, base_y - corner * 0.05, center.z)
 		dress.add_child(water)
 
-	# Backdrop: tile the region's silhouette model around the horizon ring, facing centre. Per-region
-	# tuning: backdrop_scale (size), backdrop_dist (ring radius), backdrop_count (how many segments).
-	var bid := String(region.dressing_backdrop)
-	if EnvCatalog.has(bid):
+	# Backdrop: tile silhouette models around the horizon ring, MIXING the region's variants at random +
+	# a random rotation. Per-region tuning: backdrop_scale (size), backdrop_dist (radius), backdrop_count.
+	var models: Array = region.dressing_backdrops if not region.dressing_backdrops.is_empty() else [region.dressing_backdrop]
+	var rep := String(models[0])                          # representative for the count/size formula
+	if EnvCatalog.has(rep):
 		var ring_r := corner * 1.2 * float(region.backdrop_dist)
 		var target_h := corner * 0.22 * float(region.backdrop_scale)
-		var scl := maxf(target_h / maxf(EnvCatalog.size(bid).y, 0.1), 1.0)
-		var base_count := TAU * ring_r / maxf(EnvCatalog.size(bid).x * scl * 0.85, 1.0)
+		var scl := maxf(target_h / maxf(EnvCatalog.size(rep).y, 0.1), 1.0)
+		var base_count := TAU * ring_r / maxf(EnvCatalog.size(rep).x * scl * 0.85, 1.0)
 		var count := int(clampf(base_count * float(region.backdrop_count), 3.0, 44.0))
 		for i in count:
+			var mid := String(models[rng.randi() % models.size()])   # random variant
+			if not EnvCatalog.has(mid):
+				mid = rep
 			var ang := TAU * float(i) / float(count) + rng.randf_range(-0.05, 0.05)
 			var s := scl * rng.randf_range(0.8, 1.3)
-			var node := _env_node(bid, region, false)
+			var node := _env_node(mid, region, false)
+			node.set_meta("env_model", mid)
 			if region.backdrop_tint.a > 0.0 and node is MeshInstance3D:   # match a ground backdrop to the surface (Dunes)
 				var fm := StandardMaterial3D.new(); fm.albedo_color = region.backdrop_tint; fm.roughness = 1.0
 				(node as MeshInstance3D).material_override = fm
 			node.scale = Vector3(s, s, s)
 			node.position = center + Vector3(cos(ang) * ring_r, base_y - center.y, sin(ang) * ring_r)
-			node.rotation.y = atan2(center.x - node.position.x, center.z - node.position.z)   # wide face to centre
+			node.rotation.y = atan2(center.x - node.position.x, center.z - node.position.z) + rng.randf_range(-0.5, 0.5)
 			dress.add_child(node)
 
 	# Buildings: ringed OUTSIDE the track footprint (closer than the backdrop), scaled up, as scenery
@@ -155,7 +160,7 @@ static func _add_dressing(track: Node, region: Resource) -> void:
 	if not bldgs.is_empty():
 		var b_ring := corner * 1.12                          # just beyond the square, inside the backdrop
 		var bscale: float = maxf(float(region.building_scale), 0.5)
-		var b_count := int(clampf(6.0 * density, 3.0, 12.0))
+		var b_count := int(clampf(float(region.building_count) * density, 1.0, 14.0))
 		for i in b_count:
 			var mid := String(bldgs[i % bldgs.size()])
 			if not EnvCatalog.has(mid):

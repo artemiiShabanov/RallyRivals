@@ -1,6 +1,6 @@
 [gd_resource type="Resource" load_steps=3 format=3]
 
-[ext_resource type="Resource" path="res://assets/surfaces/sand.tres" id="1_fc4pb"]
+[ext_resource type="Resource" path="res://assets/surfaces/sand_dark.tres" id="1_fc4pb"]
 [ext_resource type="Script" path="res://scripts/world/region_def.gd" id="2_a0pfs"]
 
 [resource]
@@ -15,9 +15,11 @@ prop_tints = {
 "tree": Color(0.42, 0.5, 0.26, 1)
 }
 prop_meshes = {}
-dressing_tint = Color(0.66, 0.6, 0.42, 1)
+dressing_tint = Color(0.52, 0.42, 0.24, 1)
 dressing_density = 1.0
 dressing_backdrop = "mesa"
+dressing_backdrops = []
+building_count = 6
 dressing_buildings = []
 dressing_water = false
 backdrop_scale = 1.0
@@ -25,4 +27,4 @@ backdrop_dist = 1.0
 backdrop_count = 0.16
 building_scale = 4.0
 sky_ground = Color(0, 0, 0, 0)
-backdrop_tint = Color(0.8, 0.7, 0.45, 1)
+backdrop_tint = Color(0.52, 0.42, 0.24, 1)

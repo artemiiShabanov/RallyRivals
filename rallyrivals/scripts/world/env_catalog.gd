@@ -9,8 +9,12 @@ const DIR := "res://assets/voxels/environment/"
 
 # id -> { category, collision, size(authored bounds in m — used to size the box fallback + collider) }
 const MODELS := {
-	"ridge":          {"category": "backdrop", "collision": false, "size": Vector3(6.4, 4.4, 2.0)},
-	"ridge_volcanic": {"category": "backdrop", "collision": false, "size": Vector3(6.4, 4.4, 2.0)},
+	"ridge":            {"category": "backdrop", "collision": false, "size": Vector3(9.6, 5.2, 2.4)},
+	"ridge_b":          {"category": "backdrop", "collision": false, "size": Vector3(9.6, 5.2, 2.4)},
+	"ridge_c":          {"category": "backdrop", "collision": false, "size": Vector3(9.6, 5.2, 2.4)},
+	"ridge_volcanic":   {"category": "backdrop", "collision": false, "size": Vector3(9.6, 5.2, 2.4)},
+	"ridge_volcanic_b": {"category": "backdrop", "collision": false, "size": Vector3(9.6, 5.2, 2.4)},
+	"ridge_volcanic_c": {"category": "backdrop", "collision": false, "size": Vector3(9.6, 5.2, 2.4)},
 	"mesa":           {"category": "backdrop", "collision": false, "size": Vector3(5.6, 4.0, 4.4)},
 	"treeline":       {"category": "backdrop", "collision": false, "size": Vector3(5.6, 4.0, 1.8)},
 	"house":          {"category": "building", "collision": true,  "size": Vector3(4.0, 4.6, 5.0)},

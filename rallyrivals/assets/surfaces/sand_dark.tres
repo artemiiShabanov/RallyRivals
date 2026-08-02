@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="SurfaceType" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/surfaces/surface_type.gd" id="1_st"]
+
+[resource]
+script = ExtResource("1_st")
+id = "sand_dark"
+grip = 5.0
+color = Color(0.52, 0.42, 0.24, 1)
+tint_variation = 0.12
+roughness = 1.0
+chunkiness = 0.2
+mark_color = Color(0.28, 0.22, 0.12, 0.45)
+mark_baseline = 0.1
+dust_amount = 300
+dust_color = Color(0.42, 0.34, 0.2, 0.8)
+dust_size = 0.03
+dust_growth = 1.0
+dust_baseline = 0.2
+dust_rise = 2.0
+dust_gravity = -2.2
+dust_spread = 72.0
+dust_lifetime = 0.26

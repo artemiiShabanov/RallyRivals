@@ -16,20 +16,23 @@ func _initialize() -> void:
 		{"tree": Color(0.15, 0.42, 0.15), "rock": Color(0.42, 0.40, 0.36), "bush": Color(0.19, 0.45, 0.17)},
 		Color(0.17, 0.40, 0.16), "treeline", ["house", "hall"], false, {})
 	# Dunes — sand — salt lake + desert, Mexico vibe: dusty olive scrub, sandstone, pale flats.
-	_write(dir, "dunes", "Dunes", "sand",
+	_write(dir, "dunes", "Dunes", "sand_dark",
 		"Salt lake + desert, Mexico vibe — cactus scrub, sandstone mesas, a pale salt-flat horizon under warm haze.",
 		{"tree": Color(0.42, 0.50, 0.26), "rock": Color(0.72, 0.58, 0.40), "bush": Color(0.56, 0.55, 0.33)},
-		Color(0.66, 0.60, 0.42), "mesa", [], false, {bcount = 0.16, backdrop_tint = _sc("sand")})
+		Color(0.52, 0.42, 0.24), "mesa", [], false, {bcount = 0.16, backdrop_tint = _sc("sand_dark")})
 	# Island — grass — Iceland + volcanic, water on the horizon: vivid moss-green, black volcanic rock.
 	_write(dir, "island", "Island", "grass",
 		"Iceland + volcanic, water on the horizon — vivid moss-green fields, black basalt rock, sea/lake at the edge.",
 		{"tree": Color(0.18, 0.50, 0.24), "rock": Color(0.19, 0.19, 0.21), "bush": Color(0.24, 0.52, 0.26)},
-		Color(0.22, 0.48, 0.26), "ridge_volcanic", ["lighthouse"], true, {bcount = 0.2, sky_ground = Color(0.06, 0.20, 0.44)})
+		Color(0.22, 0.48, 0.26), "ridge_volcanic", ["lighthouse"], true,
+		{bcount = 0.2, bscale = 0.6, building_count = 2, sky_ground = Color(0.06, 0.20, 0.44),
+		backdrops = ["ridge_volcanic", "ridge_volcanic_b", "ridge_volcanic_c"]})
 	# Alpine — snow — mountains + alpine village: dark pines on white, slate rock.
 	_write(dir, "alpine", "Alpine", "snow",
 		"Mountains + alpine village — dark pines on white, slate outcrops, timber chalets, a peaked skyline.",
 		{"tree": Color(0.12, 0.30, 0.22), "rock": Color(0.50, 0.53, 0.58), "bush": Color(0.16, 0.34, 0.26)},
-		Color(0.62, 0.68, 0.76), "ridge", ["chalet"], false, {bscale = 2.0, bdist = 2.0})
+		Color(0.62, 0.68, 0.76), "ridge", ["chalet"], false,
+		{bscale = 2.0, bdist = 2.0, backdrops = ["ridge", "ridge_b", "ridge_c"]})
 
 	# quarry was Stage 1's placeholder — replaced by island; remove the stale .tres.
 	var stale := ProjectSettings.globalize_path(dir + "quarry.tres")
@@ -56,6 +59,8 @@ func _write(dir: String, id: String, name: String, off_road: String, vibe: Strin
 	r.building_scale = tune.get("bldg", 4.0)
 	r.sky_ground = tune.get("sky_ground", Color(0, 0, 0, 0))
 	r.backdrop_tint = tune.get("backdrop_tint", Color(0, 0, 0, 0))
+	r.dressing_backdrops = tune.get("backdrops", [])
+	r.building_count = tune.get("building_count", 6)
 	var err := ResourceSaver.save(r, dir + id + ".tres")
 	if err != OK:
 		push_error("gen_region_defs: save %s failed (%d)" % [id, err])
