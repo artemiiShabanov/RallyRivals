@@ -27,79 +27,111 @@ func _initialize() -> void:
 	var timber := _slot(Color(0.50, 0.34, 0.20))
 	var roof := _slot(Color(0.55, 0.22, 0.18))
 	var metal := _slot(Color(0.60, 0.62, 0.66))
+	var window := _slot(Color(0.52, 0.66, 0.82))
+	var door := _slot(Color(0.28, 0.19, 0.11))
 
 	# --- backdrop silhouettes ---
-	_build_ridge(rock, snow);       _emit(dir, "ridge", 64, 20, 44)
-	_build_ridge(rock_dark, rock);  _emit(dir, "ridge_volcanic", 64, 20, 44)
-	_build_mesa(sand);              _emit(dir, "mesa", 56, 44, 40)
-	_build_treeline(foliage, trunk);_emit(dir, "treeline", 56, 18, 40)
-	# --- buildings ---
-	_build_house(wall, roof);       _emit(dir, "house", 40, 50, 46)
-	_build_hall(timber, roof);      _emit(dir, "hall", 60, 96, 48)
-	_build_tower(metal, roof);      _emit(dir, "tower", 24, 24, 100)
+	_build_ridge(rock, snow, 7);      _emit(dir, "ridge", 96, 24, 52)          # varied peaks (Alpine)
+	_build_ridge(rock_dark, rock, 3); _emit(dir, "ridge_volcanic", 96, 24, 52) # (Island)
+	_build_mesa(sand);                _emit(dir, "mesa", 168, 60, 16)          # 3x wider, 3x lower, eroded (Dunes)
+	_build_treeline(foliage, trunk);  _emit(dir, "treeline", 88, 52, 16)       # small round conifers, 4 rows (Backwoods)
+	# --- buildings (bigger + detailed; scaled up at placement) ---
+	_build_house(wall, roof, window, door);  _emit(dir, "house", 48, 60, 96)
+	_build_hall(timber, roof, window, door); _emit(dir, "hall", 72, 120, 60)
+	_build_tower(metal, roof, window);       _emit(dir, "tower", 30, 30, 152)
 
 	print("env voxels: 7 models -> ", dir)
 	quit()
 
 # ---------- models (grid: x=width, y=height, z=depth) ----------
-# A jagged mountain-wall segment: a heightfield ridge, snow-capped on the tall peaks.
-func _build_ridge(rock: int, cap: int) -> void:
+# A jagged mountain-wall segment: a heightfield ridge, snow-capped on the tall peaks. `oct` shifts the
+# high-frequency octave so ridge vs ridge_volcanic read as different mountains (variety).
+func _build_ridge(rock: int, cap: int, oct: int) -> void:
 	grid = {}
-	var w := 64; var d := 20
+	var w := 96; var d := 24
 	for x in w:
 		var edge: float = minf(float(x), float(w - 1 - x)) / (w * 0.5)   # taper the ends down
 		for z in d:
 			var dz: float = 1.0 - absf(z + 0.5 - d * 0.5) / (d * 0.5)    # thin front-to-back
-			var h := 22.0 + 16.0 * sin(x * 0.11) + 7.0 * sin(x * 0.37 + 1.3) + 5.0 * sin(x * 0.9)
-			h = h * clampf(0.35 + 0.65 * edge, 0.0, 1.0) * (0.55 + 0.45 * dz)
-			var hi := clampi(int(h), 1, 43)
+			var h := 26.0 + 18.0 * sin(x * 0.09) + 9.0 * sin(x * 0.31 + 1.3)
+			h += 6.0 * sin(x * 0.7 + float(oct)) + 4.0 * sin(x * 1.5 + 2.1)   # extra octaves -> varied peaks
+			h = h * clampf(0.3 + 0.7 * edge, 0.0, 1.0) * (0.5 + 0.5 * dz)
+			var hi := clampi(int(h), 1, 51)
 			for y in hi:
-				grid[Vector3i(x, y, z)] = cap if (y >= hi - 4 and hi > 26) else rock
+				grid[Vector3i(x, y, z)] = cap if (y >= hi - 5 and hi > 30) else rock
 
-# Flat-topped butte with battered (inward-sloping) sides.
+# A wide, low, eroded butte: rolling top with gullies + battered sides (Dunes salt-flat mesas).
 func _build_mesa(rock: int) -> void:
 	grid = {}
-	var w := 56; var d := 44; var h := 40
-	for y in h:
-		var inset := int(y * 0.16)
-		_fill(6 + inset, w - 7 - inset, y, y, 6 + inset, d - 7 - inset, rock)
+	var w := 168; var d := 60; var h := 16
+	for x in w:
+		for z in d:
+			var e := 12.0 + 2.5 * sin(x * 0.13) + 2.0 * sin(z * 0.2 + 1.0)          # rolling top
+			e -= 4.0 * maxf(0.0, sin(x * 0.5) * sin(z * 0.4))                        # gullies (erosion)
+			var edge: float = minf(minf(float(x), float(w - 1 - x)), minf(float(z), float(d - 1 - z)))
+			e *= clampf(edge / 6.0, 0.0, 1.0)                                        # battered sides
+			var hi := clampi(int(e), 0, h)
+			for y in hi:
+				grid[Vector3i(x, y, z)] = rock
 
-# A row of conifer cones (stacked shrinking layers) on short trunks.
+# Small, rounded conifers in 4 staggered rows — depth + less blocky (Backwoods forest).
 func _build_treeline(foliage: int, trunk: int) -> void:
 	grid = {}
-	for cx in [9, 23, 37, 51]:
-		var x0 := int(cx)
-		var top := 6 + ((x0 * 7) % 5) * 4       # a little height variety per tree
-		_fill(x0 - 1, x0 + 1, 0, 6, 8, 10, trunk)
-		for layer in 5:
-			var r := 8 - layer                  # cone taper
-			if r < 1:
-				break
-			var y0 := 6 + layer * (top / 5 + 1)
-			_fill(x0 - r, x0 + r, y0, y0 + top / 5, 9 - r, 9 + r, foliage)
+	var w := 88
+	for ri in 4:
+		var rz := 8 + ri * 12
+		var x := 8 + (ri % 2) * 6
+		while x < w - 8:
+			_conifer(x, rz, foliage, trunk, 8 + ((x + rz) % 5))
+			x += 12
 
-# A small pitched-roof house: solid wall box + a gable roof (different slot).
-func _build_house(wall: int, roof: int) -> void:
-	grid = {}
-	_fill(3, 36, 0, 27, 3, 46, wall)
-	for dy in 13:
-		_fill(3 + dy, 36 - dy, 28 + dy, 28 + dy, 0, 49, roof)   # gable narrows with height
+func _conifer(cx: int, cz: int, foliage: int, trunk: int, top: int) -> void:
+	_fill(cx, cx, 0, 2, cz, cz, trunk)
+	for l in top:
+		var r := (1.0 - float(l) / float(top)) * 3.5 + 0.6   # smooth round taper -> detail
+		_disc(float(cx) + 0.5, float(cz) + 0.5, r, 2 + l, foliage)
 
-# A long low barn/warehouse/lodge: bigger box + a broad low gable.
-func _build_hall(wall: int, roof: int) -> void:
+# A tall multi-storey house: window rows per floor on all four walls, a door, a pitched roof.
+func _build_house(wall: int, roof: int, window: int, door: int) -> void:
 	grid = {}
-	_fill(3, 56, 0, 32, 3, 92, wall)
-	for dy in 15:
-		_fill(3 + dy, 56 - dy, 33 + dy, 33 + dy, 0, 95, roof)
+	var w := 48; var d := 60; var floors := 3; var fh := 24
+	var top := floors * fh
+	_fill(2, w - 3, 0, top, 2, d - 3, wall)
+	for fl in floors:
+		var yb := 8 + fl * fh
+		for wx in range(7, w - 7, 11):
+			_paint(wx, wx + 4, yb, yb + 12, 2, 2, window)
+			_paint(wx, wx + 4, yb, yb + 12, d - 3, d - 3, window)
+		for wz in range(7, d - 7, 11):
+			_paint(2, 2, yb, yb + 12, wz, wz + 4, window)
+			_paint(w - 3, w - 3, yb, yb + 12, wz, wz + 4, window)
+	_paint(int(w / 2) - 3, int(w / 2) + 3, 0, 16, 2, 2, door)
+	for dy in 18:
+		_fill(2 + dy, w - 3 - dy, top + dy, top + dy, 0, d - 1, roof)
 
-# A round silo/tower with a conical cap.
-func _build_tower(body: int, cap: int) -> void:
+# A long warehouse/barn: side window strips, a big door, a broad low gable.
+func _build_hall(wall: int, roof: int, window: int, door: int) -> void:
 	grid = {}
-	var c := 11.5
-	for y in 92:
-		_disc(c, c, 11.0, y, body)
-	for k in 9:
-		_disc(c, c, 10.0 - k * 1.1, 92 + k, cap)
+	var w := 72; var d := 120; var wh := 40
+	_fill(2, w - 3, 0, wh, 2, d - 3, wall)
+	for wz in range(12, d - 12, 14):
+		_paint(2, 2, 12, 28, wz, wz + 6, window)
+		_paint(w - 3, w - 3, 12, 28, wz, wz + 6, window)
+	_paint(int(w / 2) - 6, int(w / 2) + 6, 0, 24, 2, 2, door)
+	for dy in 18:
+		_fill(2 + dy, w - 3 - dy, wh + dy, wh + dy, 0, d - 1, roof)
+
+# A tall round silo/tower with banded window rings and a conical cap.
+func _build_tower(body: int, cap: int, window: int) -> void:
+	grid = {}
+	var c := 14.5
+	for y in 138:
+		_disc(c, c, 13.0, y, body)
+	for k in 6:                                  # window/detail bands up the shaft
+		_disc(c, c, 13.0, 22 + k * 18, window)
+		_disc(c, c, 13.0, 23 + k * 18, window)
+	for k in 14:
+		_disc(c, c, 13.0 - k * 0.9, 138 + k, cap)
 
 func _disc(cx: float, cz: float, r: float, y: int, slot: int) -> void:
 	var ri := int(ceil(r))
@@ -114,6 +146,14 @@ func _fill(x0: int, x1: int, y0: int, y1: int, z0: int, z1: int, slot: int) -> v
 		for y in range(y0, y1 + 1):
 			for z in range(z0, z1 + 1):
 				grid[Vector3i(x, y, z)] = slot
+
+# Recolour only voxels that already exist (windows/doors on a wall surface).
+func _paint(x0: int, x1: int, y0: int, y1: int, z0: int, z1: int, slot: int) -> void:
+	for x in range(x0, x1 + 1):
+		for y in range(y0, y1 + 1):
+			for z in range(z0, z1 + 1):
+				if grid.has(Vector3i(x, y, z)):
+					grid[Vector3i(x, y, z)] = slot
 
 func _slot(target: Color) -> int:
 	var best := INF; var pick := 0

@@ -14,22 +14,22 @@ func _initialize() -> void:
 	_write(dir, "backwoods", "Backwoods", "dirt",
 		"Forest + Eastern-European countryside — dense conifers, log fences, muddy tracks, a treeline horizon.",
 		{"tree": Color(0.15, 0.42, 0.15), "rock": Color(0.42, 0.40, 0.36), "bush": Color(0.19, 0.45, 0.17)},
-		Color(0.17, 0.40, 0.16), "treeline", ["house", "hall"], false)
+		Color(0.17, 0.40, 0.16), "treeline", ["house", "hall"], false, {})
 	# Dunes — sand — salt lake + desert, Mexico vibe: dusty olive scrub, sandstone, pale flats.
 	_write(dir, "dunes", "Dunes", "sand",
 		"Salt lake + desert, Mexico vibe — cactus scrub, sandstone mesas, a pale salt-flat horizon under warm haze.",
 		{"tree": Color(0.42, 0.50, 0.26), "rock": Color(0.72, 0.58, 0.40), "bush": Color(0.56, 0.55, 0.33)},
-		Color(0.66, 0.60, 0.42), "mesa", ["house", "tower"], false)
+		Color(0.66, 0.60, 0.42), "mesa", ["house", "tower"], false, {bcount = 0.33})
 	# Island — grass — Iceland + volcanic, water on the horizon: vivid moss-green, black volcanic rock.
 	_write(dir, "island", "Island", "grass",
 		"Iceland + volcanic, water on the horizon — vivid moss-green fields, black basalt rock, sea/lake at the edge.",
 		{"tree": Color(0.18, 0.50, 0.24), "rock": Color(0.19, 0.19, 0.21), "bush": Color(0.24, 0.52, 0.26)},
-		Color(0.22, 0.48, 0.26), "ridge_volcanic", ["house", "tower"], true)
+		Color(0.22, 0.48, 0.26), "ridge_volcanic", ["house", "tower"], true, {bcount = 0.2})
 	# Alpine — snow — mountains + alpine village: dark pines on white, slate rock.
 	_write(dir, "alpine", "Alpine", "snow",
 		"Mountains + alpine village — dark pines on white, slate outcrops, timber chalets, a peaked skyline.",
 		{"tree": Color(0.12, 0.30, 0.22), "rock": Color(0.50, 0.53, 0.58), "bush": Color(0.16, 0.34, 0.26)},
-		Color(0.62, 0.68, 0.76), "ridge", ["house", "tower"], false)
+		Color(0.62, 0.68, 0.76), "ridge", ["house", "tower"], false, {bscale = 2.0, bdist = 2.0})
 
 	# quarry was Stage 1's placeholder — replaced by island; remove the stale .tres.
 	var stale := ProjectSettings.globalize_path(dir + "quarry.tres")
@@ -39,7 +39,7 @@ func _initialize() -> void:
 	print("region defs: 4")
 	quit()
 
-func _write(dir: String, id: String, name: String, off_road: String, vibe: String, tints: Dictionary, dressing: Color, backdrop: String, buildings: Array, water: bool) -> void:
+func _write(dir: String, id: String, name: String, off_road: String, vibe: String, tints: Dictionary, dressing: Color, backdrop: String, buildings: Array, water: bool, tune: Dictionary) -> void:
 	var r = RegionDef.new()
 	r.id = id
 	r.display_name = name
@@ -50,6 +50,10 @@ func _write(dir: String, id: String, name: String, off_road: String, vibe: Strin
 	r.dressing_backdrop = backdrop
 	r.dressing_buildings = buildings
 	r.dressing_water = water
+	r.backdrop_scale = tune.get("bscale", 1.0)
+	r.backdrop_dist = tune.get("bdist", 1.0)
+	r.backdrop_count = tune.get("bcount", 1.0)
+	r.building_scale = tune.get("bldg", 4.0)
 	var err := ResourceSaver.save(r, dir + id + ".tres")
 	if err != OK:
 		push_error("gen_region_defs: save %s failed (%d)" % [id, err])

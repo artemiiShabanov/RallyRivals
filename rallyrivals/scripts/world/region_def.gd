@@ -32,8 +32,12 @@ extends Resource
 @export var dressing_tint := Color(0.20, 0.40, 0.18)   ## box-fallback / water tint; 0-density = no dressing
 @export var dressing_density := 1.0                    ## 0 = no dressing
 @export var dressing_backdrop := ""                    ## EnvCatalog id tiled around the horizon (ridge/mesa/treeline)
-@export var dressing_buildings: Array = []             ## EnvCatalog ids scattered as off-road buildings (house/hall/tower)
+@export var dressing_buildings: Array = []             ## EnvCatalog ids ringed OUTSIDE the track (house/hall/tower)
 @export var dressing_water := false                    ## a flat water plane at the horizon (Island)
+@export var backdrop_scale := 1.0                      ## backdrop size multiplier (Alpine mountains x2)
+@export var backdrop_dist := 1.0                       ## backdrop ring distance multiplier (Alpine x2 further)
+@export var backdrop_count := 1.0                      ## backdrop segment-count multiplier (Island/Dunes fewer)
+@export var building_scale := 4.0                      ## building size multiplier (they ring outside the track)
 
 ## The placeholder colour for a prop type in this region, or `fallback` (the catalog colour) if unset.
 func prop_tint(type_id: String, fallback: Color) -> Color:

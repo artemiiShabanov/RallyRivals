@@ -106,63 +106,42 @@ static func _add_dressing(track: Node, region: Resource) -> void:
 		water.position = Vector3(center.x, base_y - corner * 0.05, center.z)
 		dress.add_child(water)
 
-	# Backdrop: tile the region's silhouette model around the corner-cleared horizon ring, facing centre.
+	# Backdrop: tile the region's silhouette model around the horizon ring, facing centre. Per-region
+	# tuning: backdrop_scale (size), backdrop_dist (ring radius), backdrop_count (how many segments).
 	var bid := String(region.dressing_backdrop)
 	if EnvCatalog.has(bid):
-		var ring_r := corner * 1.2
-		var target_h := corner * 0.22                                     # ~a fifth of the track radius tall
+		var ring_r := corner * 1.2 * float(region.backdrop_dist)
+		var target_h := corner * 0.22 * float(region.backdrop_scale)
 		var scl := maxf(target_h / maxf(EnvCatalog.size(bid).y, 0.1), 1.0)
-		var count := int(clampf(TAU * ring_r / maxf(EnvCatalog.size(bid).x * scl * 0.85, 1.0), 8.0, 40.0))
+		var base_count := TAU * ring_r / maxf(EnvCatalog.size(bid).x * scl * 0.85, 1.0)
+		var count := int(clampf(base_count * float(region.backdrop_count), 3.0, 44.0))
 		for i in count:
-			var ang := TAU * float(i) / float(count) + rng.randf_range(-0.04, 0.04)
-			var s := scl * rng.randf_range(0.8, 1.25)
+			var ang := TAU * float(i) / float(count) + rng.randf_range(-0.05, 0.05)
+			var s := scl * rng.randf_range(0.8, 1.3)
 			var node := _env_node(bid, region, false)
 			node.scale = Vector3(s, s, s)
 			node.position = center + Vector3(cos(ang) * ring_r, base_y - center.y, sin(ang) * ring_r)
 			node.rotation.y = atan2(center.x - node.position.x, center.z - node.position.z)   # wide face to centre
 			dress.add_child(node)
 
-	# Buildings: a seeded scatter INSIDE the footprint, sampled OFF-ROAD (so none land on the road /
-	# racing line) and sat on the ground (heightfield-sampled), collidable. Radius keys off the half-EDGE
-	# (min extent), not the half-diagonal, so they stay on the terrain.
+	# Buildings: ringed OUTSIDE the track footprint (closer than the backdrop), scaled up, as scenery
+	# (non-collidable) sitting on the base plane — a village around the track, not track obstacles.
 	var bldgs: Array = region.dressing_buildings
 	if not bldgs.is_empty():
-		var smap = ground.get_meta("surface_map") if (ground != null and ground.has_meta("surface_map")) else null
-		var half_edge: float = minf(aabb.size.x, aabb.size.z) * 0.5
-		var b_count := int(clampf(6.0 * density, 2.0, 10.0))
-		var placed := 0; var guard := 0
-		while placed < b_count and guard < b_count * 16:
-			guard += 1
-			var ang := rng.randf() * TAU
-			var wx := center.x + cos(ang) * half_edge * rng.randf_range(0.5, 0.9)
-			var wz := center.z + sin(ang) * half_edge * rng.randf_range(0.5, 0.9)
-			if smap != null and smap.surface_at(wx, wz) != smap.off_road:
-				continue                                    # on the road / racing line — reject
-			var mid := String(bldgs[placed % bldgs.size()])
+		var b_ring := corner * 1.12                          # just beyond the square, inside the backdrop
+		var bscale: float = maxf(float(region.building_scale), 0.5)
+		var b_count := int(clampf(6.0 * density, 3.0, 12.0))
+		for i in b_count:
+			var mid := String(bldgs[i % bldgs.size()])
 			if not EnvCatalog.has(mid):
-				placed += 1; continue
-			var gy := _ground_height_at(ground, smap, wx, wz)
-			var node := _env_node(mid, region, EnvCatalog.is_solid(mid))
-			node.position = Vector3(wx, gy if not is_nan(gy) else base_y, wz)
+				continue
+			var ang := TAU * (float(i) + rng.randf_range(0.15, 0.85)) / float(b_count)
+			var rr := b_ring * rng.randf_range(0.95, 1.08)
+			var node := _env_node(mid, region, false)        # scenery outside the track
+			node.scale = Vector3(bscale, bscale, bscale)
+			node.position = center + Vector3(cos(ang) * rr, base_y - center.y, sin(ang) * rr)
 			node.rotation.y = rng.randf() * TAU
 			dress.add_child(node)
-			placed += 1
-
-# Ground height at a world XZ from the baked heightfield (so a building sits ON the ground, not the
-# footprint's low point). NAN when there's no heightfield / out of bounds -> caller uses base_y.
-static func _ground_height_at(ground: Node, smap, wx: float, wz: float) -> float:
-	if ground == null or smap == null:
-		return NAN
-	var col := ground.get_node_or_null("Col") as CollisionShape3D
-	if col == null or not (col.shape is HeightMapShape3D):
-		return NAN
-	var hs := col.shape as HeightMapShape3D
-	var mpp: float = maxf(float(smap.mpp), 0.0001)
-	var px := int(round(wx / mpp + hs.map_width * 0.5))
-	var pz := int(round(wz / mpp + hs.map_depth * 0.5))
-	if px < 0 or pz < 0 or px >= hs.map_width or pz >= hs.map_depth:
-		return NAN
-	return hs.map_data[pz * hs.map_width + px]
 
 # One scenery node: the imported .obj mesh (base at y=0) or, until it's imported, a tinted box fallback
 # the model's size. Solid models are wrapped in a StaticBody (box collider, layer 1 the car hits).

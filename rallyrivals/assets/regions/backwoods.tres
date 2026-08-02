@@ -20,3 +20,7 @@ dressing_density = 1.0
 dressing_backdrop = "treeline"
 dressing_buildings = ["house", "hall"]
 dressing_water = false
+backdrop_scale = 1.0
+backdrop_dist = 1.0
+backdrop_count = 1.0
+building_scale = 4.0
