@@ -4,7 +4,7 @@
 [ext_resource type="ArrayMesh" path="res://assets/voxels/cars/stiletto_d1.obj" id="2_j3t6s"]
 [ext_resource type="ArrayMesh" path="res://assets/voxels/cars/stiletto_d2.obj" id="3_ypuo8"]
 [ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_kgyy6"]
-[ext_resource type="ArrayMesh" path="res://assets/voxels/wheels/wheel_apex.obj" id="5_hpgh0"]
+[ext_resource type="ArrayMesh" uid="uid://bapexwheel1x" path="res://assets/voxels/wheels/wheel_apex.tres" id="5_hpgh0"]
 
 [resource]
 script = ExtResource("4_kgyy6")

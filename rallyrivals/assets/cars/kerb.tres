@@ -1,10 +1,8 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3 uid="uid://osmnnaot5tlw"]
+[gd_resource type="Resource" script_class="CarDef" load_steps=4 format=3 uid="uid://osmnnaot5tlw"]
 
 [ext_resource type="ArrayMesh" uid="uid://bk42crjm5lw41" path="res://assets/voxels/cars/delta_body.tres" id="1_6hiqo"]
-[ext_resource type="ArrayMesh" uid="uid://bxsp408545m51" path="res://assets/voxels/cars/kerb_d1.obj" id="2_xlftw"]
-[ext_resource type="ArrayMesh" uid="uid://box22h60oau6c" path="res://assets/voxels/cars/kerb_d2.obj" id="3_fok62"]
 [ext_resource type="Script" uid="uid://bl6owfgo2uomf" path="res://scripts/vehicle/car_def.gd" id="4_i6rnf"]
-[ext_resource type="ArrayMesh" uid="uid://d06gis5l3h0fv" path="res://assets/voxels/wheels/wheel_apex.obj" id="5_c442p"]
+[ext_resource type="ArrayMesh" uid="uid://bapexwheel1x" path="res://assets/voxels/wheels/wheel_apex.tres" id="5_c442p"]
 
 [resource]
 script = ExtResource("4_i6rnf")
