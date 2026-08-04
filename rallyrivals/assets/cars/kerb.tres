@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3 uid="uid://osmnnaot5tlw"]
 
-[ext_resource type="ArrayMesh" uid="uid://lq7hp1pt0k3s" path="res://assets/voxels/cars/kerb.obj" id="1_6hiqo"]
+[ext_resource type="ArrayMesh" uid="uid://bk42crjm5lw41" path="res://assets/voxels/cars/delta_body.tres" id="1_6hiqo"]
 [ext_resource type="ArrayMesh" uid="uid://bxsp408545m51" path="res://assets/voxels/cars/kerb_d1.obj" id="2_xlftw"]
 [ext_resource type="ArrayMesh" uid="uid://box22h60oau6c" path="res://assets/voxels/cars/kerb_d2.obj" id="3_fok62"]
 [ext_resource type="Script" uid="uid://bl6owfgo2uomf" path="res://scripts/vehicle/car_def.gd" id="4_i6rnf"]
@@ -22,6 +22,6 @@ grip = 5
 mass = 800.0
 damage_sensitivity = 1.0
 model = ExtResource("1_6hiqo")
-model_damaged_1 = ExtResource("2_xlftw")
-model_damaged_2 = ExtResource("3_fok62")
+model_damaged_1 = ExtResource("1_6hiqo")
+model_damaged_2 = ExtResource("1_6hiqo")
 wheel_model = ExtResource("5_c442p")

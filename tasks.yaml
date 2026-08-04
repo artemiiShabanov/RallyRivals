@@ -127,10 +127,10 @@ tasks:
   - {id: code-vehicle-lights, title: "Head/taillights: night beams via LightingPreset + brake flare", type: code, group: vehicle, size: small, status: done, blockers: [art-world-lighting]}
   - {id: art-voxel-props, title: "Voxel prop set (rocks/signs/barriers) — each prop authored per region x3 for scatter variety", type: art, group: voxel, size: big, status: done, blockers: []}
   - {id: art-voxel-environment, title: "Voxel scenery/buildings set", type: art, group: voxel, size: big, status: done, blockers: []}
-  - {id: art-voxel-brand-families, title: "Visual family per manufacturer", type: art, group: voxel, size: default, status: todo, blockers: [content-cars-roster]}
+  - {id: art-voxel-brand-families, title: "Visual family per manufacturer", type: art, group: voxel, size: default, status: done, blockers: [content-cars-roster]}
   # ---------- art: voxel fleet (sculpt over assets/voxels stubs; base shells only —
   # damage-variant sculpts get their own tasks once code-vehicle-damage defines the read) ----------
-  - {id: art-voxel-car-kerb, title: "Voxel car: Kerb (Apex D, starter) — MV pipeline validation", type: art, group: voxel, size: default, status: todo, blockers: []}
+  - {id: art-voxel-car-kerb, title: "Voxel car: Kerb (Apex D, starter) — MV pipeline validation", type: art, group: voxel, size: default, status: done, blockers: []}
   - {id: art-voxel-car-mule, title: "Voxel car: Mule (Wreckhouse D)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
   - {id: art-voxel-car-spark, title: "Voxel car: Spark (Mayfly D)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
   - {id: art-voxel-car-tangent, title: "Voxel car: Tangent (Apex C)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}

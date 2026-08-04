@@ -32,6 +32,21 @@ var ramps := [
 		4: Color(0.55, 0.75, 0.60),   # sage (UI positive)
 		5: Color(0.95, 0.92, 0.85),   # cream
 	}],
+	# --- car BODY ramps (art-voxel-brand-families): body colour pinned mid, ramp gives shade/highlight.
+	# Appended AFTER the 12 existing ramps so slots 0-71 never move (committed models keep their colours). ---
+	["car_apex", Color("4a0f16"), Color("f2707a"), {2: Color("c9303e")}],    # Apex accent — rally red
+	["car_wreck", Color("061224"), Color("3a6aa4"), {2: Color("0d2b52")}],   # Wreckhouse — navy
+	["car_mayfly", Color("0d1142"), Color("4b5ed0"), {2: Color("202d85")}],  # Mayfly — indigo
+	["car_trim", Color.BLACK, Color.WHITE, {
+		0: Color("bfffe6"),   # apex body — pale mint
+		1: Color("ff8c00"),   # wreckhouse accent — orange
+		2: Color("abf5ed"),   # mayfly accent — pale cyan
+		3: Color("5c7086"),   # glass — grayish blue (all cars)
+		4: Color("101014"),   # tyre (near-black)
+		5: Color("c6cad0"),   # chrome / trim
+	}],
+	# Apex BODY ramp — pale mint, gives the flat body (light end) + a darker mint SHADE (pinned mid) for seams.
+	["car_apex_body", Color("2f6e5a"), Color("bfffe6"), {3: Color("7fc4ad")}],
 ]
 
 func _initialize() -> void:
