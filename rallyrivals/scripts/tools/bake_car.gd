@@ -18,7 +18,7 @@ const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
 	"tangent": {"src": "res://assets/voxels/cars/tangent.vox", "tres": "res://assets/voxels/cars/tangent_body.tres",
-	            "uid": "uid://btangentbody01", "cy": 3.0, "cz": 74.24},
+	            "uid": "uid://bos1221f5owhm", "cy": 3.0, "cz": 74.24},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]
