@@ -13,12 +13,14 @@ const OY := -0.5
 # Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
 # CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
 # floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
-const CAR := "tangent"
+const CAR := "meridian"
 const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
 	"tangent": {"src": "res://assets/voxels/cars/tangent.vox", "tres": "res://assets/voxels/cars/tangent_body.tres",
 	            "uid": "uid://bos1221f5owhm", "cy": 3.0, "cz": 74.24},
+	"meridian": {"src": "res://assets/voxels/cars/meridian.vox", "tres": "res://assets/voxels/cars/meridian_body.tres",
+	            "uid": "", "cy": 3.0, "cz": 73.33},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]
@@ -131,7 +133,7 @@ func _write_tres(quads: Array) -> void:
 	var p := ProjectSettings.globalize_path(TRES)
 	var txt := FileAccess.get_file_as_string(p)
 	var hdr_end := txt.find("]")
-	if hdr_end > 0 and not txt.substr(0, hdr_end).contains("uid="):
+	if TRES_UID != "" and hdr_end > 0 and not txt.substr(0, hdr_end).contains("uid="):
 		txt = txt.insert(hdr_end, " uid=\"%s\"" % TRES_UID)
 		FileAccess.open(p, FileAccess.WRITE).store_string(txt)
 	print("  surfaces=%d aabb=%s" % [mesh.get_surface_count(), str(mesh.get_aabb())])

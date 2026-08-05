@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=4 format=3 uid="uid://clhquxxlirsqc"]
 
 [ext_resource type="ArrayMesh" uid="uid://bos1221f5owhm" path="res://assets/voxels/cars/tangent_body.tres" id="1_bqkw5"]
-[ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_d341p"]
+[ext_resource type="Script" uid="uid://bl6owfgo2uomf" path="res://scripts/vehicle/car_def.gd" id="4_d341p"]
 [ext_resource type="ArrayMesh" uid="uid://bapexwheel1x" path="res://assets/voxels/wheels/wheel_apex.tres" id="5_j810h"]
 
 [resource]

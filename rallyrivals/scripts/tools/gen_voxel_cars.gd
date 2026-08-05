@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "tangent"
+const CAR := "meridian"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -70,6 +70,34 @@ const CARS := {
 		# 555-style livery in Apex colours: flank sweep + door number panel + accented wing
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false, "accent_rocker": false,
 		"accent_flank_sweep": true, "accent_door_panel": true, "accent_wing": true,
+	},
+	# Apex B — Audi Ur-Quattro (4404×1722×1346, WB 2524) ×1.109. NOT the Sport S1: the long-wheelbase
+	# original, boxy and angular — flat level hood, upright greenhouse, short boot, and its signature
+	# BLISTERED arches (flare_w nearly double the Impreza's). 2-door coupé, modest boot-lid lip.
+	"meridian": {
+		"body_style": "hatch",                                       # backlight rakes to the very tail
+		"L": 4.89, "body_w": 1.91,
+		"floor": 0.30, "belt": 1.09, "roof": 1.60, "glass_top": 1.55,
+		"roof_crown": 0.02, "tail_drop": 0.04, "shoulder_r": 0.09,   # angular: crisper than the Impreza
+		"cowl": 1.72, "roof_front": 2.41, "roof_rear": 3.57,
+		"green_belt_w": 1.81, "roof_w": 1.59,
+		"wz_f": 1.02, "wz_r": 3.82,
+		"skirt_h": 0.20, "skirt_out": 0.05,
+		"hood_drop": 0.10, "deck_drop": 0.04,                        # flat, level bonnet
+		"nose_taper": 0.05, "tail_taper": 0.05, "nose_drop": 0.03,
+		"nose_point_d": 0.08, "nose_side_d": 0.06, "nose_side_z": 0.30,
+		"nose_round": 0.06, "nose_upback": 0.08,                     # flat upright face
+		"tail_point_d": 0.26, "tail_cut_h": 0.52,                    # lower rear chopped hard away
+		"tail_side_d": 0.06, "tail_side_z": 0.28, "tail_top_d": 0.05, "tail_round": 0.05,
+		"flare_w": 0.09,                                             # BLISTERED arches — the Quattro cue
+		"spoiler": true, "spoiler_style": "stand", "spoiler_h": 0.20,     # blade raised on stands at the tail
+		"roof_bulge": false, "hood_bulge": false,                    # the Quattro bonnet is FLAT
+		"side_doors": 1,
+		"antenna": true, "antenna_h": 0.46,                           # roof whip antenna
+		# Audi Sport works livery reads white + red + black, which the Apex palette already is: a red
+		# beltline stripe and rocker flash with a dark competition number panel on the doors.
+		"accent_twin_stripe": false, "accent_roundel": false, "accent_flank_sweep": false,
+		"accent_belt_stripe": true, "accent_rocker": true, "accent_door_panel": true,
 	},
 }
 var SPEC: Dictionary = CARS[CAR]
@@ -227,7 +255,9 @@ func _glass() -> void:
 	var belt := _rz(SPEC.belt); var header := _rz(SPEC.glass_top); var ht := _htail()
 	var cowl := _rz(SPEC.cowl); var apz := _rz(SPEC.roof_front); var cpz := _rz(SPEC.roof_rear)
 	var roofv := _rz(SPEC.roof)
-	var bpz := (apz + cpz) / 2
+	# B-pillar sits mid-cabin on a 4-door, but well BACK on a 2-door coupe (one long door ahead of it).
+	var bfrac := 0.5 if int(SPEC.get("side_doors", 1)) >= 2 else 0.70
+	var bpz := apz + int(round(float(cpz - apz) * bfrac))
 	var bth := _rz(0.05)                                              # B-pillar half-thickness
 	var pth := _rz(0.05)                                              # A/C pillar thickness
 	# PASS 1 — classify every voxel against the PRISTINE grid. (Mutating the grid while iterating it makes
@@ -309,8 +339,21 @@ func _hood_scoop() -> void:
 			grid.erase(Vector3i(x, y, z0))
 			grid[Vector3i(x, y, z0 + 1)] = S.dark
 
+# Roof whip ANTENNA — a thin mast standing on the roof (rally cars run one for the radio/intercom).
+# Starts from the first SOLID voxel found under it, so it is always attached, whatever the roof crown does.
+func _antenna() -> void:
+	var az := _rz(SPEC.get("antenna_z", float(SPEC.roof_rear) - 0.12))
+	var ax := c + _rz(SPEC.get("antenna_x", 0.0))
+	var base := -1
+	for y in range(_rz(2.4), _rz(SPEC.floor), -1):
+		if grid.has(Vector3i(ax, y, az)): base = y; break
+	if base < 0: return
+	for k in range(1, _rz(SPEC.get("antenna_h", 0.46)) + 1):
+		grid[Vector3i(ax, base + k, az)] = S.dark
+
 # Roof drip rails — the gutter where the roof panel meets the side glass, both sides, front→rear.
 func _roof_details() -> void:
+	if SPEC.get("antenna", false): _antenna()
 	var rf := _rz(SPEC.roof_front); var rr := _rz(SPEC.roof_rear); var roof := _rz(SPEC.roof)
 	var bhw := _rz(SPEC.body_w * 0.5)
 	for z in range(rf - _rz(0.04), rr + _rz(0.05)):
@@ -416,7 +459,7 @@ func _paint_front(x: int, y: int, slot: int) -> void:
 # plan-view bevel on the rear corners. Runs before the detail paint so it paints what stays.
 func _tail_shape() -> void:
 	var L := _rz(SPEC.L); var floor := _rz(SPEC.floor); var belt := _rz(SPEC.belt); var bhw := _rz(SPEC.body_w * 0.5)
-	var hh := int((belt - floor) * 0.42)                          # taller than the nose third ("bottom even harder")
+	var hh := int((belt - floor) * float(SPEC.get("tail_cut_h", 0.42)))   # how far up the lower-rear cut reaches
 	var th := int((belt - floor) * 0.30)                          # top-rear chamfer height
 	var vd := _rz(SPEC.tail_point_d)                             # deeper lower-rear chamfer
 	var td := _rz(SPEC.tail_top_d)                              # top-rear edge chamfer depth
@@ -646,7 +689,7 @@ func _bodykit() -> void:
 	_splitter()
 	_rear_valance()
 	_skirts()
-	_hood_bulge()
+	if SPEC.get("hood_bulge", true): _hood_bulge()
 	if SPEC.get("roof_bulge", false): _roof_bulge()
 
 # Outermost BODY column on a side. Every centre-symmetric fill spans an INCLUSIVE range(c-X, c+X+1) so the
@@ -658,7 +701,7 @@ func _edge(side: int, hw: int) -> int:
 # Fender flares — an arch-following eyebrow lip protruding outboard (the Evo widebody), NOT a corner box.
 # Fills a disc around each opening; _arches then re-carves the wheel hole, leaving the flare as a lip.
 func _flares() -> void:
-	var hw := _rz(SPEC.body_w * 0.5); var fw := _rz(0.05); var r := _rz(RIG_WHEEL_R); var cy := _rz(RIG_WHEEL_R)
+	var hw := _rz(SPEC.body_w * 0.5); var fw := _rz(SPEC.get("flare_w", 0.05)); var r := _rz(RIG_WHEEL_R); var cy := _rz(RIG_WHEEL_R)
 	var floor := _rz(SPEC.floor)
 	for wz in [_rz(SPEC.wz_f), _rz(SPEC.wz_r)]:
 		for side in [-1, 1]:
@@ -693,6 +736,31 @@ func _spoiler() -> void:
 				for z in range(zc - zt, zc + zt + 1):
 					grid[Vector3i(x, y, z)] = S.body
 		return
+	if SPEC.get("spoiler_style", "arch") == "stand":
+		# Blade RAISED ON TWO STANDS at the tail (classic rally wing) — clear air under the blade.
+		var wz := _rz(SPEC.L) - _rz(0.17)
+		var wbase := _rz(_top_m(float(wz) * VOX))
+		var wh := _rz(SPEC.get("spoiler_h", 0.20))
+		var wbw := _rz(SPEC.body_w * 0.5) - _rz(0.12)
+		for sx in [-_rz(0.42), _rz(0.42)]:                        # stands
+			for y in range(wbase, wbase + wh):
+				for z in range(wz - _rz(0.03), wz + _rz(0.04) + 1):
+					grid[Vector3i(c + sx, y, z)] = S.dark
+		for x in range(c - wbw, c + wbw + 1):                     # blade
+			for z in range(wz - _rz(0.11), wz + _rz(0.11) + 1):
+				for y in range(wbase + wh, wbase + wh + _rz(0.07)):
+					grid[Vector3i(x, y, z)] = S.body
+		return
+	if SPEC.get("spoiler_at", "roof") == "tail":
+		# Blade across the tailgate's TRAILING edge — the back of the car — riding the surface there.
+		var tz0 := _rz(SPEC.L) - _rz(0.24); var tz1 := _rz(SPEC.L) - _rz(0.05)
+		var thw := _rz(SPEC.body_w * 0.5) - _rz(0.10)
+		for z in range(tz0, tz1 + 1):
+			var tb := _rz(_top_m(float(z) * VOX))
+			for x in range(c - thw, c + thw + 1):
+				for y in range(tb, tb + _rz(0.10)):
+					grid[Vector3i(x, y, z)] = S.body
+		return
 	var rr := _rz(SPEC.roof_rear); var rw := _rz(SPEC.roof_w * 0.5); var ry := _rz(SPEC.roof)
 	for x in range(c - rw, c + rw + 1):
 		for z in range(rr - _rz(0.02), rr + _rz(0.14)):
@@ -724,15 +792,18 @@ func _splitter() -> void:
 func _rear_valance() -> void:
 	var floorv := _rz(SPEC.floor); var h := _skirt_h()
 	var hw := _rz(SPEC.body_w * 0.5); var L := _rz(SPEC.L)
-	var sd := _rz(SPEC.get("tail_side_d", 0.0)); var sz := _rz(SPEC.get("tail_side_z", 0.30))
 	var dep := _skirt_out() + _rz(0.03)
-	# Owns the rear-most z band (the tail above curves away), following the tail's plan bevel so it stands
-	# proud of the BACK rather than flaring out past the bodywork at the corners.
-	for zr in range(0, dep + 1):
-		var keep := hw - int(round(float(sd) * (1.0 - float(zr) / float(maxi(sz, 1)))))
-		for x in range(c - keep, c + keep + 1):
-			for y in range(floorv, floorv + h):
-				grid[Vector3i(x, y, L - 1 - zr)] = S.body
+	# Grow BACKWARD from the bodywork that is actually there, and only where the body already reaches
+	# near the tail. A deep lower-rear chop removes that material, and blindly stamping the valance at the
+	# tail face left it floating in the void the chop had just carved (1332 orphaned voxels).
+	for y in range(floorv, floorv + h):
+		for x in range(c - hw, c + hw + 1):
+			var zs := -1
+			for z in range(L - 1, maxi(L - 1 - _rz(0.7), 0), -1):
+				if grid.has(Vector3i(x, y, z)): zs = z; break
+			if zs < 0 or zs < L - 1 - dep: continue      # chopped away here -> leave the undercut alone
+			for z in range(zs + 1, L):
+				grid[Vector3i(x, y, z)] = S.body
 
 # Side sills — a thick skirt protruding outboard between the arches, tapering in at both ends.
 func _skirts() -> void:
@@ -846,9 +917,13 @@ func _render(nm: String, dv: Vector3) -> void:
 	var mn := Vector2(INF, INF); var mx := Vector2(-INF, -INF)
 	for key in grid:
 		var nrm := Vector3.ZERO
+		var exposed := false
 		for o in N6:
-			if not grid.has(key + o): nrm += Vector3(o)
-		if nrm == Vector3.ZERO: continue
+			if not grid.has(key + o): nrm += Vector3(o); exposed = true
+		if not exposed: continue                      # truly interior -> skip
+		# A 1-voxel-thick feature (antenna, thin trim) has opposing exposed faces that CANCEL to zero.
+		# Testing `nrm == ZERO` alone treated those as interior and deleted them from the preview.
+		if nrm == Vector3.ZERO: nrm = Vector3.UP
 		var p := Vector3(key)
 		var s := Vector2(p.dot(right), p.dot(up))
 		shell.append([s, p.dot(d), nrm.normalized(), grid[key]])
@@ -858,7 +933,7 @@ func _render(nm: String, dv: Vector3) -> void:
 	var ox := (CW - span.x * scale) * 0.5; var oy := (CH - span.y * scale) * 0.5
 	var blk := maxi(int(ceil(scale)), 1)
 	var img := Image.create(CW, CH, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0.11, 0.12, 0.15))
+	img.fill(Color(0.34, 0.37, 0.42))
 	var zbuf := PackedFloat32Array(); zbuf.resize(CW * CH); zbuf.fill(-INF)
 	for e in shell:
 		var s: Vector2 = e[0]; var depth: float = e[1]
@@ -875,7 +950,7 @@ func _render(nm: String, dv: Vector3) -> void:
 
 func _sheet() -> void:
 	var img := Image.create(CW, CH * 3, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0.07, 0.08, 0.1))
+	img.fill(Color(0.28, 0.31, 0.35))
 	var i := 0
 	for nm in ["front", "side", "rear"]:
 		if _cells.has(nm): img.blit_rect(_cells[nm], Rect2i(0, 0, CW, CH), Vector2i(0, i * CH))
@@ -894,6 +969,24 @@ const RIG_WHEEL_VIS := 0.44      # wheel MODEL radius (car.tscn wheel_radius); a
 func _ht_m() -> float:                                # greenhouse/body-top meeting point in metres (see _htail)
 	if SPEC.get("body_style", "hatch") == "sedan": return float(SPEC.get("deck_z", float(SPEC.L) - 0.6))
 	return float(SPEC.L) - 0.12
+
+# True if (z, y) in metres would be CARVED AWAY by the step-5/6 nose & tail shaping, so the blueprint shows
+# the FINAL silhouette rather than just the base volume (the chamfers are shape, and shape is what step 0 is for).
+func _carved_m(z: float, y: float) -> bool:
+	var floorm: float = SPEC.floor; var belt: float = SPEC.belt; var L: float = SPEC.L
+	if z <= float(SPEC.get("nose_side_z", 0.30)):
+		var third := (belt - floorm) / 3.0
+		if y < floorm + third:
+			if z < float(SPEC.get("nose_point_d", 0.0)) * (1.0 - (y - floorm) / maxf(third, 0.001)): return true
+	var zr := L - z
+	if zr <= float(SPEC.get("tail_side_z", 0.30)):
+		var hh := (belt - floorm) * float(SPEC.get("tail_cut_h", 0.42))
+		var th := (belt - floorm) * 0.30
+		if y < floorm + hh:
+			if zr < float(SPEC.get("tail_point_d", 0.0)) * (1.0 - (y - floorm) / maxf(hh, 0.001)): return true
+		elif y > belt - th:
+			if zr < float(SPEC.get("tail_top_d", 0.0)) * (1.0 - (belt - y) / maxf(th, 0.001)): return true
+	return false
 
 func _top_m(z: float) -> float:                       # silhouette top at z (metres) — mirrors _roof_at
 	return maxf(_body_top_m(z), _gh(z))               # body (hood/belt/deck/tail) vs greenhouse — same maths
@@ -955,6 +1048,7 @@ func _blueprint() -> void:
 			var top := _top_m(z)
 			for py in range(int(floorm * PPM), int(top * PPM)):
 				var ym := float(py) / PPM
+				if _carved_m(z, ym): continue                  # nose / tail chamfers (steps 5-6)
 				var col := body
 				if ym > belt + 0.02 and ym < gtop and z > cowl and z < ht and top > belt + 0.04: col = glass
 				elif ym < floorm + 0.06: col = shade
