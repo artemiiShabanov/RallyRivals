@@ -38,7 +38,7 @@ var ramps := [
 	["car_wreck", Color("061224"), Color("3a6aa4"), {2: Color("0d2b52")}],   # Wreckhouse — navy
 	["car_mayfly", Color("0d1142"), Color("4b5ed0"), {2: Color("202d85")}],  # Mayfly — indigo
 	["car_trim", Color.BLACK, Color.WHITE, {
-		0: Color("bfffe6"),   # apex body — pale mint
+		0: Color("e7e4da"),   # apex body — slightly dirty white
 		1: Color("ff8c00"),   # wreckhouse accent — orange
 		2: Color("abf5ed"),   # mayfly accent — pale cyan
 		3: Color("5c7086"),   # glass — grayish blue (all cars)
@@ -46,7 +46,9 @@ var ramps := [
 		5: Color("c6cad0"),   # chrome / trim
 	}],
 	# Apex BODY ramp — pale mint, gives the flat body (light end) + a darker mint SHADE (pinned mid) for seams.
-	["car_apex_body", Color("2f6e5a"), Color("bfffe6"), {3: Color("7fc4ad")}],
+	# Apex BODY ramp — slightly dirty white (was pale mint; the mint->white swap used to be a bake-time
+	# recolour in bake_car.gd, now it lives in the palette so the .vox files read correctly in MagicaVoxel too).
+	["car_apex_body", Color("46443e"), Color("e7e4da"), {3: Color("c4c1b5")}],
 ]
 
 func _initialize() -> void:

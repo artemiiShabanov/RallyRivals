@@ -9,13 +9,23 @@ extends SceneTree
 const VOX := 0.033
 # rig anchor (car.tscn: wheels x=±0.85, z=±1.4, r0.40; front=+z). .vox generator-space: spine x=32,
 # wheel-centre y=3, axle-mid z=69.5. 180° Y-rotation puts the nose (model z≈0) at the rig front (+z).
-const CX := 32.0
-const CY := 3.0
-const CZ := 69.5
 const OY := -0.5
-const SRC := "res://assets/voxels/cars/delta.vox"
-const TRES := "res://assets/voxels/cars/delta_body.tres"
-const TRES_UID := "uid://bk42crjm5lw41"   # stable uid so kerb.tres / car.tscn refs don't churn on re-bake
+# Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
+# CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
+# floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
+const CAR := "tangent"
+const CARS := {
+	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
+	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
+	"tangent": {"src": "res://assets/voxels/cars/tangent.vox", "tres": "res://assets/voxels/cars/tangent_body.tres",
+	            "uid": "uid://btangentbody01", "cy": 3.0, "cz": 74.24},
+}
+var CX := 32.0
+var CY: float = CARS[CAR]["cy"]
+var CZ: float = CARS[CAR]["cz"]
+var SRC: String = CARS[CAR]["src"]
+var TRES: String = CARS[CAR]["tres"]
+var TRES_UID: String = CARS[CAR]["uid"]
 
 var grid := {}
 var rgba: PackedByteArray
@@ -29,8 +39,10 @@ func _initialize() -> void:
 		grid[Vector3i(b[off], b[off+2], b[off+1])] = b[off+3] - 1
 		off += 4
 	var ri := _find(b, "RGBA"); rgba = b.slice(ri + 12, ri + 12 + 1024)
-	_recolor(Color("bfffe6"), Color("e7e4da"))   # body: mint -> slightly dirty white (user request)
-	_recolor(Color("7fc4ad"), Color("c4c1b5"))   # its shade -> dirty-white shade (panel seams)
+	var lox := 1 << 30; var hix := -(1 << 30)
+	for k in grid: lox = mini(lox, k.x); hix = maxi(hix, k.x)
+	CX = (lox + hix) / 2.0                     # spine measured from the data, not assumed
+	# (the old mint->dirty-white recolour now lives in the master palette itself, so nothing to remap here)
 	var glass := _nearest(0x5c, 0x70, 0x86); var chrome := _nearest(0xc6, 0xca, 0xd0); var tyre := _nearest(0x10, 0x10, 0x14)
 	for s in 256: _class[s] = "paint"
 	_class[glass] = "glass"; _class[chrome] = "chrome"; _class[tyre] = "rubber"
@@ -39,7 +51,7 @@ func _initialize() -> void:
 	var quads := _greedy_quads(exposed)
 	print("quads=%d exposed=%d" % [quads.size(), exposed[0]])
 	_write_tres(quads)
-	print("baked -> delta_body.tres (%d quads)" % quads.size())
+	print("baked %s -> %s (%d quads, spine x=%.1f)" % [CAR, TRES.get_file(), quads.size(), CX])
 	quit()
 
 func _find(b: PackedByteArray, id: String) -> int:
@@ -122,7 +134,7 @@ func _write_tres(quads: Array) -> void:
 	if hdr_end > 0 and not txt.substr(0, hdr_end).contains("uid="):
 		txt = txt.insert(hdr_end, " uid=\"%s\"" % TRES_UID)
 		FileAccess.open(p, FileAccess.WRITE).store_string(txt)
-	print("  delta_body.tres surfaces=%d aabb=%s" % [mesh.get_surface_count(), str(mesh.get_aabb())])
+	print("  surfaces=%d aabb=%s" % [mesh.get_surface_count(), str(mesh.get_aabb())])
 
 func _mat(tex: Texture2D, rough: float, metal: float, spec: float, emis: float) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()

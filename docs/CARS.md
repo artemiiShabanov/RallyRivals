@@ -40,6 +40,27 @@
 | S | **Juggernaut** | Wreckhouse | 10/8/4/8/8 | **Ch4 BOSS: the garage-wrecker, pink-slip** — owns every straight; steering 4 is the designed weakness — beat him where the road bends |
 | S | **Nova** | Mayfly | 8/9/9/6/6 | lives fast |
 
+## Voxel art references (art-voxel-car-*)
+
+Every car is modelled **reference-first** from a real rally car (never free-handed) — pick the reference,
+fill the Car Spec Sheet from its real dimensions, then model to spec. Chosen per CAR, not per brand. The
+reference must match the car's **stat archetype**, not just its tier: Verdict is 5/3/9/8/9 ("rails in
+corners, crawls out of hairpins"), so it gets the nimble low-power Stratos — not a Group B rocket.
+
+Every model is scaled so its **wheelbase = 2.8 m** (the fixed rig), so in-game lengths differ from real
+life: short-wheelbase cars (Stratos 2.18 m, RS200 2.53 m) scale up and lose some real-world stubbiness.
+Ratios stay internally honest.
+
+| class | car | reference | why |
+|-------|-----|-----------|-----|
+| D | **Kerb** | Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) | forgiving Group A hatch — DONE |
+| C | **Tangent** | Subaru Impreza WRX STi GC8 **4-door sedan** (4340×1690×1405, WB 2520) | notchback trunk breaks the silhouette vs the Delta hatch |
+| B | **Meridian** | Audi Ur-Quattro (**not** the Sport S1) | boxy coupe + blistered arches = "scalpel-in-training"; S1's aero would out-drama the A car |
+| A | **Verdict** | Lancia Stratos HF | light, nimble, modest power — matches "rails in corners, crawls out of hairpins" |
+| S | **Stiletto** | Ford RS200 | purpose-built 4WD balance = "the precision endgame" |
+
+Wreckhouse and Mayfly references: TBD (assign the same way — stat archetype first).
+
 ## Bars -> handling (code-vehicle-stats)
 
 Each bar lerps between a bar-1 and bar-10 endpoint (one table in `vehicle_controller.gd` —
