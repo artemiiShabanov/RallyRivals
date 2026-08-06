@@ -10,7 +10,7 @@ const VOX := 0.033
 # proportions BEFORE any modelling, when a fix is one number) · 1 base volume · 2 body kit (arches/flares/wing) ·
 # 3 doors+windows · 4 hood+roof · 5 front · 6 back · 7 accessories (mirrors/handles) · 8 accent colouring
 # (livery stripes, roundel, prints). Wheels are a SEPARATE model — never here.
-const STEP := 8
+const STEP := 7
 var grid := {}
 var _palette: Image
 var _cells := {}
@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "verdict"
+const CAR := "stiletto"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -144,6 +144,49 @@ const CARS := {
 		# lands as red bands on white: bonnet fan, flank chevron, and the louvred deck between the buttresses.
 		"accent_twin_stripe": true, "accent_belt_stripe": false, "accent_roundel": true,
 		"accent_flank_sweep": true, "accent_rocker": true, "accent_door_panel": false,
+	},
+	# Apex S — Ford RS200 (3998×1763×1321, WB 2530, track 1501/1496, 225/50 VR16) ×1.107. Mid-engined
+	# like the Verdict, but the OPPOSITE character: purpose-built Group B, so it is TALL, boxy and
+	# cab-forward where the Stratos is low and wedge-shaped. Ghia used a Sierra windscreen and cut-down
+	# Sierra doors, which is why the glasshouse is so deep (0.48 band vs the Stratos's 0.36) and the cabin
+	# sits almost over the front axle — cowl is only 0.31 m behind it. Famously short overhangs.
+	# Unlike the Verdict this one needs NO width correction: scaled track 1.66 vs the rig's 1.70 (the rig
+	# is 0.04 WIDER, not narrower), and the real car's body clears its own tyres by just 19 mm — so pure
+	# scaling and the honest overhang agree at ~1.96. Its scaled wheel is 0.349 vs the rig's 0.44 (+26%),
+	# i.e. the usual arcade distortion, so it takes the shared floor 0.30 and the +0.09 roof lift.
+	"stiletto": {
+		"body_style": "sedan",                                       # backlight -> flat engine deck
+		"L": 4.42, "body_w": 1.96,
+		"floor": 0.30, "belt": 1.02, "roof": 1.55, "glass_top": 1.50,
+		"deck_rise": 0.10,                                           # engine cover just above the belt
+		"roof_crown": 0.03, "tail_drop": 0.03, "shoulder_r": 0.10,
+		# Landmarks as fractions of L: cowl 0.24 · screen top 0.42 · roof end 0.66 · deck 0.90. Long roof
+		# and a LONG shallow backlight — windscreen 33° (the Sierra screen), backlight 22°, i.e. a fastback
+		# engine cover rather than an upright rear screen. Leaves only 0.45 m of flat deck behind it.
+		"cowl": 1.06, "roof_front": 1.86, "roof_rear": 2.91, "deck_z": 3.97,
+		"green_belt_w": 1.72, "roof_w": 1.49,                        # boxy cabin: far less tumblehome
+		"wz_f": 0.75, "wz_r": 3.55,                                  # short overhangs, 0.17 L / 0.20 L
+		"skirt_h": 0.18, "skirt_out": 0.05,
+		"hood_drop": 0.16, "deck_drop": 0.03,                        # blunt nose, not a wedge
+		"nose_taper": 0.10, "tail_taper": 0.05, "nose_drop": 0.04,
+		"nose_point_d": 0.07, "nose_side_d": 0.08, "nose_side_z": 0.30,   # shallow chin — the RS200 is blunt, not chopped
+		"nose_round": 0.08, "nose_upback": 0.10,
+		"tail_point_d": 0.16, "tail_cut_h": 0.40,
+		"tail_side_d": 0.06, "tail_side_z": 0.30, "tail_top_d": 0.06, "tail_round": 0.05,
+		"flare_w": 0.09,                                             # E2 widebody; must clear skirt_out or the arches vanish
+		"crown_clear": 0.13,                                         # headlight bulges stand proud of the bonnet
+		"round_lights": true,                                        # circular semi-shrouded lamps, not a lamp band
+		"hood_vent": true, "vent_len": 0.46, "vent_w": 0.58,         # the massive central radiator outlet
+		"deck_louvres": true,
+		"spoiler": true, "spoiler_style": "stand", "spoiler_h": 0.30, # the big Group B wing on stands
+		"roof_bulge": false, "hood_bulge": false,
+		"side_doors": 1,
+		"antenna": true, "antenna_h": 0.42,
+		# Livery is HAND-PAINTED on this car, so step 8 is a no-op: the generator's step-7 output IS the
+		# baseline the hand-tuned .vox is diffed against when working out which half to mirror. Flip these
+		# back on only if you want a generated starting point instead.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
 	},
 }
 var SPEC: Dictionary = CARS[CAR]
@@ -365,6 +408,7 @@ func _hood_details() -> void:
 	for x in range(c - fx - 1, c + fx + 2):
 		_paint_top(x, cowl - 1, S.shade)
 	if SPEC.get("hood_scoop", false): _hood_scoop()
+	if SPEC.get("hood_vent", false): _hood_vent()
 	if SPEC.get("hood_louvres", false):
 		# centre power-bulge shadow lines + twin NACA louvres (the Integrale's cue)
 		for z in range(_rz(0.46), cowl - _rz(0.05)):
@@ -386,9 +430,29 @@ func _deck_louvres() -> void:
 	var z0 := _rz(float(SPEC.get("deck_z", float(SPEC.L) - 0.6)) + 0.06)
 	var z1 := _rz(SPEC.L) - 1
 	var hw := _rz(SPEC.body_w * 0.5) - _rz(0.14)
+	var floorv := _rz(SPEC.floor)
 	for z in range(z0, z1 + 1):
 		var slot: int = S.dark if (z - z0) % 2 == 0 else S.shade
+		# Scan down from the DECK's own profile, not the absolute topmost voxel (_paint_top). A wing raised
+		# on stands sits above the deck in exactly this z band, and _paint_top would comb the BLADE instead
+		# of the engine cover. Starting one below _top_m also leaves the stands' feet alone.
+		var ceil_y := _rz(_top_m(float(z) * VOX)) - 1
 		for x in range(c - hw, c + hw + 1):
+			for y in range(ceil_y, floorv - 1, -1):
+				if grid.has(Vector3i(x, y, z)):
+					grid[Vector3i(x, y, z)] = slot
+					break
+
+# Central bonnet OUTLET — hot air from the radiators escaping just ahead of the screen (the RS200's cue:
+# the headlight bulges sweep back into it). Slats painted on the ACTUAL hood surface, so they ride the rake.
+func _hood_vent() -> void:
+	var cowl := _rz(SPEC.cowl)
+	var z1 := cowl - _rz(0.10)
+	var z0 := z1 - _rz(SPEC.get("vent_len", 0.42))
+	var vhw := _rz(float(SPEC.get("vent_w", 0.54)) * 0.5)
+	for z in range(z0, z1 + 1):
+		var slot: int = S.dark if (z - z0) % 2 == 0 else S.shade
+		for x in range(c - vhw, c + vhw + 1):
 			_paint_top(x, z, slot)
 
 # Bonnet scoop — the Impreza's signature. A raised trapezoid on the hood centre with a DARK forward-facing
@@ -495,14 +559,26 @@ func _front_details() -> void:
 	for x in range(c - _rz(0.05), c + _rz(0.05) + 1):
 		for y in range(gl + int(h * 0.08), gh - int(h * 0.08)):
 			_paint_front(x, y, S.acc)
-	# wide rectangular headlights flanking the grille, out to near the fender edge
-	for sgn in [-1, 1]:
-		var x0: int = c + sgn * (gw + _rz(0.05)); var x1: int = c + sgn * (hw - _rz(0.09))
-		for x in range(mini(x0, x1), maxi(x0, x1) + 1):
-			for y in range(gl + 1, gh - 1):
-				_paint_front(x, y, S.chrome)
-		for x in range(mini(x0, x1), maxi(x0, x1) + 1):               # amber indicator strip under the lamp
-			_paint_front(x, gl, S.amber)
+	# HEADLIGHTS. Default is a wide rectangular lamp band (80s hatch/saloon). `round_lights` swaps in a pair
+	# of circular semi-shrouded lamps set into the wing tops — the RS200's face, and unmistakably not the
+	# same car as a rectangular-lamp model at this resolution.
+	if SPEC.get("round_lights", false):
+		var lr := maxi(int(h * 0.20), 3)
+		for sgn3 in [-1, 1]:
+			var lx: int = c + sgn3 * int(hw * 0.60)
+			var ly := gl + int(float(gh - gl) * 0.55)
+			for dx in range(-lr, lr + 1):
+				for dy in range(-lr, lr + 1):
+					var d := sqrt(float(dx * dx + dy * dy))
+					if d > float(lr): continue
+					_paint_front(lx + dx, ly + dy, S.chrome if d <= float(lr) - 1.5 else S.dark)
+	else:
+		for sgn in [-1, 1]:
+			var x0: int = c + sgn * (gw + _rz(0.05)); var x1: int = c + sgn * (hw - _rz(0.09))
+			for x in range(mini(x0, x1), maxi(x0, x1) + 1):
+				for y in range(gl + 1, gh - 1):
+					_paint_front(x, y, S.chrome)
+				_paint_front(x, gl, S.amber)                          # amber indicator strip under the lamp
 	# dark lower intake across the nose + fog lights outboard + a light plate patch centred in it
 	for x in range(c - int(hw * 0.80), c + int(hw * 0.80) + 1):
 		for y in range(il, ih):
