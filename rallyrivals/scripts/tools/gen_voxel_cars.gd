@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "meridian"
+const CAR := "verdict"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -99,6 +99,52 @@ const CARS := {
 		"accent_twin_stripe": false, "accent_roundel": false, "accent_flank_sweep": false,
 		"accent_belt_stripe": true, "accent_rocker": true, "accent_door_panel": true,
 	},
+	# Apex A — Lancia Stratos HF Stradale (3710×1750×1110, WB 2180) ×1.284, the biggest scale-up in the
+	# roster. MID-ENGINED, so "sedan": the backlight drops onto a FLAT engine deck that then runs a third of
+	# the car to a Kamm tail — the notchback branch, but with a Group 4 tail LIP, not a saloon's deck wing.
+	# THREE numbers make this car, and two of them fight the rig:
+	#  · Its reputation is NOT a short wheelbase-vs-length (0.588 is actually LONG — a Dino is 0.553); it is
+	#    wheelbase-vs-WIDTH, 1.25 (Dino 1.38). So the character is LOW AND WIDE, never stubby. Don't shorten it.
+	#  · Pure scaling wants body_w 2.25, but the rig track (1.7) is 0.14 NARROWER than scale-correct here, so a
+	#    2.25 body would sink the wheels ~5 voxels into tunnels. Real Stratos: the body overhangs the outer
+	#    tyre by only 43 mm. Fix: the waist is 2.06 (0.07 overhang, honest) and the FLARES carry the missing
+	#    width back out to 2.24 at the arches — which is the Stratos's actual plan-view shape anyway.
+	#  · It is the ONE car whose arcade wheel is nearly honest: real r 0.321 ×1.284 = 0.413 vs the rig's 0.44,
+	#    +7% (every other car is +30%). So it needs almost none of the usual arcade lift — floor 0.25, not 0.30
+	#    — and it still must not be slammed: 130 mm of real ground clearance, because it was bred to rally.
+	"verdict": {
+		"body_style": "sedan",                                       # backlight -> flat engine deck -> Kamm tail
+		"L": 4.44, "body_w": 2.06,
+		"floor": 0.25, "belt": 1.04, "roof": 1.45, "glass_top": 1.40,
+		"deck_rise": 0.24,                                           # engine cover rides 30% higher than the belt
+		"roof_crown": 0.02, "tail_drop": 0.02, "shoulder_r": 0.10,   # Kamm tail: cut off square, barely rounded
+		# Cabin landmarks straight off the side view as fractions of L: cowl 0.30 · screen top 0.44 · roof end
+		# 0.56 · deck 0.69 — i.e. a SHORT helmet cabin centred on the wheelbase, with 0.31 L of engine deck
+		# behind it. Both rakes land ~32° from horizontal (planar glass, per the smoothstep lesson).
+		"cowl": 1.42, "roof_front": 2.08, "roof_rear": 3.44, "deck_z": 3.74,
+		"green_belt_w": 1.70, "roof_w": 1.42,                        # helmet cabin: huge tumblehome (0.69 of body)
+		"wz_f": 0.90, "wz_r": 3.70,                                  # overhangs 0.19 L front / 0.22 L rear
+		"skirt_h": 0.16, "skirt_out": 0.04,                          # slim sills — no chunky bolt-on kit
+		"hood_drop": 0.32, "deck_drop": 0.02,                        # WEDGE bonnet: nose tip drops to 0.64 m
+		"nose_taper": 0.14, "tail_taper": 0.04, "nose_drop": 0.08,
+		"nose_point_d": 0.24, "nose_side_d": 0.09, "nose_side_z": 0.34,   # deep 30° chin chamfer
+		"nose_round": 0.10, "nose_upback": 0.10,
+		# The lower rear is chopped away as ONE long ramp starting under the backlight (z 3.76) and rising to
+		# the tail — not a corner chamfer. tail_side_z has to span the whole ramp or _tail_shape's zone gate
+		# (`zr > sz: continue`) clips it back to a stub.
+		"tail_point_d": 0.70, "tail_cut_h": 0.45,
+		"tail_side_d": 0.05, "tail_side_z": 0.75, "tail_top_d": 0.64, "tail_round": 0.04,
+		"flare_w": 0.09,                                             # blisters carry the width back out to 2.24
+		"crown_clear": 0.13, "deck_louvres": true,                                         # wedge bonnet -> wings must hump over the front wheel
+		"spoiler": true, "spoiler_style": "tail", "spoiler_h": 0.10, "spoiler_len": 0.26,
+		"roof_bulge": false, "hood_bulge": false,
+		"side_doors": 1,
+		"antenna": false,
+		# Alitalia 1977-78 reads white + green + red; the Apex palette is dirty-white + red, so the scheme
+		# lands as red bands on white: bonnet fan, flank chevron, and the louvred deck between the buttresses.
+		"accent_twin_stripe": true, "accent_belt_stripe": false, "accent_roundel": true,
+		"accent_flank_sweep": true, "accent_rocker": true, "accent_door_panel": false,
+	},
 }
 var SPEC: Dictionary = CARS[CAR]
 
@@ -132,6 +178,7 @@ func _car() -> void:
 	grid = {}
 	c = _rz(SPEC.body_w * 0.5) + _rz(0.14)
 	_lower_body()                       # 1 · base volume (+ arches: rig-fixed, all cars)
+	_fender_crowns()                    # wings hump over the wheels BEFORE the openings are cut
 	_greenhouse()
 	_arches()
 	if STEP >= 2:                       # 2 · body kit (added volumes)
@@ -147,7 +194,11 @@ func _car() -> void:
 		_front_details()
 	if STEP >= 6:                       # 6 · back (shape THEN detail)
 		_tail_shape()
+		if STEP >= 4 and SPEC.get("deck_louvres", false): _deck_louvres()   # re-apply onto the chopped deck
 		_rear_valance()                 # re-apply: the tail chamfer erases the step-2 valance
+		# ...and so does it to a TAIL LIP, which rides the deck's trailing edge — exactly the material the
+		# top-rear chamfer cuts away. (The other spoiler styles sit forward or high enough to survive.)
+		if STEP >= 2 and SPEC.get("spoiler", true) and _spoiler_style() == "tail": _spoiler()
 		_rear_details()
 	if STEP >= 7:                       # 7 · accessories
 		_accessories()
@@ -221,7 +272,7 @@ func _gh_raw(z: float) -> float:
 	# here would make _top_m's max() clamp those rakes away, flattening the hood and deck.
 	if z <= cowl or z >= ht: return _body_top_m(z)
 	if z < rf: return lerpf(belt, roof, (z - cowl) / maxf(rf - cowl, 0.001))
-	if z > rr: return lerpf(roof, belt, (z - rr) / maxf(ht - rr, 0.001))
+	if z > rr: return lerpf(roof, _deck_m(), (z - rr) / maxf(ht - rr, 0.001))   # backlight lands ON the deck
 	return roof + float(SPEC.get("roof_crown", 0.0)) * sin(PI * (z - rf) / maxf(rr - rf, 0.001))
 
 func _gh(z: float) -> float:                          # smoothed greenhouse top (metres)
@@ -229,6 +280,11 @@ func _gh(z: float) -> float:                          # smoothed greenhouse top 
 	for i in range(-3, 4):
 		acc += _gh_raw(z + float(i) * SMOOTH_R / 3.0)
 	return acc / 7.0
+
+# Engine-deck top (metres). A MID-ENGINED car's engine cover sits ABOVE the door beltline — a saloon's boot
+# lid sits level with it — so `deck_rise` lifts the whole deck (and with it the base of the backlight).
+func _deck_m() -> float:
+	return float(SPEC.belt) + float(SPEC.get("deck_rise", 0.0))
 
 # Body top (metres): raked hood · belt · raked trunk lid, plus a rounded tail ("butt") at the very end.
 func _body_top_m(z: float) -> float:
@@ -239,7 +295,7 @@ func _body_top_m(z: float) -> float:
 		if z < 0.14: t -= float(SPEC.nose_drop) * smoothstep(0.14, 0.0, z)
 	elif SPEC.get("body_style", "hatch") == "sedan" and z >= _ht_m():
 		var ht := _ht_m()
-		t = belt - float(SPEC.get("deck_drop", 0.0)) * ((z - ht) / maxf(L - ht, 0.001))
+		t = _deck_m() - float(SPEC.get("deck_drop", 0.0)) * ((z - ht) / maxf(L - ht, 0.001))
 	var td: float = SPEC.get("tail_drop", 0.0)
 	if td > 0.0: t -= td * smoothstep(L - 0.30, L, z)    # round the tail instead of a hard square corner
 	return t
@@ -317,7 +373,23 @@ func _hood_details() -> void:
 			for x in range(c - _rz(0.13), c + _rz(0.13) + 1):
 				for dz in range(0, _rz(0.12)):
 					_paint_top(x, vz + dz, S.dark if dz % 2 == 0 else S.shade)
+	if SPEC.get("deck_louvres", false): _deck_louvres()
 	_roof_details()
+
+# Engine-deck LOUVRES — the slatted cover over a mid-mounted engine. Transverse slats painted onto the
+# ACTUAL deck surface via _paint_top, so they ride the raised deck and then follow the step-6 tail chop
+# instead of sitting at some fixed height. Inset from the edges so the deck still reads as a panel with a
+# border, and started past `deck_z` so the comb never runs onto the backlight glass.
+# Re-applied after _tail_shape() for the same reason the valance and the tail lip are: the chop is what
+# creates most of the surface these sit on.
+func _deck_louvres() -> void:
+	var z0 := _rz(float(SPEC.get("deck_z", float(SPEC.L) - 0.6)) + 0.06)
+	var z1 := _rz(SPEC.L) - 1
+	var hw := _rz(SPEC.body_w * 0.5) - _rz(0.14)
+	for z in range(z0, z1 + 1):
+		var slot: int = S.dark if (z - z0) % 2 == 0 else S.shade
+		for x in range(c - hw, c + hw + 1):
+			_paint_top(x, z, slot)
 
 # Bonnet scoop — the Impreza's signature. A raised trapezoid on the hood centre with a DARK forward-facing
 # intake mouth, narrowing slightly toward the mouth. Sits ON the raked hood (reads the surface per column).
@@ -460,7 +532,10 @@ func _paint_front(x: int, y: int, slot: int) -> void:
 func _tail_shape() -> void:
 	var L := _rz(SPEC.L); var floor := _rz(SPEC.floor); var belt := _rz(SPEC.belt); var bhw := _rz(SPEC.body_w * 0.5)
 	var hh := int((belt - floor) * float(SPEC.get("tail_cut_h", 0.42)))   # how far up the lower-rear cut reaches
-	var th := int((belt - floor) * 0.30)                          # top-rear chamfer height
+	# The top-rear chamfer hangs off the ACTUAL surface at the tail, not the beltline — a raised engine deck
+	# (deck_rise) puts the top well above `belt`, and measuring from belt would rake the wrong band.
+	var topv := _rz(_body_top_m(float(SPEC.L) - 0.06))
+	var th := int((topv - floor) * 0.30)                          # top-rear chamfer height
 	var vd := _rz(SPEC.tail_point_d)                             # deeper lower-rear chamfer
 	var td := _rz(SPEC.tail_top_d)                              # top-rear edge chamfer depth
 	var sd := _rz(SPEC.tail_side_d); var sz := _rz(SPEC.tail_side_z)
@@ -476,8 +551,8 @@ func _tail_shape() -> void:
 		if k.y < floor + hh:
 			back = maxi(back, int(round(float(vd) * (1.0 - float(k.y - floor) / float(maxi(hh, 1))))))
 		# top-rear chamfer (side view): bevel the top edge, deepest at the deck, easing down
-		if k.y > belt - th:
-			back = maxi(back, int(round(float(td) * (1.0 - float(belt - k.y) / float(maxi(th, 1))))))
+		if k.y > topv - th:
+			back = maxi(back, int(round(float(td) * (1.0 - float(topv - k.y) / float(maxi(th, 1))))))
 		if zr < back: grid.erase(k); continue
 		# rear-corner bevel (plan view): outer x pulled in near the tail, easing to full width by sz
 		var keep_hw := bhw - int(round(float(sd) * (1.0 - float(zr) / float(maxi(sz, 1)))))
@@ -668,6 +743,41 @@ func _paint_side(y: int, z: int, side: int, slot: int) -> void:
 
 # Wheel arches — RIG-FIXED so the shared wheel model (radius 0.40, at z ±1.4 / x ±0.85) sits inside every
 # car identically. Carves the opening + a shade lip. NO wheels here (separate brand model at runtime).
+# WING CROWNS. The arch opening is RIG-fixed (top at cy + r + clr ≈ 0.89 m on every car), so on a car with
+# a hard-raked bonnet the body top can fall to within a voxel of it — the fender over the wheel comes out one
+# voxel thick, which reads as a hole and snaps off. A real front wing humps ABOVE the bonnet centreline over
+# the wheel (Stratos, Delta and Quattro all do it), so raise the OUTER band over each arch to clear the
+# opening by `crown_clear`, easing back to the natural body top toward the centreline and along z. Default 0
+# -> cars that already have deep fenders are untouched.
+func _fender_crowns() -> void:
+	var clear := _rz(SPEC.get("crown_clear", 0.0))
+	if clear <= 0: return
+	var hw := _rz(SPEC.body_w * 0.5); var floorv := _rz(SPEC.floor)
+	var arch_top := _rz(RIG_WHEEL_R) * 2 + 3                     # must match _arches(): cy + r + clr
+	var span := _rz(0.55); var band := _rz(0.42)
+	for wz in [_rz(SPEC.wz_f), _rz(SPEC.wz_r)]:
+		for z in range(wz - span, wz + span + 1):
+			var nat := _rz(_body_top_m(float(z) * VOX))
+			var want := arch_top + clear
+			if want <= nat: continue                             # this end already has fender depth to spare
+			# PLATEAU, not a bell: flat over the wheel and across the outer band, falling off only at the
+			# edges. Blending two smoothsteps across a 2-3 voxel lift quantises into speckle — a lumpy blob
+			# rather than a wing. Keep the crown flat wherever it is at full height.
+			var fz := 1.0 - smoothstep(0.45, 1.0, float(absi(z - wz)) / float(maxi(span, 1)))
+			for x in range(c - hw, c + hw + 1):
+				var dxa := absi(x - c)
+				if dxa < hw - band: continue
+				var fx := clampf(float(dxa - (hw - band)) / float(maxi(_rz(0.16), 1)), 0.0, 1.0)
+				var t := int(round(float(want - nat) * fz * fx))
+				if t <= 0: continue
+				# Grow from the column's ACTUAL top so the rounded shoulder survives underneath the hump.
+				var ytop := -1
+				for y in range(want + 2, floorv - 1, -1):
+					if grid.has(Vector3i(x, y, z)): ytop = y; break
+				if ytop < 0: continue
+				for y in range(ytop + 1, nat + t + 1):
+					grid[Vector3i(x, y, z)] = S.body
+
 func _arches() -> void:
 	var r := _rz(RIG_WHEEL_R); var cy := _rz(RIG_WHEEL_R); var hw := _rz(SPEC.body_w * 0.5); var clr := 3
 	for wz in [_rz(SPEC.wz_f), _rz(SPEC.wz_r)]:
@@ -711,12 +821,25 @@ func _flares() -> void:
 					for y in range(floor, cy + r + _rz(0.13)):
 						var dy := float(y) + 0.5 - float(cy); var dz := float(z) + 0.5 - float(wz)
 						if sqrt(dy * dy + dz * dz) <= float(r) + float(_rz(0.14)):
+							# A flare is an eyebrow BOLTED TO the body, so only grow it where there is material
+							# directly inboard. Stamping the whole disc blind leaves floating shells wherever
+							# the body top falls below the disc's reach — over a raked bonnet, or under the
+							# rounded shoulder — which is 12 orphan clusters at the Verdict's front arch.
+							if not grid.has(Vector3i(xe + s * (k - 1), y, z)): continue
 							grid[Vector3i(xe + s * k, y, z)] = S.body
 
-# Rear wing. HATCH: a blade across the roof rear (tailgate top). SEDAN: the 555's DECK wing — a blade raised
-# on two stanchions above the trunk lid, which is where a notchback's wing actually mounts.
+# Rear wing — `spoiler_style` picks the shape, INDEPENDENT of body style (a mid-engined notchback wants a
+# tail lip, not a saloon's deck wing, so the body style may only supply the DEFAULT):
+#   "deck"  unibody deck wing on a notchback trunk (the 555 Impreza)   · sedan default
+#   "arch"  blade across the roof rear / tailgate top (hot hatch)      · hatch default
+#   "stand" blade raised on two stands at the tail (classic rally wing)
+#   "tail"  full-width lip riding the tailgate's trailing edge (Group 4 Kamm-tail lip)
+func _spoiler_style() -> String:
+	return SPEC.get("spoiler_style", "deck" if SPEC.get("body_style", "hatch") == "sedan" else "arch")
+
 func _spoiler() -> void:
-	if SPEC.get("body_style", "hatch") == "sedan":
+	var style := _spoiler_style()
+	if style == "deck":
 		var zc := _rz(float(SPEC.deck_z) + 0.22)
 		var deck_y := _rz(_body_top_m(float(zc) * VOX))
 		# UNIBODY deck wing (the Impreza's signature): ONE piece — a blade spanning the deck with a DEEP arch
@@ -736,7 +859,7 @@ func _spoiler() -> void:
 				for z in range(zc - zt, zc + zt + 1):
 					grid[Vector3i(x, y, z)] = S.body
 		return
-	if SPEC.get("spoiler_style", "arch") == "stand":
+	if style == "stand":
 		# Blade RAISED ON TWO STANDS at the tail (classic rally wing) — clear air under the blade.
 		var wz := _rz(SPEC.L) - _rz(0.17)
 		var wbase := _rz(_top_m(float(wz) * VOX))
@@ -751,14 +874,22 @@ func _spoiler() -> void:
 				for y in range(wbase + wh, wbase + wh + _rz(0.07)):
 					grid[Vector3i(x, y, z)] = S.body
 		return
-	if SPEC.get("spoiler_at", "roof") == "tail":
-		# Blade across the tailgate's TRAILING edge — the back of the car — riding the surface there.
-		var tz0 := _rz(SPEC.L) - _rz(0.24); var tz1 := _rz(SPEC.L) - _rz(0.05)
-		var thw := _rz(SPEC.body_w * 0.5) - _rz(0.10)
+	if style == "tail":
+		# Full-width LIP riding the tailgate's trailing edge — the back of the car. Height is `spoiler_h`
+		# (a lip, not a wing), and it wraps the rear corners in plan by following the body's own half-width.
+		var tz0 := _rz(SPEC.L) - _rz(SPEC.get("spoiler_len", 0.24)); var tz1 := _rz(SPEC.L) - 1
+		var lip := _rz(SPEC.get("spoiler_h", 0.10)); var floorv := _rz(SPEC.floor)
 		for z in range(tz0, tz1 + 1):
-			var tb := _rz(_top_m(float(z) * VOX))
+			var thw := _rz(_hw_m(float(z) * VOX)) - _rz(0.03)
+			var ceil_y := _rz(_top_m(float(z) * VOX))
 			for x in range(c - thw, c + thw + 1):
-				for y in range(tb, tb + _rz(0.10)):
+				# Ride the ACTUAL deck, not the uncarved profile: a deep top-rear chamfer (tail_top_d) drops
+				# the real surface well below _top_m, and a lip pinned to _top_m would float over the chop.
+				var ty := -1
+				for y in range(ceil_y, floorv - 1, -1):
+					if grid.has(Vector3i(x, y, z)): ty = y; break
+				if ty < 0: continue                                   # chopped away here — no lip to hang
+				for y in range(ty + 1, ty + 1 + lip):
 					grid[Vector3i(x, y, z)] = S.body
 		return
 	var rr := _rz(SPEC.roof_rear); var rw := _rz(SPEC.roof_w * 0.5); var ry := _rz(SPEC.roof)
@@ -778,14 +909,19 @@ func _skirt_out() -> int: return _rz(SPEC.get("skirt_out", 0.05))
 func _splitter() -> void:
 	var floorv := _rz(SPEC.floor); var h := _skirt_h()
 	var hw := _rz(SPEC.body_w * 0.5)
-	var sd := _rz(SPEC.get("nose_side_d", 0.0)); var sz := _rz(SPEC.get("nose_side_z", 0.30))
 	var dep := _skirt_out() + _rz(0.03)
-	# The lip owns the forward-most z band (the nose above it curves back), and follows the nose's plan
-	# bevel so it protrudes FORWARD rather than flaring out past the bodywork at the corners.
-	for z in range(0, dep + 1):
-		var keep := hw - int(round(float(sd) * (1.0 - float(z) / float(maxi(sz, 1)))))
-		for x in range(c - keep, c + keep + 1):
-			for y in range(floorv, floorv + h):
+	# Grow FORWARD from the bodywork that is actually there, per column — the mirror of _rear_valance().
+	# Stamping the lip into a fixed z=0..dep band only works while the lower nose still reaches z=0; a deep
+	# chin chamfer (nose_point_d) sweeps it back several voxels and leaves the lip hanging in the void the
+	# chamfer just carved (865 orphaned voxels on the Verdict). Growing forward also makes the air dam
+	# follow the chin rake, which is what a real one does.
+	for y in range(floorv, floorv + h):
+		for x in range(c - hw, c + hw + 1):
+			var zf := -1
+			for z in range(0, _rz(0.9)):
+				if grid.has(Vector3i(x, y, z)): zf = z; break
+			if zf <= 0: continue                    # no body here, or it already owns the forward-most band
+			for z in range(maxi(zf - dep, 0), zf):
 				grid[Vector3i(x, y, z)] = S.body
 
 # Rear valance / diffuser across the tail, wrapping the corners.
@@ -981,11 +1117,12 @@ func _carved_m(z: float, y: float) -> bool:
 	var zr := L - z
 	if zr <= float(SPEC.get("tail_side_z", 0.30)):
 		var hh := (belt - floorm) * float(SPEC.get("tail_cut_h", 0.42))
-		var th := (belt - floorm) * 0.30
+		var topm := _body_top_m(L - 0.06)                 # real surface at the tail (see _tail_shape)
+		var th := (topm - floorm) * 0.30
 		if y < floorm + hh:
 			if zr < float(SPEC.get("tail_point_d", 0.0)) * (1.0 - (y - floorm) / maxf(hh, 0.001)): return true
-		elif y > belt - th:
-			if zr < float(SPEC.get("tail_top_d", 0.0)) * (1.0 - (belt - y) / maxf(th, 0.001)): return true
+		elif y > topm - th:
+			if zr < float(SPEC.get("tail_top_d", 0.0)) * (1.0 - (topm - y) / maxf(th, 0.001)): return true
 	return false
 
 func _top_m(z: float) -> float:                       # silhouette top at z (metres) — mirrors _roof_at

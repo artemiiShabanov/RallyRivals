@@ -13,7 +13,7 @@ const OY := -0.5
 # Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
 # CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
 # floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
-const CAR := "meridian"
+const CAR := "verdict"
 const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
@@ -21,6 +21,10 @@ const CARS := {
 	            "uid": "uid://bos1221f5owhm", "cy": 3.0, "cz": 74.24},
 	"meridian": {"src": "res://assets/voxels/cars/meridian.vox", "tres": "res://assets/voxels/cars/meridian_body.tres",
 	            "uid": "", "cy": 3.0, "cz": 73.33},
+	# Verdict sits LOWER than the others (floor 0.25, not 0.30 — its scaled wheel is nearly rig-size), so its
+	# cy is not the shared 3.0: (RIG_WHEEL_R - floor)/VOX = (0.40-0.25)/0.033. cz = axle midpoint, voxels 27/112.
+	"verdict": {"src": "res://assets/voxels/cars/verdict.vox", "tres": "res://assets/voxels/cars/verdict_body.tres",
+	            "uid": "", "cy": 4.55, "cz": 69.5},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]
