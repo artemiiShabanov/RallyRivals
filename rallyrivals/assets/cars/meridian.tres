@@ -23,3 +23,5 @@ model = ExtResource("1_a3ecf")
 model_damaged_1 = ExtResource("1_a3ecf")
 model_damaged_2 = ExtResource("1_a3ecf")
 wheel_model = ExtResource("5_478ru")
+collision_size = Vector3(2.15, 1.02, 4.88)
+collision_offset_y = 0.210

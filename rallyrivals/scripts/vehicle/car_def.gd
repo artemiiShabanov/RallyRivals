@@ -29,3 +29,14 @@ extends Resource
 @export var model_damaged_1: Mesh       ## light damage (swapped by code-vehicle-damage)
 @export var model_damaged_2: Mesh       ## heavy damage
 @export var wheel_model: Mesh           ## brand wheel, axle along X (no corrective rotation)
+
+@export_group("Collision")
+## Body box, sized to THIS car's shell instead of the scene's shared 2x1x4. Zero = keep the scene box
+## (the stub cars that have no baked model yet). Emitted by scripts/tools/bake_car.gd so it cannot
+## drift from the mesh; aerials (antenna, wing mast) are trimmed out or they become collidable spikes.
+## The BOTTOM of every box is pinned to the scene box's y = -0.30: the wheels are raycasts, so the body
+## shape never supports the car, and how low it reaches is the ONLY thing that changes ride height and
+## bottoming-out. Keeping that fixed means collisions and damage get the real footprint with no
+## change to how the car drives.
+@export var collision_size := Vector3.ZERO
+@export var collision_offset_y := 0.0   ## centre of the box above the car origin

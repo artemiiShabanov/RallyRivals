@@ -163,6 +163,23 @@ func apply_car_def() -> void:
 		w.suspension_stiffness = _base_stiffness[w] * m
 		w.suspension_max_force = _base_max_force[w] * m
 	_apply_models()
+	_apply_collision()
+
+# Resize the body box to THIS car's shell. The shared 2x1x4 box predates the voxel cars and no longer
+# fits any of them — the Crowbar is 1.21 m longer than it, so a quarter of that car (its boot) could not
+# be hit at all, and the Mule's whole greenhouse sat above the box.
+# ALWAYS build a NEW BoxShape3D: the one in car.tscn is a scene SubResource shared by every instance, so
+# resizing it in place would give every car on the grid whichever size was applied last.
+func _apply_collision() -> void:
+	if car == null or car.collision_size == Vector3.ZERO:
+		return                                      # no baked model yet -> keep the scene's box
+	var cs := get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if cs == null:
+		return
+	var box := BoxShape3D.new()
+	box.size = car.collision_size
+	cs.shape = box
+	cs.position = Vector3(0.0, car.collision_offset_y, 0.0)
 
 # Swap the body shell + wheel meshes to this CarDef's models (assets/voxels). Wheel objs are
 # authored axle-along-X, so the placeholder cylinder's corrective rotation must be cleared.

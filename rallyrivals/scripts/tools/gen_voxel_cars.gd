@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "mule"
+const CAR := "crowbar"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -238,6 +238,44 @@ const CARS := {
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
 	},
+	# Wreckhouse C — Volvo 242 / 240 Turbo Group A (4900×1710×1430, WB 2640) ×1.061 — the SMALLEST
+	# scale-up in the roster, because its wheelbase is already long. Crowbar is the Ch1 boss with
+	# steering 3, the lowest number in the game, and "the flying brick" sells that on sight: at 5.20 m
+	# this is the LONGEST car by 0.31 m, and at L/W 2.77 by far the most slab-sided.
+	#  · The rig track cuts the OPPOSITE way here vs the Verdict/Mule: 1.70 is 0.22 m WIDER than
+	#    scale-correct (1.48), so the rig's wheels sit well outboard of where the real body ends. Rather
+	#    than inflate the waist to 2.05 and lose the narrow-brick look, the waist stays 1.88 (wheels a
+	#    hair proud at the doors, as on the real Group A car) and the BOX FLARES cover them — 0.08 m of
+	#    cover at the arches against the real car's 0.062.
+	#  · Standard arcade wheel distortion is back (+31%), so floor 0.30 and a 0.10 m roof lift.
+	"crowbar": {
+		"brand": "wreck",
+		"body_style": "sedan",                                       # 3-box notchback: backlight -> flat boot
+		"L": 5.20, "body_w": 1.88,
+		"floor": 0.30, "belt": 1.11, "roof": 1.62, "glass_top": 1.57,
+		"roof_crown": 0.02, "tail_drop": 0.03, "shoulder_r": 0.08,
+		# Landmarks as fractions of L: cowl 0.30 · screen top 0.42 · roof end 0.63 · boot 0.76. Upright
+		# 70s glasshouse — windscreen 39°, backlight 37° — and 1.25 m of boot deck behind it.
+		"cowl": 1.56, "roof_front": 2.18, "roof_rear": 3.28, "deck_z": 3.95,
+		"green_belt_w": 1.74, "roof_w": 1.52,
+		"wz_f": 0.93, "wz_r": 3.73,                                  # overhangs 0.18 L / 0.28 L — a long tail
+		"skirt_h": 0.16, "skirt_out": 0.04,
+		"hood_drop": 0.06, "deck_drop": 0.03,                        # flat level bonnet: it is a brick
+		"nose_taper": 0.05, "tail_taper": 0.04, "nose_drop": 0.02,
+		"nose_point_d": 0.08, "nose_side_d": 0.06, "nose_side_z": 0.28,
+		"nose_round": 0.05, "nose_upback": 0.08,                     # upright slab front, barely rounded
+		"tail_point_d": 0.10, "tail_cut_h": 0.35,
+		"tail_side_d": 0.05, "tail_side_z": 0.28, "tail_top_d": 0.05, "tail_round": 0.04,
+		"flare_w": 0.10,                                             # Group A box flares — must cover the tyres
+		"crown_clear": 0.0,                                          # flat bonnet clears the arch by 6 rows
+		"spoiler": true, "spoiler_style": "tail", "spoiler_h": 0.08, "spoiler_len": 0.22,   # boot-lid lip
+		"roof_bulge": false, "hood_bulge": false,
+		"side_doors": 1,                                             # 242 is the 2-door
+		"antenna": false,
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
 }
 var SPEC: Dictionary = CARS[CAR]
 
@@ -250,7 +288,11 @@ var SPEC: Dictionary = CARS[CAR]
 const RAMP := 6
 const BRANDS := {
 	"apex":   {"body": 15 * RAMP + 0, "shade": 16 * RAMP + 3, "acc": 12 * RAMP + 2},  # dirty white / grey / red
-	"wreck":  {"body": 17 * RAMP + 2, "shade": 17 * RAMP + 4, "acc": 15 * RAMP + 1},  # navy / lighter navy / orange
+	# Wreckhouse takes the ramp's LIGHT END for its seam (#5b8fc9 on #0d2b52). Index 4 was already a
+	# bigger absolute luminance delta than Apex's (0.193 vs 0.138) and still read weak on navy: a dark
+	# body needs a wider swing than the number suggests, and the review sheet's exposure curve
+	# compresses the top end on top of that. Delta is now 0.379.
+	"wreck":  {"body": 17 * RAMP + 2, "shade": 17 * RAMP + 5, "acc": 15 * RAMP + 1},  # navy / pale blue / orange
 	"mayfly": {"body": 18 * RAMP + 4, "shade": 18 * RAMP + 2, "acc": 14 * RAMP + 2},  # pale cyan / teal / indigo
 }
 
@@ -1183,6 +1225,9 @@ func _settle() -> void:
 const N6 := [Vector3i(1, 0, 0), Vector3i(-1, 0, 0), Vector3i(0, 1, 0), Vector3i(0, -1, 0), Vector3i(0, 0, 1), Vector3i(0, 0, -1)]
 const CW := 620
 const CH := 300
+func _tone(x: float, g: float) -> float:
+	return clampf((1.0 - exp(-maxf(x, 0.0) * g)) / (1.0 - exp(-g)), 0.0, 1.0)
+
 func _render(nm: String, dv: Vector3) -> void:
 	var d := dv.normalized()
 	var right := Vector3.UP.cross(d).normalized()
@@ -1210,12 +1255,29 @@ func _render(nm: String, dv: Vector3) -> void:
 	var blk := maxi(int(ceil(scale)), 1)
 	var img := Image.create(CW, CH, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0.34, 0.37, 0.42))
+	# REVIEW EXPOSURE. These sheets exist to judge SHAPE, and a dark brand body (Wreckhouse navy sits at
+	# 0.16 luminance vs Apex white's 0.89) renders as a black blob whatever the shading model. Normalise
+	# to the body colour's own luminance so every brand reviews at the same legibility. Hue is preserved
+	# and light bodies are untouched (gain clamps at 1.0); the in-game shot stays colour-accurate.
+	var _bc: Color = _palette.get_pixel(int(S.body), 0)
+	var gain := clampf(0.58 / maxf(0.2126 * _bc.r + 0.7152 * _bc.g + 0.0722 * _bc.b, 0.05), 1.0, 3.6)
 	var zbuf := PackedFloat32Array(); zbuf.resize(CW * CH); zbuf.fill(-INF)
 	for e in shell:
 		var s: Vector2 = e[0]; var depth: float = e[1]
-		var shade: float = clampf((e[2] as Vector3).dot(lightv), 0.0, 1.0) * 0.7 + 0.3
+		# Pure MULTIPLY collapses on dark brand paint: a Wreckhouse navy body renders entirely between
+		# near-black and the base colour, and the shape becomes unreadable at exactly the steps where
+		# shape is what you are reviewing. Multiply for the body tone, then add a small highlight so
+		# face-to-face contrast survives at any body value. Hue still reads; the in-game shot is the
+		# colour-accurate one.
+		var ndl: float = clampf((e[2] as Vector3).dot(lightv), 0.0, 1.0)
 		var base: Color = _palette.get_pixel(int(e[3]), 0)
-		var col := Color(base.r * shade, base.g * shade, base.b * shade)
+		var k := 0.40 + 0.50 * ndl
+		var hi := 0.22 * ndl * ndl
+		# Soft rolloff, not a hard clamp. The gain is derived from the BODY colour but applies to every
+		# slot, so clamping blew glass, chrome and the seam shade all the way to white and destroyed the
+		# material distinction the sheet exists to show. `1-exp(-x*g)` compresses the top end instead, so
+		# ordering survives; the divisor keeps gain 1.0 (a light body) close to identity.
+		var col := Color(_tone(base.r * k + hi, gain), _tone(base.g * k + hi, gain), _tone(base.b * k + hi, gain))
 		var px := int((s.x - mn.x) * scale + ox); var py := CH - 1 - int((s.y - mn.y) * scale + oy)
 		for iy in range(py - blk, py + 1):
 			for ix in range(px, px + blk):

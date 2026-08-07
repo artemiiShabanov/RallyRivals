@@ -13,7 +13,7 @@ const OY := -0.5
 # Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
 # CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
 # floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
-const CAR := "mule"
+const CAR := "crowbar"
 const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
@@ -32,6 +32,9 @@ const CARS := {
 	# the wheel centre. Same axles as Stiletto: _rz(0.75)=23, _rz(3.55)=108 -> cz 65.5.
 	"mule": {"src": "res://assets/voxels/cars/mule.vox", "tres": "res://assets/voxels/cars/mule_body.tres",
 	            "uid": "", "cy": 0.0, "cz": 65.5},
+	# Crowbar: floor 0.30 -> cy 3.0. Axles _rz(0.93)=28, _rz(3.73)=113 -> cz 70.5.
+	"crowbar": {"src": "res://assets/voxels/cars/crowbar.vox", "tres": "res://assets/voxels/cars/crowbar_body.tres",
+	            "uid": "", "cy": 3.0, "cz": 70.5},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]
@@ -65,7 +68,35 @@ func _initialize() -> void:
 	print("quads=%d exposed=%d" % [quads.size(), exposed[0]])
 	_write_tres(quads)
 	print("baked %s -> %s (%d quads, spine x=%.1f)" % [CAR, TRES.get_file(), quads.size(), CX])
+	_print_collision()
 	quit()
+
+# Emit the CarDef body box for this car, so collision_size/offset can never drift from the mesh.
+# The box FLOOR is pinned to the scene box's y = -0.30 on every car: the wheels are raycasts, so the
+# body shape never supports the car and how low it reaches is the only thing that alters ride height.
+# Fixing it means collisions and damage get the true footprint while the car drives exactly as before.
+# Aerials are trimmed — an antenna is 1-3 voxels per row where a wing blade is 300+, so 30 separates
+# them — otherwise a mast becomes a collidable spike that snags on scenery.
+const COL_FLOOR_Y := -0.30
+const AERIAL_ROW := 30
+func _print_collision() -> void:
+	var rows := {}
+	var lox := 1 << 30; var hix := -(1 << 30); var loz := 1 << 30; var hiz := -(1 << 30)
+	for k in grid:
+		rows[k.y] = int(rows.get(k.y, 0)) + 1
+		lox = mini(lox, k.x); hix = maxi(hix, k.x); loz = mini(loz, k.z); hiz = maxi(hiz, k.z)
+	var top := -(1 << 30); var raw := -(1 << 30)
+	for y in rows:
+		raw = maxi(raw, int(y))
+		if int(rows[y]) >= AERIAL_ROW: top = maxi(top, int(y))
+	var ty := float(top + 1 - CY) * VOX + OY
+	var size := Vector3(float(hix - lox + 1) * VOX, ty - COL_FLOOR_Y, float(hiz - loz + 1) * VOX)
+	# Derive the offset from the ROUNDED size, not the exact one — writing both independently at 2 and 3
+	# decimals drifts the floor by a couple of mm, and "the floor never moves" is the entire guarantee.
+	var sy := snappedf(size.y, 0.01)
+	print("  CarDef collision:  collision_size = Vector3(%.2f, %.2f, %.2f)   collision_offset_y = %.3f%s" % [
+		size.x, sy, size.z, COL_FLOOR_Y + sy * 0.5,
+		("   (aerial trimmed %.2f m)" % (float(raw - top) * VOX)) if raw > top else ""])
 
 func _find(b: PackedByteArray, id: String) -> int:
 	var c := id.to_ascii_buffer()
