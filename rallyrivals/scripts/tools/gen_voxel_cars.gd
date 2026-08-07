@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "crowbar"
+const CAR := "anvil"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -276,6 +276,50 @@ const CARS := {
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
 	},
+	# Wreckhouse B — Mitsubishi Pajero Evolution V55W (4075×1875×1915, WB 2420 — the SHORT 3-door, not
+	# the long Pajero) ×1.157. Anvil is the "straight-line bully": ~1970 kg of Dakar homologation
+	# special, and the widest arches in the game.
+	# TWO DELIBERATE DEPARTURES FROM PURE SCALE, both to serve the roster rather than the spreadsheet:
+	#  · Pure scaling gives roof 2.22 — the Niva problem again, worse. The rig-fixed arch would cover
+	#    only 24% of body height (the real car is ~29%) and it reads as a van on small wheels. Pulled to
+	#    1.80 / floor 0.40 -> 35%, properly planted.
+	#  · Honest width lands at 1.88 waist / 1.98 arches, which would make the B-class Dakar car NARROWER
+	#    than the D-class Niva — an artefact of the Niva being scaled up 27% while this is 16%, and of
+	#    the real Evo running 265-section tyres nearly flush with its flares (our rig tyre is one fixed
+	#    width for every car, so that relationship does not transfer). Set 2.02 waist / 2.28 arches.
+	# Net vs Mule (4.35 / 2.01 / 2.15 arches / 1.85 roof): longer, wider, LOWER — wide-and-squat against
+	# narrow-and-tall, which is the separation the two boxy 4x4s need or they blur into each other.
+	"anvil": {
+		"brand": "wreck",
+		"body_style": "hatch",                                       # tailgate: backlight rakes to the tail
+		"L": 4.46, "body_w": 2.02,
+		"floor": 0.40, "belt": 1.16, "roof": 1.80, "glass_top": 1.74,
+		"roof_crown": 0.03, "tail_drop": 0.03, "shoulder_r": 0.08,
+		# Landmarks: cowl 0.30 L · screen top 0.43 · roof end 0.93. Windscreen 48°, tailgate 72° —
+		# upright, but both less vertical than the Niva's 51/74.
+		"cowl": 1.34, "roof_front": 1.92, "roof_rear": 4.13,
+		"green_belt_w": 1.86, "roof_w": 1.70,
+		"wz_f": 0.79, "wz_r": 3.59,                                  # real ABSOLUTE overhangs, not scaled
+		"skirt_h": 0.16, "skirt_out": 0.04,
+		"hood_drop": 0.10, "deck_drop": 0.0,
+		"nose_taper": 0.06, "tail_taper": 0.04, "nose_drop": 0.03,
+		# Approach/departure cuts, but shallower than the Niva's 56/61 — the Evo carries a deep moulded
+		# bumper where the Niva has bare chassis.
+		"nose_point_d": 0.14, "nose_side_d": 0.06, "nose_side_z": 0.30,
+		"nose_round": 0.06, "nose_upback": 0.08,
+		"tail_point_d": 0.16, "tail_cut_h": 0.40,
+		"tail_side_d": 0.05, "tail_side_z": 0.30, "tail_top_d": 0.06, "tail_round": 0.04,
+		"flare_w": 0.13,                                             # THE Evolution cue — widest in the game
+		"crown_clear": 0.0,                                          # bonnet clears the arch by 7 rows
+		"hood_scoop": true, "scoop_z": 0.62, "scoop_len": 0.40,      # bonnet intake
+		"spoiler": true, "spoiler_style": "arch",                    # tailgate-top roof blade
+		"roof_bulge": false, "hood_bulge": false,
+		"side_doors": 2,                                             # 4-door (the real Evo is a 3-door)
+		"antenna": true, "antenna_h": 0.38,
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
 }
 var SPEC: Dictionary = CARS[CAR]
 
@@ -455,14 +499,22 @@ func _roof_at(z: int) -> int:
 # 3 · WINDOWS — windshield / side DLO (front + rear door + triangular quarter) / backlight, glass INSET
 # 1 voxel so the frame + pillars sit proud. Pillars: A moderate (body), B moderate (BLACK), C VERY THICK
 # (body) — the Delta's signature. Widths/colours are per-model choices (not tier).
+# B-pillar z. SHARED by the glazing and the door shut lines, because a door's trailing edge and its
+# pillar are the same line on a real car. They used to be computed independently — _glass put the pillar
+# at 0.70 of the cabin on a 2-door while _door_seams always drew its middle seam at the midpoint — so on
+# every 2-door car the black pillar and the body seam disagreed by ~0.2 of the cabin length.
+# Mid-cabin on a 4-door; well back on a 2-door coupe, which has one long door ahead of it.
+func _bpillar_z() -> int:
+	var apz := _rz(SPEC.roof_front); var cpz := _rz(SPEC.roof_rear)
+	var bfrac := 0.5 if int(SPEC.get("side_doors", 1)) >= 2 else 0.70
+	return apz + int(round(float(cpz - apz) * bfrac))
+
 const INSET_DIRS := [Vector3i(1, 0, 0), Vector3i(-1, 0, 0), Vector3i(0, 0, 1), Vector3i(0, 0, -1), Vector3i(0, 1, 0)]
 func _glass() -> void:
 	var belt := _rz(SPEC.belt); var header := _rz(SPEC.glass_top); var ht := _htail()
 	var cowl := _rz(SPEC.cowl); var apz := _rz(SPEC.roof_front); var cpz := _rz(SPEC.roof_rear)
 	var roofv := _rz(SPEC.roof)
-	# B-pillar sits mid-cabin on a 4-door, but well BACK on a 2-door coupe (one long door ahead of it).
-	var bfrac := 0.5 if int(SPEC.get("side_doors", 1)) >= 2 else 0.70
-	var bpz := apz + int(round(float(cpz - apz) * bfrac))
+	var bpz := _bpillar_z()
 	var bth := _rz(0.05)                                              # B-pillar half-thickness
 	var pth := _rz(0.05)                                              # A/C pillar thickness
 	# PASS 1 — classify every voxel against the PRISTINE grid. (Mutating the grid while iterating it makes
@@ -783,9 +835,13 @@ func _paint_rear(x: int, y: int, slot: int) -> void:
 # base: A-pillar foot (cowl), B-pillar (bpz), C-pillar foot (roof_rear). + a dark rocker sill.
 func _door_seams() -> void:
 	var floor := _rz(SPEC.floor); var belt := _rz(SPEC.belt); var bhw := _rz(SPEC.body_w * 0.5)
-	var bpz := (_rz(SPEC.roof_front) + _rz(SPEC.roof_rear)) / 2
 	var cpz := _rz(SPEC.roof_rear); var cfront := cpz + (_htail() - cpz) / 3   # solid C-pillar (behind quarter)
-	for dz in [_rz(SPEC.cowl), bpz, cfront]:
+	# A 2-door has TWO shut lines per side (A-pillar foot, then the B-pillar); a 4-door adds the rear
+	# door's trailing edge at the C-pillar. Three lines were drawn regardless, which gave every coupe an
+	# extra seam that no door edge corresponds to.
+	var seams := [_rz(SPEC.cowl), _bpillar_z()]
+	if int(SPEC.get("side_doors", 1)) >= 2: seams.append(cfront)
+	for dz in seams:
 		for x in [c - bhw, c - bhw + 1, c + bhw - 1, c + bhw]:
 			for y in range(floor + _rz(0.18), belt):
 				_paint(x, y, dz, S.shade)
@@ -818,7 +874,10 @@ func _accessories() -> void:
 			for k in range(2, 5):
 				grid[Vector3i(xe + s * k, y, z1)] = S.dark
 	# DOOR HANDLES — one per door, set just ahead of each door's trailing shut line.
-	var bpz := (_rz(SPEC.roof_front) + _rz(SPEC.roof_rear)) / 2
+	# Handles hang just ahead of each door's TRAILING edge, so they must read the same _bpillar_z() as the
+	# glazing and the shut lines. This used the cabin midpoint independently — identical on a 4-door, but
+	# on a 2-door (pillar at 0.70) it put the handle ~0.22 m too far forward, mid-door instead of by the edge.
+	var bpz := _bpillar_z()
 	var cfront := _rz(SPEC.roof_rear) + (_htail() - _rz(SPEC.roof_rear)) / 3
 	var hzs := [bpz - _rz(0.36)]
 	if int(SPEC.get("side_doors", 1)) >= 2: hzs.append(cfront - _rz(0.36))
@@ -1074,11 +1133,21 @@ func _spoiler() -> void:
 				for y in range(ty + 1, ty + 1 + lip):
 					grid[Vector3i(x, y, z)] = S.body
 		return
-	var rr := _rz(SPEC.roof_rear); var rw := _rz(SPEC.roof_w * 0.5); var ry := _rz(SPEC.roof)
-	for x in range(c - rw, c + rw + 1):
-		for z in range(rr - _rz(0.02), rr + _rz(0.14)):
-			grid[Vector3i(x, ry, z)] = S.body
-			grid[Vector3i(x, ry + 1, z)] = S.body
+	# Blade across the tailgate top, RIDING THE ACTUAL ROOFLINE. It used to stamp at the fixed `roof`
+	# height, which only worked while the band stayed on the flat roof — past `roof_rear` the backlight is
+	# already dropping away, so on a car with a steep tailgate the blade hung in mid-air behind it (530
+	# orphaned voxels on the Anvil). Same failure as the splitter, the rear valance and the tail lip:
+	# geometry pinned to a constant that the surface underneath no longer matches.
+	var rr := _rz(SPEC.roof_rear); var rw := _rz(SPEC.roof_w * 0.5); var floorv := _rz(SPEC.floor)
+	for z in range(rr - _rz(0.02), rr + _rz(0.14)):
+		var ceil_y := _rz(_top_m(float(z) * VOX))
+		for x in range(c - rw, c + rw + 1):
+			var ty := -1
+			for y in range(ceil_y + 1, floorv - 1, -1):
+				if grid.has(Vector3i(x, y, z)): ty = y; break
+			if ty < 0: continue
+			grid[Vector3i(x, ty + 1, z)] = S.body
+			grid[Vector3i(x, ty + 2, z)] = S.body
 
 # ---- BEEFY PERIMETER SKIRT: front valance · side sills · rear valance. A chunky band of ADDED volume that
 # protrudes outboard/forward/back around the whole lower body, so it reads as a bolted-on kit rather than a

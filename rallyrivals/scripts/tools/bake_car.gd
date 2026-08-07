@@ -13,7 +13,7 @@ const OY := -0.5
 # Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
 # CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
 # floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
-const CAR := "crowbar"
+const CAR := "anvil"
 const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
@@ -35,6 +35,9 @@ const CARS := {
 	# Crowbar: floor 0.30 -> cy 3.0. Axles _rz(0.93)=28, _rz(3.73)=113 -> cz 70.5.
 	"crowbar": {"src": "res://assets/voxels/cars/crowbar.vox", "tres": "res://assets/voxels/cars/crowbar_body.tres",
 	            "uid": "", "cy": 3.0, "cz": 70.5},
+	# Anvil rides high like the Mule (floor 0.40 == RIG_WHEEL_R) -> cy 0. Axles _rz(0.79)=24, _rz(3.59)=109.
+	"anvil": {"src": "res://assets/voxels/cars/anvil.vox", "tres": "res://assets/voxels/cars/anvil_body.tres",
+	            "uid": "", "cy": 0.0, "cz": 66.5},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]
