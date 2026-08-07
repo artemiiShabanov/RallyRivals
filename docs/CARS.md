@@ -59,7 +59,27 @@ Ratios stay internally honest.
 | A | **Verdict** | Lancia Stratos HF | light, nimble, modest power — matches "rails in corners, crawls out of hairpins" |
 | S | **Stiletto** | Ford RS200 | purpose-built 4WD balance = "the precision endgame" |
 
-Wreckhouse and Mayfly references: TBD (assign the same way — stat archetype first).
+**Apex Cartel — all five DONE** (2026-08-06). Precision/tarmac family: every one a homologation rally car.
+
+### Wreckhouse (locked 2026-08-06)
+
+Brand skew +1 speed / +1 grip / −1 steering / −1 braking, so every reference is heavy, blunt and
+straight-line-fast. Where Apex is the tarmac-precision family, Wreckhouse is the **brute/off-road**
+family — three of the five are off-roaders, which is the brand identity, not an accident.
+
+| class | car | stats | reference | why |
+|-------|-----|-------|-----------|-----|
+| D | **Mule** | 5/4/4/3/6 | Lada Niva | "planted workhorse" is literal — best D grip, worst D steering/braking. Tall boxy 4×4, and genuinely rally-bred (there was a Group B Niva) |
+| C | **Crowbar** | 8/5/3/4/6 | Volvo 240 Turbo | *the flying brick*. Steering **3** is the lowest number in the roster and this boss's designed weakness — a long heavy 3-box saloon sells that on sight |
+| B | **Anvil** | 7/6/5/5/7 | Mitsubishi Pajero Evolution | seven straight Dakar wins and ~1900 kg of it. Colossal blistered arches, wide and squat; nose-heavy 4WD understeer is steering 5 honestly |
+| A | **Sledge** | 8/7/6/5/8 | Mercedes-Benz 500 SLC | "heavyweight contender" — and not a stretch, it won the 1979 Bandama. A vast low coupe, unlike anything else in the game |
+| S | **Juggernaut** | 10/8/4/8/8 | Baja pickup (Ford F-150 trophy-style) | the literal garage-wrecker. Nothing else in the roster is a pickup, so it reads instantly; scaling a 3.7 m wheelbase onto our fixed 2.8 m rig makes the wheels read proportionally huge — exactly the Baja look |
+
+**Silhouette separation to hold onto while modelling:** Mule is *narrow and tall* (agricultural),
+Anvil is *wide and squat* (aero-flared). They are both boxy 4×4s and will blur into each other if
+that contrast is not deliberate. Juggernaut's pickup bed is its own separator.
+
+Mayfly references: TBD (assign the same way — stat archetype first: light, darty, accel-biased).
 
 ## Bars -> handling (code-vehicle-stats)
 
