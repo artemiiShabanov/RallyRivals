@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "anvil"
+const CAR := "sledge"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -316,6 +316,48 @@ const CARS := {
 		"roof_bulge": false, "hood_bulge": false,
 		"side_doors": 2,                                             # 4-door (the real Evo is a 3-door)
 		"antenna": true, "antenna_h": 0.38,
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
+	# Wreckhouse A — Mercedes-Benz 500 SLC C107 (4750×1790×1330, WB 2820) ×0.993. THE FIRST CAR THAT
+	# SCALES DOWN: its wheelbase is longer than the rig's 2.80, so nothing is inflated and the numbers
+	# land almost exactly on the real car's. Sledge is the "heavyweight contender" — 1585 kg of long low
+	# GT that actually won the 1979 Bandama, and after two boxy 4x4s the brand badly needs a low one.
+	#  · Biggest arcade wheel distortion in the roster (+38%): its 14" wheel scales to 0.319 against the
+	#    rig's 0.44. So the usual floor 0.30 and a 0.12 roof lift, and `belt` has to be lifted with it —
+	#    the RIG-FIXED arch top (0.891) would otherwise sit only 0.11 below the beltline where the real
+	#    car has 0.16, leaving barely a voxel of fender over the front wheel.
+	#  · Rig track is 0.26 m WIDER than scale-correct (1.70 vs 1.44) — the largest mismatch yet, and the
+	#    opposite direction to the Verdict/Mule. Matching the real body-over-tyre would need a 2.06 waist,
+	#    which on a 4.72 m car reads stubby (L/W 2.29 against the real 2.65). Kept it lean at 1.88 (wheels
+	#    0.02 proud at the doors, as on the Crowbar) and let the rally car's arch flares cover them.
+	"sledge": {
+		"brand": "wreck",
+		"body_style": "sedan",                                       # notchback coupe: backlight -> flat boot
+		"L": 4.72, "body_w": 1.88,
+		"floor": 0.30, "belt": 1.05, "roof": 1.49, "glass_top": 1.44,
+		"roof_crown": 0.02, "tail_drop": 0.05, "shoulder_r": 0.10,
+		# Landmarks: cowl 0.36 L · screen top 0.50 · roof end 0.66 · boot 0.79. A long bonnet with the
+		# cabin set well back — the classic 70s GT proportion, and nothing else in the game has it.
+		"cowl": 1.70, "roof_front": 2.36, "roof_rear": 3.11, "deck_z": 3.73,
+		"green_belt_w": 1.70, "roof_w": 1.44,                        # coupe tumblehome
+		"wz_f": 0.86, "wz_r": 3.66,                                  # overhangs 0.18 L / 0.22 L
+		"skirt_h": 0.16, "skirt_out": 0.04,
+		"hood_drop": 0.08, "deck_drop": 0.04,                        # long, near-level bonnet
+		"nose_taper": 0.07, "tail_taper": 0.05, "nose_drop": 0.04,
+		"nose_point_d": 0.10, "nose_side_d": 0.07, "nose_side_z": 0.30,
+		"nose_round": 0.08, "nose_upback": 0.10,
+		"tail_point_d": 0.12, "tail_cut_h": 0.38,
+		"tail_side_d": 0.06, "tail_side_z": 0.30, "tail_top_d": 0.06, "tail_round": 0.05,
+		# NO ARCH FLARES — a C107 is a smooth-flanked GT and the blisters were fighting that. Leaves the
+		# tyres ~0.02 m proud at the arches, which is 0.6 of a voxel at 33 mm: below the grid, so nothing
+		# actually steps out. The sills still carry the waist to 0.98, past the tyre line.
+		"flare_w": 0.0,
+		"crown_clear": 0.0,
+		"spoiler": false, "roof_bulge": false, "hood_bulge": false,  # 1979 Bandama car ran no wing
+		"side_doors": 1,                                             # 2-door coupe
+		"antenna": true, "antenna_h": 0.40,
 		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
