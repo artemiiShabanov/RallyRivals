@@ -13,7 +13,7 @@ const OY := -0.5
 # Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
 # CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
 # floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
-const CAR := "stiletto"
+const CAR := "mule"
 const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
@@ -28,6 +28,10 @@ const CARS := {
 	# Stiletto is back on the shared floor 0.30 -> cy 3.0. cz = axle midpoint: _rz(0.75)=23, _rz(3.55)=108.
 	"stiletto": {"src": "res://assets/voxels/cars/stiletto.vox", "tres": "res://assets/voxels/cars/stiletto_body.tres",
 	            "uid": "", "cy": 3.0, "cz": 65.5},
+	# Mule rides HIGH (floor 0.40) — level with RIG_WHEEL_R, so cy is 0: the model floor sits exactly at
+	# the wheel centre. Same axles as Stiletto: _rz(0.75)=23, _rz(3.55)=108 -> cz 65.5.
+	"mule": {"src": "res://assets/voxels/cars/mule.vox", "tres": "res://assets/voxels/cars/mule_body.tres",
+	            "uid": "", "cy": 0.0, "cz": 65.5},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]

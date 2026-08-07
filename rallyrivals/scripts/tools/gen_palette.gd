@@ -49,6 +49,12 @@ var ramps := [
 	# Apex BODY ramp — slightly dirty white (was pale mint; the mint->white swap used to be a bake-time
 	# recolour in bake_car.gd, now it lives in the palette so the .vox files read correctly in MagicaVoxel too).
 	["car_apex_body", Color("46443e"), Color("e7e4da"), {3: Color("c4c1b5")}],
+	# Per-brand BODY ramps, appended after car_apex_body so slots 0-101 never move (committed models keep
+	# their colours). Each gives its brand a body shade AND a seam-contrast shade from the same hue family.
+	# NOTE which index is the body: Apex's body is the LIGHT end and its seam is darker; Wreckhouse's body
+	# is DARK (navy) so its seam has to be LIGHTER or every shut line and arch shadow vanishes into it.
+	["car_wreck_body", Color("04101f"), Color("5b8fc9"), {2: Color("0d2b52"), 4: Color("2f5f96")}],
+	["car_mayfly_body", Color("0b3b39"), Color("d8fdf7"), {2: Color("4fb5aa"), 4: Color("abf5ed")}],
 ]
 
 func _initialize() -> void:

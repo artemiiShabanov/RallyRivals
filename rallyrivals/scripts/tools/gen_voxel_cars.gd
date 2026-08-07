@@ -24,11 +24,12 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "stiletto"
+const CAR := "mule"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
 	"kerb": {
+		"brand": "apex",
 		"body_style": "hatch",
 		"L": 4.40, "body_w": 2.00,
 		"floor": 0.3, "belt": 0.98, "roof": 1.52, "glass_top": 1.45,
@@ -45,6 +46,7 @@ const CARS := {
 	# backlight onto a flat trunk deck. Longer nose (boxer bay) than the cab-forward Delta, more tumblehome,
 	# rounder 90s nose (bigger taper/drop), and the 555's big deck wing.
 	"tangent": {
+		"brand": "apex",
 		"body_style": "sedan",
 		"L": 4.82, "body_w": 1.88,
 		# lengthwise z + belt MEASURED OFF THE REFERENCE PHOTO (assets/refs/tangent_side.png), as fractions of
@@ -75,6 +77,7 @@ const CARS := {
 	# original, boxy and angular — flat level hood, upright greenhouse, short boot, and its signature
 	# BLISTERED arches (flare_w nearly double the Impreza's). 2-door coupé, modest boot-lid lip.
 	"meridian": {
+		"brand": "apex",
 		"body_style": "hatch",                                       # backlight rakes to the very tail
 		"L": 4.89, "body_w": 1.91,
 		"floor": 0.30, "belt": 1.09, "roof": 1.60, "glass_top": 1.55,
@@ -113,6 +116,7 @@ const CARS := {
 	#    +7% (every other car is +30%). So it needs almost none of the usual arcade lift — floor 0.25, not 0.30
 	#    — and it still must not be slammed: 130 mm of real ground clearance, because it was bred to rally.
 	"verdict": {
+		"brand": "apex",
 		"body_style": "sedan",                                       # backlight -> flat engine deck -> Kamm tail
 		"L": 4.44, "body_w": 2.06,
 		"floor": 0.25, "belt": 1.04, "roof": 1.45, "glass_top": 1.40,
@@ -155,6 +159,7 @@ const CARS := {
 	# scaling and the honest overhang agree at ~1.96. Its scaled wheel is 0.349 vs the rig's 0.44 (+26%),
 	# i.e. the usual arcade distortion, so it takes the shared floor 0.30 and the +0.09 roof lift.
 	"stiletto": {
+		"brand": "apex",
 		"body_style": "sedan",                                       # backlight -> flat engine deck
 		"L": 4.42, "body_w": 1.96,
 		"floor": 0.30, "belt": 1.02, "roof": 1.55, "glass_top": 1.50,
@@ -188,14 +193,73 @@ const CARS := {
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
 	},
+	# Wreckhouse D — Lada Niva VAZ-2121 (3720×1680×1640, WB 2200, track 1430/1400, clearance 220,
+	# 175/80 R16) ×1.273. FIRST NON-APEX CAR and the first off-roader: narrow, TALL and upright, where
+	# every Apex car is long and low. Mule is "planted workhorse" — best D grip, worst D steering/braking.
+	#  · Like the Stratos, its scaled wheel is essentially rig-size (0.437 vs 0.44, +0.7%), so it needs NO
+	#    arcade lift. But unlike every previous car it genuinely rides high: 0.22 m of real ground clearance
+	#    scales to 0.28, and the sill sits higher still -> floor 0.45, vs 0.30 on the tarmac cars.
+	#  · Same width correction as the Verdict: pure scaling wants 2.14, but the rig track (1.7) is 0.12
+	#    NARROWER than scale-correct, and the real body clears its tyres by only 37 mm -> waist 2.01.
+	#  · The greenhouse is the tall giveaway: a 0.63 m glass band (Stiletto 0.48, Verdict 0.36), an upright
+	#    ~50° windscreen and a near-vertical tailgate, so the roof spans over half the car's length.
+	"mule": {
+		"brand": "wreck",
+		"body_style": "hatch",                                       # tailgate: backlight rakes to the tail
+		"L": 4.35, "body_w": 2.01,
+		# Pure scaling gives roof 2.09 / floor 0.45, but the RIG-FIXED arch then cuts only 27% of the body
+		# height (a real Niva is ~36%) and the car reads as a van on small wheels. Pulled to 1.85 / 0.40,
+		# which puts the arch back at ~34% and stops the D workhorse towering over the B Dakar car.
+		# belt drops with it so the 0.63 m glass band is preserved — the tall greenhouse IS the Niva.
+		"floor": 0.40, "belt": 1.19, "roof": 1.85, "glass_top": 1.79,
+		"roof_crown": 0.02, "tail_drop": 0.02, "shoulder_r": 0.06,   # crisp box, barely rounded
+		"cowl": 1.15, "roof_front": 1.68, "roof_rear": 4.04,         # short bonnet, very long roof
+		"green_belt_w": 1.85, "roof_w": 1.69,                        # a BOX: almost no tumblehome
+		# SHORTENED to the Niva's REAL absolute overhangs instead of scaled ones. The wheelbase is stretched
+		# 2.20 -> 2.80 for the rig, and scaling the overhangs with it made a stubby off-roader look long;
+		# holding them at ~0.75/0.80 puts the wheels back at the corners, which is the Niva's whole stance.
+		"wz_f": 0.75, "wz_r": 3.55,                                  # overhangs 0.17 L / 0.18 L
+		"skirt_h": 0.12, "skirt_out": 0.02,                          # no bolt-on kit: a plain sill
+		"hood_drop": 0.08, "deck_drop": 0.0,                         # flat, level bonnet
+		"nose_taper": 0.06, "tail_taper": 0.04, "nose_drop": 0.03,
+		# APPROACH / DEPARTURE chamfers, cut hard: on a 4x4 these are the functional angles, not styling.
+		# Chin 56 deg off the ground (was 77), tail 61 (was 78).
+		"nose_point_d": 0.18, "nose_side_d": 0.05, "nose_side_z": 0.32,
+		"nose_round": 0.05, "nose_upback": 0.06,                     # upright slab front
+		"tail_point_d": 0.20, "tail_cut_h": 0.45,
+		"tail_side_d": 0.04, "tail_side_z": 0.34, "tail_top_d": 0.08, "tail_round": 0.04,
+		"flare_w": 0.06,                                             # arch lips only — must clear skirt_out
+		"crown_clear": 0.0,                                          # flat bonnet sits far above the arch already
+		"spoiler": false, "roof_bulge": false, "hood_bulge": false,
+		"side_doors": 1,                                             # 3-door
+		"antenna": true, "antenna_h": 0.40,
+		# Livery is HAND-PAINTED, so step 8 is a no-op and STEP 7 is the reproducible generator baseline
+		# the hand-tuned .vox gets diffed against. Flip these on for a generated starting point instead.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
 }
 var SPEC: Dictionary = CARS[CAR]
+
+# ---- BRAND LIVERY: body / seam-contrast / accent, as MASTER-PALETTE ramp slots. gen_palette writes
+# 6-wide ramps in a fixed order, so ramp N starts at N*6: 12 car_apex · 13 car_wreck · 14 car_mayfly ·
+# 15 car_trim · 16 car_apex_body · 17 car_wreck_body · 18 car_mayfly_body.
+# `shade` is the SEAM CONTRAST, not simply "darker": on Apex's near-white body it must be darker to read
+# at all, on Wreckhouse's navy it must be LIGHTER or every shut line, arch shadow and louvre slat
+# disappears into the paint. Direction follows the body's value, not a convention. ----
+const RAMP := 6
+const BRANDS := {
+	"apex":   {"body": 15 * RAMP + 0, "shade": 16 * RAMP + 3, "acc": 12 * RAMP + 2},  # dirty white / grey / red
+	"wreck":  {"body": 17 * RAMP + 2, "shade": 17 * RAMP + 4, "acc": 15 * RAMP + 1},  # navy / lighter navy / orange
+	"mayfly": {"body": 18 * RAMP + 4, "shade": 18 * RAMP + 2, "acc": 14 * RAMP + 2},  # pale cyan / teal / indigo
+}
 
 func _initialize() -> void:
 	_palette = Image.load_from_file(ProjectSettings.globalize_path("res://assets/palette/rallyrivals_palette.png"))
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://assets/voxels/cars/_review/"))
+	var B: Dictionary = BRANDS.get(SPEC.get("brand", "apex"), BRANDS["apex"])
 	S = {
-		"body": _slot(Color("e7e4da")), "shade": _slot(Color("c4c1b5")), "acc": _slot(Color("c9303e")),
+		"body": B.body, "shade": B.shade, "acc": B.acc,
 		"dark": _slot(Color("18181c")), "glass": _slot(Color("5c7086")), "tire": _slot(Color("101014")),
 		"chrome": _slot(Color("c6cad0")), "amber": _slot(Color("ff8c00")), "red": _slot(Color("c01818")),
 	}
