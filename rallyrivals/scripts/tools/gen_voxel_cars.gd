@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "sledge"
+const CAR := "juggernaut"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -362,6 +362,44 @@ const CARS := {
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
 	},
+	# Wreckhouse S — Baja/trophy pickup on a Ford F-150 regular cab, 6.5 ft bed (5315×2029×1918,
+	# WB 3119, bed depth 543) ×0.898. Second reference that scales DOWN. Juggernaut is the final boss,
+	# "the garage-wrecker": speed 10, steering 4. THE ONLY PICKUP IN THE GAME — the open bed is its whole
+	# silhouette, and nothing else in the roster reads like it from any angle.
+	#  · The lineup note from step 0 holds: squeezing a 3.12 m wheelbase onto the rig's 2.80 leaves the
+	#    0.44 wheel 22% larger than the truck's own, which IS the Baja look — no correction wanted.
+	#  · Short cab, long bed: the cabin is 1.33 m of a 4.77 m truck and the bed is 1.87 m (39% of length,
+	#    against a real 6.5 ft box's 37%). A regular cab is what makes it read as a work truck rather
+	#    than a lifted SUV — the Anvil already owns that shape.
+	"juggernaut": {
+		"brand": "wreck",
+		"body_style": "pickup",                                      # open bed — see _bed()
+		"L": 4.77, "body_w": 2.00,
+		"floor": 0.46, "belt": 1.22, "roof": 1.80, "glass_top": 1.75,
+		"roof_crown": 0.02, "tail_drop": 0.02, "shoulder_r": 0.06,
+		# Upright truck cab: windscreen 55°, backlight 75° (near vertical). Cowl at 0.33 L leaves the long
+		# bonnet a full-size pickup needs.
+		"cowl": 1.57, "roof_front": 1.98, "roof_rear": 2.75, "deck_z": 2.90,
+		"green_belt_w": 1.86, "roof_w": 1.72,                        # boxy cab, almost no tumblehome
+		"wz_f": 0.85, "wz_r": 3.65,                                  # overhangs 0.18 L / 0.23 L
+		"bed_rail": 1.20, "bed_floor": 0.80, "bed_wall": 0.10,       # 0.40 m deep load area
+		"skirt_h": 0.14, "skirt_out": 0.04,
+		"hood_drop": 0.10, "deck_drop": 0.0,
+		"nose_taper": 0.05, "tail_taper": 0.03, "nose_drop": 0.03,
+		# Deep approach/departure cuts — a Baja truck's bumpers are tube, not bodywork.
+		"nose_point_d": 0.16, "nose_side_d": 0.06, "nose_side_z": 0.32,
+		"nose_round": 0.06, "nose_upback": 0.08,
+		"tail_point_d": 0.18, "tail_cut_h": 0.40,
+		"tail_side_d": 0.05, "tail_side_z": 0.32, "tail_top_d": 0.05, "tail_round": 0.04,
+		"flare_w": 0.12,                                             # Baja arches
+		"crown_clear": 0.0,                                          # bonnet clears the arch by 8 rows
+		"spoiler": false, "roof_bulge": false, "hood_bulge": false,
+		"side_doors": 1,                                             # regular cab
+		"antenna": true, "antenna_h": 0.42,
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
 }
 var SPEC: Dictionary = CARS[CAR]
 
@@ -414,6 +452,7 @@ func _car() -> void:
 	c = _rz(SPEC.body_w * 0.5) + _rz(0.14)
 	_lower_body()                       # 1 · base volume (+ arches: rig-fixed, all cars)
 	_fender_crowns()                    # wings hump over the wheels BEFORE the openings are cut
+	_bed()                              # pickup only: carve the load area out of the solid tub
 	_greenhouse()
 	_arches()
 	if STEP >= 2:                       # 2 · body kit (added volumes)
@@ -488,7 +527,7 @@ func _greenhouse() -> void:
 # SEDAN/notchback: the backlight lands on the trunk at `deck_z`, leaving a FLAT deck from there to the tail
 # (the deck is just _lower_body's belt-height top, so nothing extra to build).
 func _htail() -> int:
-	if SPEC.get("body_style", "hatch") == "sedan":
+	if SPEC.get("body_style", "hatch") in ["sedan", "pickup"]:
 		return _rz(SPEC.get("deck_z", float(SPEC.L) - 0.6))
 	return _rz(SPEC.L) - _rz(0.12)
 
@@ -528,6 +567,8 @@ func _body_top_m(z: float) -> float:
 	if z <= cowl:
 		t = belt - float(SPEC.get("hood_drop", 0.0)) * (1.0 - z / maxf(cowl, 0.001))
 		if z < 0.14: t -= float(SPEC.nose_drop) * smoothstep(0.14, 0.0, z)
+	elif SPEC.get("body_style", "hatch") == "pickup" and z >= _ht_m():
+		t = float(SPEC.get("bed_rail", float(SPEC.belt) - 0.02))   # bed SIDES, flat all the way to the tail
 	elif SPEC.get("body_style", "hatch") == "sedan" and z >= _ht_m():
 		var ht := _ht_m()
 		t = _deck_m() - float(SPEC.get("deck_drop", 0.0)) * ((z - ht) / maxf(L - ht, 0.001))
@@ -1061,6 +1102,22 @@ func _fender_crowns() -> void:
 				for y in range(ytop + 1, nat + t + 1):
 					grid[Vector3i(x, y, z)] = S.body
 
+# PICKUP BED — the third body style. `hatch` and `sedan` both assume a continuous top surface behind the
+# cabin; an open bed is a CAVITY, so _lower_body fills the tub solid up to `bed_rail` and this carves the
+# load area back out, leaving walls of `bed_wall` all round and a floor at `bed_floor`. Painted with the
+# seam shade so the floor reads as a separate surface rather than a hole of body colour.
+func _bed() -> void:
+	if SPEC.get("body_style", "hatch") != "pickup": return
+	var wall := _rz(SPEC.get("bed_wall", 0.10))
+	var z0 := _rz(SPEC.deck_z) + wall; var z1 := _rz(SPEC.L) - 1 - wall
+	var hw := _rz(SPEC.body_w * 0.5) - wall
+	var y0 := _rz(SPEC.get("bed_floor", 0.80)); var y1 := _rz(SPEC.get("bed_rail", 1.20))
+	for z in range(z0, z1 + 1):
+		for x in range(c - hw, c + hw + 1):
+			for y in range(y0, y1 + 1):
+				grid.erase(Vector3i(x, y, z))
+			grid[Vector3i(x, y0 - 1, z)] = S.shade                 # the bed floor, one row below the cavity
+
 func _arches() -> void:
 	var r := _rz(RIG_WHEEL_R); var cy := _rz(RIG_WHEEL_R); var hw := _rz(SPEC.body_w * 0.5); var clr := 3
 	for wz in [_rz(SPEC.wz_f), _rz(SPEC.wz_r)]:
@@ -1416,7 +1473,7 @@ const BPAD := 30
 const RIG_WHEEL_VIS := 0.44      # wheel MODEL radius (car.tscn wheel_radius); arches stay rig-fixed at RIG_WHEEL_R
 
 func _ht_m() -> float:                                # greenhouse/body-top meeting point in metres (see _htail)
-	if SPEC.get("body_style", "hatch") == "sedan": return float(SPEC.get("deck_z", float(SPEC.L) - 0.6))
+	if SPEC.get("body_style", "hatch") in ["sedan", "pickup"]: return float(SPEC.get("deck_z", float(SPEC.L) - 0.6))
 	return float(SPEC.L) - 0.12
 
 # True if (z, y) in metres would be CARVED AWAY by the step-5/6 nose & tail shaping, so the blueprint shows

@@ -13,7 +13,7 @@ const OY := -0.5
 # Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
 # CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
 # floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
-const CAR := "sledge"
+const CAR := "juggernaut"
 const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
@@ -41,6 +41,10 @@ const CARS := {
 	# Sledge: floor 0.30 -> cy 3.0. Axles _rz(0.86)=26, _rz(3.66)=111 -> cz 68.5.
 	"sledge": {"src": "res://assets/voxels/cars/sledge.vox", "tres": "res://assets/voxels/cars/sledge_body.tres",
 	            "uid": "", "cy": 3.0, "cz": 68.5},
+	# Juggernaut is the FIRST car with a NEGATIVE cy: floor 0.46 is ABOVE RIG_WHEEL_R 0.40, so the model
+	# floor sits above the wheel centre. (0.40-0.46)/VOX = -1.82. Axles _rz(0.85)=26, _rz(3.65)=111.
+	"juggernaut": {"src": "res://assets/voxels/cars/juggernaut.vox", "tres": "res://assets/voxels/cars/juggernaut_body.tres",
+	            "uid": "", "cy": -1.82, "cz": 68.5},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]
