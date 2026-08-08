@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "juggernaut"
+const CAR := "spark"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -396,6 +396,59 @@ const CARS := {
 		"spoiler": false, "roof_bulge": false, "hood_bulge": false,
 		"side_doors": 1,                                             # regular cab
 		"antenna": true, "antenna_h": 0.42,
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
+	# Mayfly D — Peugeot 205 GTI 1.9 (3705×1589×1354, WB 2420, track 1394/1304) ×1.157 — the BIGGEST
+	# scale-up of any tarmac car in the roster, and the whole SPEC is a fight against it.
+	#  · Pure scaling gives 4.29 × 1.84 × 1.57. That height is the problem: the 205 is the SHORTEST
+	#    reference in the game (1354 mm, 11 mm under the Delta) and normalization would make it the
+	#    third-TALLEST tarmac car, above the Kerb it is supposed to look small beside. Roof pulled to
+	#    1.48. Cross-checked two ways: against the Kerb's own reference (Delta 1365 -> 1.52, so a
+	#    true-to-order 205 lands ~1.51) and against the arch, where 1.48 puts the rig-fixed opening at
+	#    50% of body height vs the Kerb's 48% — proud arches, which is a 205 GTI signature anyway.
+	#  · Overhangs held near REAL absolute (0.72 / 0.68) instead of scaled (0.79 / 0.70), the Mule rule:
+	#    a short wheelbase stretched to 2.80 drags stubby overhangs out with it. L 4.20 makes Spark the
+	#    smallest car in the game by 0.15 m, which is the point of the D-class Mayfly.
+	#  · docs/CARS.md flags 205-vs-Delta as a silhouette collision. They separate on SIZE (0.20 m
+	#    shorter, 0.16 m narrower, 0.04 m lower) and on stance: the Delta is a widebody box, the 205 a
+	#    narrow crisp wedge with a low beltline and a big glasshouse.
+	#  · belt sits at 0.98, ABOVE the 0.94 the real beltline share asks for. At 0.94 the fender over the
+	#    rig-fixed 0.891 arch is 1.5 voxels and would break up; the arch does not scale with the car, so
+	#    the smallest body in the roster is the one that runs out of room above it.
+	"spark": {
+		"brand": "mayfly",
+		"body_style": "hatch",                                       # tailgate: backlight rakes to the tail
+		"L": 4.20, "body_w": 1.84,                                   # shortest AND narrowest car in the game
+		"floor": 0.30, "belt": 0.98, "roof": 1.48, "glass_top": 1.43,
+		"roof_crown": 0.03, "tail_drop": 0.02, "shoulder_r": 0.07,   # crisp Pininfarina edges, lightly radiused
+		# Cabin landmarks as fractions of L: cowl 0.27 · screen top 0.42 · roof end 0.757. On a "hatch" the
+		# backlight ALWAYS runs to L-0.12, so roof_rear is the only lever on tailgate rake — at the Kerb's
+		# 0.667 the glass sweeps 1.28 m to the tail and the car reads as a fastback, which no 205 is.
+		# Roof carried back to 3.18 (1.40 long, 0.33 L) leaves a 0.90 backlight: a genuinely steep tailgate
+		# over a long flat roof, which is the 205's profile. The short bonnet (transverse 4-pot vs the
+		# Delta's longer bay) plus a 0.66 screen run separates the silhouettes: 0.27 L of nose vs 0.30.
+		"cowl": 1.12, "roof_front": 1.78, "roof_rear": 3.18,
+		"green_belt_w": 1.78, "roof_w": 1.60,                        # flat sides, modest tumblehome
+		"wz_f": 0.72, "wz_r": 3.52,                                  # overhangs 0.17 L front / 0.16 L rear
+		"skirt_h": 0.12, "skirt_out": 0.03,                          # the GTI's half-height side rubbing strips
+		"hood_drop": 0.10, "deck_drop": 0.0,                         # gently sloping bonnet, no wedge
+		"nose_taper": 0.06, "tail_taper": 0.05, "nose_drop": 0.06,
+		"nose_point_d": 0.12, "nose_side_d": 0.06, "nose_side_z": 0.28,
+		"nose_round": 0.05, "nose_upback": 0.05,
+		"tail_point_d": 0.10, "tail_cut_h": 0.40,
+		"tail_side_d": 0.05, "tail_side_z": 0.30, "tail_top_d": 0.08, "tail_round": 0.04,
+		"flare_w": 0.08,                                             # the GTI's plastic arch extensions
+		"crown_clear": 0.05,                                         # low bonnet -> lift the wing over the arch
+		"spoiler": true, "spoiler_style": "arch",                    # tailgate-top lip
+		"lamp_outline": true,                                        # gold body swallows amber — ring the lamps
+
+		"roof_bulge": false, "hood_bulge": false, "hood_louvres": false,
+		"side_doors": 1,                                             # 3-door
+		# Roof whip, not the 205's real front-wing aerial: _antenna() places a single mast and anything
+		# off-centre would put geometry asymmetry above 0, which is the invariant every QA pass checks.
+		"antenna": true, "antenna_h": 0.35,                          # shortest whip in the roster
 		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
@@ -818,9 +871,22 @@ func _front_details() -> void:
 					if d > float(lr): continue
 					_paint_front(lx + dx, ly + dy, S.chrome if d <= float(lr) - 1.5 else S.dark)
 	else:
+		# `lamp_outline` rings the aperture in the seam shade so the lens reads as an object set INTO the
+		# panel. Needed when the body sits close to the lamp colours in BOTH value and hue: on Mayfly's gold
+		# the amber indicator is contrast 1.23 at 15 deg of hue and simply vanishes. (Chrome is 1.16, but a
+		# neutral grey is far enough off a saturated gold in HUE to still read, which is why the lamps do.)
+		# Off by default: the committed cars have bodies their lamps already separate from, and STEP 7 is the
+		# baseline their hand-tuned .vox files get diffed against, so it must not move under them.
+		var outline: bool = SPEC.get("lamp_outline", false)
 		for sgn in [-1, 1]:
 			var x0: int = c + sgn * (gw + _rz(0.05)); var x1: int = c + sgn * (hw - _rz(0.09))
-			for x in range(mini(x0, x1), maxi(x0, x1) + 1):
+			var xa := mini(x0, x1); var xb := maxi(x0, x1)
+			if outline:
+				for x in range(xa - 1, xb + 2):
+					_paint_front(x, gl - 1, S.shade); _paint_front(x, gh - 1, S.shade)
+				for y in range(gl - 1, gh):
+					_paint_front(xa - 1, y, S.shade); _paint_front(xb + 1, y, S.shade)
+			for x in range(xa, xb + 1):
 				for y in range(gl + 1, gh - 1):
 					_paint_front(x, y, S.chrome)
 				_paint_front(x, gl, S.amber)                          # amber indicator strip under the lamp
@@ -891,12 +957,22 @@ func _rear_details() -> void:
 	var ll := floorv + int(h * 0.50); var lh := floorv + int(h * 0.76)   # lamp band
 	var bl := floorv + int(h * 0.16); var bh := floorv + int(h * 0.42)   # bumper band
 	# tail lamp cluster: red, out to the corners, with a body-coloured break at the centre
+	# Same `lamp_outline` as the front. The RED reads on any body, but the amber row sits at the BOTTOM of
+	# the cluster: its top edge borders red and carries itself, while its lower edge meets bare paint — so on
+	# a gold car only half of it separates. The ring gives that edge something to land against.
+	var outline: bool = SPEC.get("lamp_outline", false)
 	for sgn in [-1, 1]:
 		var x0: int = c + sgn * int(hw * 0.24); var x1: int = c + sgn * (hw - _rz(0.07))
-		for x in range(mini(x0, x1), maxi(x0, x1) + 1):
+		var xa := mini(x0, x1); var xb := maxi(x0, x1)
+		if outline:
+			for x in range(xa - 1, xb + 2):
+				_paint_rear(x, ll - 1, S.shade); _paint_rear(x, lh, S.shade)
+			for y in range(ll - 1, lh + 1):
+				_paint_rear(xa - 1, y, S.shade); _paint_rear(xb + 1, y, S.shade)
+		for x in range(xa, xb + 1):
 			for y in range(ll, lh):
 				_paint_rear(x, y, S.red)
-		for x in range(mini(x0, x1), maxi(x0, x1) + 1):                  # amber indicator in the cluster
+		for x in range(xa, xb + 1):                                      # amber indicator in the cluster
 			_paint_rear(x, ll, S.amber)
 	# dark rear bumper band + a light plate patch centred in it
 	for x in range(c - int(hw * 0.82), c + int(hw * 0.82) + 1):
@@ -1083,6 +1159,9 @@ func _fender_crowns() -> void:
 	var hw := _rz(SPEC.body_w * 0.5); var floorv := _rz(SPEC.floor)
 	var arch_top := _rz(RIG_WHEEL_R) * 2 + 3                     # must match _arches(): cy + r + clr
 	var span := _rz(0.55); var band := _rz(0.42)
+	# Both axles are walked, but `want <= nat` below means only an end whose body top actually falls to the
+	# arch gets a crown — in practice the front, since the rear's top is `belt`, a SPEC constant well clear
+	# of it. Verified on Spark: all 554 crown voxels land at the front axle, none at the rear.
 	for wz in [_rz(SPEC.wz_f), _rz(SPEC.wz_r)]:
 		for z in range(wz - span, wz + span + 1):
 			var nat := _rz(_body_top_m(float(z) * VOX))

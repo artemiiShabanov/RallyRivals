@@ -132,7 +132,7 @@ tasks:
   # damage-variant sculpts get their own tasks once code-vehicle-damage defines the read) ----------
   - {id: art-voxel-car-kerb, title: "Voxel car: Kerb (Apex D, starter) — MV pipeline validation", type: art, group: voxel, size: default, status: done, blockers: []}
   - {id: art-voxel-car-mule, title: "Voxel car: Mule (Wreckhouse D)", type: art, group: voxel, size: default, status: done, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
-  - {id: art-voxel-car-spark, title: "Voxel car: Spark (Mayfly D)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-spark, title: "Voxel car: Spark (Mayfly D)", type: art, group: voxel, size: default, status: done, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
   - {id: art-voxel-car-tangent, title: "Voxel car: Tangent (Apex C)", type: art, group: voxel, size: default, status: done, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
   - {id: art-voxel-car-crowbar, title: "Voxel car: Crowbar (Wreckhouse C)", type: art, group: voxel, size: default, status: done, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
   - {id: art-voxel-car-fuse, title: "Voxel car: Fuse (Mayfly C)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}

@@ -13,7 +13,7 @@ const OY := -0.5
 # Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
 # CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
 # floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
-const CAR := "juggernaut"
+const CAR := "spark"
 const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
@@ -45,6 +45,10 @@ const CARS := {
 	# floor sits above the wheel centre. (0.40-0.46)/VOX = -1.82. Axles _rz(0.85)=26, _rz(3.65)=111.
 	"juggernaut": {"src": "res://assets/voxels/cars/juggernaut.vox", "tres": "res://assets/voxels/cars/juggernaut_body.tres",
 	            "uid": "", "cy": -1.82, "cz": 68.5},
+	# Spark: floor 0.30 -> cy 3.0, the shared tarmac value. Axles _rz(0.72)=22, _rz(3.52)=107 -> cz 64.5,
+	# the SMALLEST in the roster — it is the shortest car, so its axle midpoint sits furthest forward.
+	"spark": {"src": "res://assets/voxels/cars/spark.vox", "tres": "res://assets/voxels/cars/spark_body.tres",
+	            "uid": "", "cy": 3.0, "cz": 64.5},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]
