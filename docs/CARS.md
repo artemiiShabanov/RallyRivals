@@ -79,7 +79,34 @@ family — three of the five are off-roaders, which is the brand identity, not a
 Anvil is *wide and squat* (aero-flared). They are both boxy 4×4s and will blur into each other if
 that contrast is not deliberate. Juggernaut's pickup bed is its own separator.
 
-Mayfly references: TBD (assign the same way — stat archetype first: light, darty, accel-biased).
+### Mayfly Speedworks (locked 2026-08-08)
+
+Brand skew +1 accel / +1 steering / −1 braking / −1 grip: every reference is light, high-revving and
+slightly nervous — the opposite of Wreckhouse's mass. Apex is the tarmac-precision family, Wreckhouse
+the brute/off-road family, Mayfly the **lightweight/nervous** family.
+
+**Wheelbase is a selection criterion here, not just a spec value.** It decides how badly a reference
+distorts on the fixed 2.80 m rig, and Mayfly's natural candidates are the worst offenders: a classic
+Mini (WB 2036) scales ×1.375 into a 4.2 m long, 1.85 m tall box — a Niva — and an Alpine A110
+(WB 2100) stretches to 5.1 m. Both stop being small cars, which was the whole reason to pick them.
+Every reference below sits in the 2.2–2.45 m band where inflation stays mild.
+
+| class | car | stats | reference | why |
+|-------|-----|-------|-----------|-----|
+| D | **Spark** | 4/5/6/3/4 | Peugeot 205 GTI (WB 2420) | 850 kg, front-drive, famous snap lift-off oversteer — "darty, slippy" is this car's reputation. Worst braking and grip in the class |
+| C | **Fuse** | 5/6/6/4/5 | Toyota AE86 (WB 2400) | "eager, light" — high-revving RWD coupe with pop-up lamps; no other face in the game |
+| B | **Strobe** | 7/9/6/3/5 | Porsche 911 Turbo (930) (WB 2272) | Ch2 boss. The widowmaker: vast turbo lag then explosive boost, brakes that never matched the engine — "all launch, no brakes" is its folklore. Whale tail over a rear-engine fastback |
+| A | **Comet** | 7/8/8/5/6 | Lotus Elise S1 (WB 2300) | 725 kg and the definition of "the flowing fast lap"; the only genuinely rounded, organic body in a roster of boxes and wedges |
+| S | **Nova** | 8/9/9/6/6 | Ferrari F40 (WB 2450) | "lives fast". 1100 kg — the lightest extreme supercar, which is Mayfly's identity. Huge rear wing, NACA ducts, slatted engine cover: reads as extreme even at 33 mm voxels |
+
+**Silhouette watch-outs while modelling:**
+- The 205 is a hatch like the Delta and the AE86 a 2-door coupe like the Ur-Quattro. They separate on
+  size and detail rather than silhouette class — keep the 205 small and rounded against the Delta's
+  boxy widebody, and the AE86 a low notchback with pop-ups against the Quattro's upright blisters.
+- Elise (A) and F40 (S) are both low mid-engines. Keep the Elise small, rounded and organic; the F40
+  angular, wide and winged.
+- The 930's overhangs must be held at their REAL absolute lengths (the Mule/Niva rule) or its 2272 mm
+  wheelbase inflates it to 5.29 m — longer than the Crowbar, which no 911 should ever be.
 
 ## Bars -> handling (code-vehicle-stats)
 
