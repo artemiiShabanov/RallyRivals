@@ -417,7 +417,11 @@ const BRANDS := {
 	# body needs a wider swing than the number suggests, and the review sheet's exposure curve
 	# compresses the top end on top of that. Delta is now 0.379.
 	"wreck":  {"body": 17 * RAMP + 2, "shade": 17 * RAMP + 5, "acc": 15 * RAMP + 1},  # navy / pale blue / orange
-	"mayfly": {"body": 18 * RAMP + 4, "shade": 18 * RAMP + 2, "acc": 14 * RAMP + 2},  # pale cyan / teal / indigo
+	# Mayfly's accent is the ONLY one that is a true complement: indigo #202d85 sits 175 deg from the gold
+	# body at contrast 6.22 — the "loud two-tone" the GDD asks of the brand, off slots that already existed.
+	# Watch the amber indicator on this body: #ff8c00 vs #e0b81f is contrast 1.23 at 15 deg, invisible in
+	# BOTH value and hue, so every Mayfly lamp recess needs a shade-colour outline to read as an object.
+	"mayfly": {"body": 18 * RAMP + 4, "shade": 18 * RAMP + 2, "acc": 14 * RAMP + 2},  # gold / bronze / indigo
 }
 
 func _initialize() -> void:

@@ -1,6 +1,6 @@
 extends SceneTree
 ## Generates the RallyRivals master palette (ADR-003: ONE palette shared by voxel models and
-## terrain). 10 ramps x 6 shades = 60 colours. The six SurfaceType colours are PINNED exactly
+## terrain). 19 ramps x 6 shades = 114 colours. The six SurfaceType colours are PINNED exactly
 ## into their ramps — the palette builds around the classifier anchors, never moves them.
 ## Writes: assets/palette/rallyrivals_palette.png  (256x1 MagicaVoxel-importable strip)
 ##         assets/palette/rallyrivals_swatches.png (human-readable swatch sheet)
@@ -54,7 +54,14 @@ var ramps := [
 	# NOTE which index is the body: Apex's body is the LIGHT end and its seam is darker; Wreckhouse's body
 	# is DARK (navy) so its seam has to be LIGHTER or every shut line and arch shadow vanishes into it.
 	["car_wreck_body", Color("04101f"), Color("5b8fc9"), {2: Color("0d2b52"), 4: Color("2f5f96")}],
-	["car_mayfly_body", Color("0b3b39"), Color("d8fdf7"), {2: Color("4fb5aa"), 4: Color("abf5ed")}],
+	# Mayfly is GOLD (was pale cyan, which landed at L 0.80 — lighter than Apex's near-white body, so the
+	# two brands read as the same light car at race distance). #e0b81f sits at L 0.50, giving the roster a
+	# clean light / mid / dark split: Apex 0.78, Mayfly 0.50, Wreckhouse 0.02. The seam is orange-SHIFTED
+	# as it darkens (+12 deg hue), not just value-darkened: straight-darkened yellow goes olive and muddy,
+	# real yellow paint shades warm because the pigment absorbs blue.
+	# 3 is pinned only to keep the ramp saturated: the raw HSV lerp lands on a chalky #a9904d there, which
+	# is the one step a hand-painter would reach for as a mid-gold and the one that would disappoint.
+	["car_mayfly_body", Color("2a1a03"), Color("fdf0b4"), {2: Color("8a5a12"), 3: Color("b8861a"), 4: Color("e0b81f")}],
 ]
 
 func _initialize() -> void:

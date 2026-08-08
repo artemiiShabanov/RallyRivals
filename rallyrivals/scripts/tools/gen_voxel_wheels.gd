@@ -18,8 +18,14 @@ var grid := {}
 
 const STYLES := [
 	{"id": "apex", "type": "spoke", "spokes": 5, "spoke_w": 0.44, "hub": "red", "uid": "uid://bapexwheel1x"},
-	{"id": "wreck", "type": "dish", "lugs": 5, "hub": "orange", "uid": "uid://bwreckwheel2y"},
-	{"id": "mayfly", "type": "spoke", "spokes": 10, "spoke_w": 0.24, "hub": "cyan", "uid": "uid://bmayflwheel3z"},
+	# The uid MUST match what is on disk and in the CarDefs that point here. Godot replaced wreck's
+	# hand-written uid with a real one on an editor pass; re-baking with the old string silently
+	# orphans every CarDef that references the wheel (the mesh loads as <null> and the car loses its
+	# wheels). Read the uid off the .tres before changing anything in this table.
+	{"id": "wreck", "type": "dish", "lugs": 5, "hub": "orange", "uid": "uid://clx2erd51v682"},
+	# hub = the brand ACCENT, same as apex:red and wreck:orange. Was "cyan" — the pre-gold Mayfly
+	# accent — which now clashes with the gold body instead of tying the wheel to it.
+	{"id": "mayfly", "type": "spoke", "spokes": 10, "spoke_w": 0.24, "hub": "indigo", "uid": "uid://bmayflwheel3z"},
 ]
 
 func _initialize() -> void:
@@ -28,7 +34,7 @@ func _initialize() -> void:
 	S = {
 		"tire": _slot(Color("101014")), "chrome": _slot(Color("c6cad0")), "steel": _slot(Color("8f9196")),
 		"dark": _slot(Color("18181c")), "red": _slot(Color("c9303e")), "orange": _slot(Color("ff8c00")),
-		"cyan": _slot(Color("abf5ed")),
+		"cyan": _slot(Color("abf5ed")), "indigo": _slot(Color("202d85")),
 	}
 	var cells := {}
 	for st in STYLES:
