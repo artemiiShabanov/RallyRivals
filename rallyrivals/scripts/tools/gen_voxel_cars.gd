@@ -29,7 +29,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "comet"
+const CAR := "nova"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -613,6 +613,57 @@ const CARS := {
 		"side_doors": 1,
 		"antenna": false,                                            # nothing breaks the roofline on this one
 		"lamp_outline": true,
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
+	# Mayfly S — Ferrari F40 (4358x1970x1124, WB 2450, track 1594/1606) x1.1429, the MILDEST scale-up of
+	# the Mayfly five and one of the mildest in the game, so this SPEC fights normalization less than any
+	# other Mayfly. The fight here is against the Comet instead: same mid-engine layout, opposite language.
+	#  · docs/CARS.md wants "reads as extreme even at 33 mm". It gets there on proportions before details:
+	#    WIDEST car in the game at 2.12 (Verdict 2.06) and LOWEST at 1.34 (Comet 1.36), on a long 4.82.
+	#  · Every rounding knob is the INVERSE of the Comet's. shoulder_r 0.03 against its 0.14, roof_crown and
+	#    tail_drop at 0.01, nose_round/tail_round at 0.02 — the hardest-edged body in the roster against the
+	#    softest. Two mid-engined cars in the same brand separate on language, not dimensions.
+	#  · L 4.82 rather than the scaled 4.98 or the absolute-overhang 4.71. The Mule rule is about SHORT
+	#    wheelbases stretched hard; at x1.14 off a 2450 mm wheelbase this one barely distorts, so the
+	#    overhangs take a light trim rather than being pinned to real.
+	#  · Arch share 0.568, a new high (Comet 0.558). Correct here — the F40 runs 335-section rear tyres and
+	#    is mostly wheel. Its 245/40ZR17 scales to 359 mm vs the rig's 400, 12% inflation, so floor stays 0.30.
+	#  · belt 0.99 is the Spark arch floor once more, leaving a 0.30 glass band — the shallowest in the game,
+	#    which an F40 greenhouse genuinely is.
+	#  · POP-UPS: the F40 has them too, so this is the second `popup_lights` car. docs/CARS.md line 97 claims
+	#    the AE86's is the only such face; that line needs correcting rather than the model being made wrong.
+	#    The two faces do not collide anyway — a tall boxy coupe against a wedge with a central vent outlet.
+	"nova": {
+		"brand": "mayfly",
+		"body_style": "sedan",                                       # mid-engine: backlight -> engine deck -> tail
+		"L": 4.82, "body_w": 2.12,                                   # WIDEST in the game
+		"floor": 0.30, "belt": 0.99, "roof": 1.34, "glass_top": 1.29,   # LOWEST in the game
+		"deck_rise": 0.10,                                           # raised engine cover under the wing
+		# HARD-EDGED: the exact inverse of the Comet's rounding. This is the separation.
+		"roof_crown": 0.01, "tail_drop": 0.01, "shoulder_r": 0.03,
+		# Landmarks as fractions of L: cowl 0.286 / screen top 0.436 / roof end 0.606 / deck 0.705. A small
+		# cabin well forward with 1.42 m of engine deck behind it.
+		"cowl": 1.38, "roof_front": 2.10, "roof_rear": 2.92, "deck_z": 3.40,
+		"green_belt_w": 1.76, "roof_w": 1.46,                        # narrow cabin on the widest body in the game
+		"wz_f": 0.95, "wz_r": 3.75,                                  # overhangs 0.20 L front / 0.22 L rear
+		"skirt_h": 0.14, "skirt_out": 0.05,
+		"hood_drop": 0.28, "deck_drop": 0.02,                        # hard wedge bonnet
+		"nose_taper": 0.06, "tail_taper": 0.04, "nose_drop": 0.10,
+		"nose_point_d": 0.22, "nose_side_d": 0.07, "nose_side_z": 0.32,
+		"nose_round": 0.02, "nose_upback": 0.06,
+		"tail_point_d": 0.12, "tail_cut_h": 0.42,
+		"tail_side_d": 0.05, "tail_side_z": 0.32, "tail_top_d": 0.08, "tail_round": 0.02,
+		"flare_w": 0.10, "crown_clear": 0.12,                        # nose falls to 0.71, well under the arch
+		"hood_vent": true, "vent_len": 0.40, "vent_w": 0.50,         # the central radiator outlet in the bonnet
+		"deck_louvres": true,                                        # SLATTED engine cover (docs/CARS.md)
+		"spoiler": true, "spoiler_style": "stand", "spoiler_h": 0.26,   # the huge rear wing
+		"popup_lights": true, "popup_z0": 0.34, "popup_z1": 0.80,    # further back + apart than the Fuse's
+		"bumper_indicators": true, "lamp_outline": true,
+		"roof_bulge": false, "hood_bulge": false, "hood_louvres": false,
+		"side_doors": 1,
+		"antenna": false,
 		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,

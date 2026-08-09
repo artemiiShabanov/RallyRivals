@@ -94,7 +94,7 @@ Every reference below sits in the 2.2–2.45 m band where inflation stays mild.
 | class | car | stats | reference | why |
 |-------|-----|-------|-----------|-----|
 | D | **Spark** | 4/5/6/3/4 | Peugeot 205 GTI (WB 2420) | 850 kg, front-drive, famous snap lift-off oversteer — "darty, slippy" is this car's reputation. Worst braking and grip in the class |
-| C | **Fuse** | 5/6/6/4/5 | Toyota AE86 (WB 2400) | "eager, light" — high-revving RWD coupe with pop-up lamps; no other face in the game |
+| C | **Fuse** | 5/6/6/4/5 | Toyota AE86 (WB 2400) | "eager, light" — high-revving RWD coupe with pop-up lamps. Shares `popup_lights` with the Nova (the F40 has them too), but the faces do not collide: a tall upright coupe against a wedge with a radiator outlet through the bonnet |
 | B | **Strobe** | 7/9/6/3/5 | Porsche 911 Turbo (930) (WB 2272) | Ch2 boss. The widowmaker: vast turbo lag then explosive boost, brakes that never matched the engine — "all launch, no brakes" is its folklore. Whale tail over a rear-engine fastback |
 | A | **Comet** | 7/8/8/5/6 | Lotus Elise S1 (WB 2300) | 725 kg and the definition of "the flowing fast lap"; the only genuinely rounded, organic body in a roster of boxes and wedges |
 | S | **Nova** | 8/9/9/6/6 | Ferrari F40 (WB 2450) | "lives fast". 1100 kg — the lightest extreme supercar, which is Mayfly's identity. Huge rear wing, NACA ducts, slatted engine cover: reads as extreme even at 33 mm voxels |

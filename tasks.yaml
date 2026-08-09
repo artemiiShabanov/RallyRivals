@@ -144,7 +144,7 @@ tasks:
   - {id: art-voxel-car-comet, title: "Voxel car: Comet (Mayfly A)", type: art, group: voxel, size: default, status: done, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
   - {id: art-voxel-car-stiletto, title: "Voxel car: Stiletto (Apex S)", type: art, group: voxel, size: default, status: done, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
   - {id: art-voxel-car-juggernaut, title: "Voxel car: Juggernaut (Wreckhouse S)", type: art, group: voxel, size: default, status: done, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
-  - {id: art-voxel-car-nova, title: "Voxel car: Nova (Mayfly S)", type: art, group: voxel, size: default, status: todo, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
+  - {id: art-voxel-car-nova, title: "Voxel car: Nova (Mayfly S)", type: art, group: voxel, size: default, status: done, blockers: [art-voxel-brand-families, art-voxel-car-kerb]}
   - {id: art-voxel-wheel-apex, title: "Voxel wheel: Apex Cartel rim", type: art, group: voxel, size: small, status: done, blockers: [art-voxel-brand-families]}
   - {id: art-voxel-wheel-wreck, title: "Voxel wheel: Wreckhouse rim", type: art, group: voxel, size: small, status: done, blockers: [art-voxel-brand-families]}
   - {id: art-voxel-wheel-mayfly, title: "Voxel wheel: Mayfly Speedworks rim", type: art, group: voxel, size: small, status: done, blockers: [art-voxel-brand-families]}
