@@ -1,8 +1,6 @@
-[gd_resource type="Resource" script_class="CarDef" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="CarDef" load_steps=4 format=3]
 
-[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/fuse.obj" id="1_gsoy8"]
-[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/fuse_d1.obj" id="2_spx0h"]
-[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/fuse_d2.obj" id="3_x2jgp"]
+[ext_resource type="ArrayMesh" path="res://assets/voxels/cars/fuse_body.tres" id="1_gsoy8"]
 [ext_resource type="Script" path="res://scripts/vehicle/car_def.gd" id="4_2f4fl"]
 [ext_resource type="ArrayMesh" uid="uid://bmayflwheel3z" path="res://assets/voxels/wheels/wheel_mayfly.tres" id="5_ynhdd"]
 
@@ -22,6 +20,8 @@ grip = 5
 mass = 680.0
 damage_sensitivity = 1.25
 model = ExtResource("1_gsoy8")
-model_damaged_1 = ExtResource("2_spx0h")
-model_damaged_2 = ExtResource("3_x2jgp")
+model_damaged_1 = ExtResource("1_gsoy8")
+model_damaged_2 = ExtResource("1_gsoy8")
 wheel_model = ExtResource("5_ynhdd")
+collision_size = Vector3(2.08, 1.09, 4.62)
+collision_offset_y = 0.245

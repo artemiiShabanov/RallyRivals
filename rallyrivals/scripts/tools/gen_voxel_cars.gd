@@ -24,7 +24,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "spark"
+const CAR := "fuse"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -453,6 +453,62 @@ const CARS := {
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
 	},
+	# Mayfly C — Toyota AE86 Sprinter Trueno (4205x1625x1335, WB 2400, track 1355/1345) x1.1667.
+	#  · Same normalization fight as Spark, one notch worse. Pure scaling gives 4.91 x 1.90 x 1.56, which
+	#    would make the LIGHTEST-feeling car in the C class the third-LONGEST vehicle in the game, above the
+	#    Meridian. Overhangs held at their real absolute 0.88/0.93 (the Mule rule) -> L 4.61. The AE86 really
+	#    does carry long overhangs on a short wheelbase; scaling them too is what breaks it.
+	#  · roof 1.46 by real height ORDER rather than by scale: the AE86 (1335) is 19 mm under the 205 (1354),
+	#    so 1.48 x 1335/1354 = 1.459. Arch share 0.509, a touch more arch-dominated than Spark's 0.501, which
+	#    suits a low coupe sitting on arcade-sized wheels.
+	#  · belt 0.98 is NOT the real beltline share (that asks for ~0.94) — it is the arch floor Spark found.
+	#    The 0.891 arch does not scale, so a low body has to lift its waist or the fender over the opening
+	#    breaks up. It costs the glasshouse: a 0.43 band, shallow, which a low notchback wants anyway.
+	#  · The rig track cuts the CROWBAR way here: 1.70 is 119 mm WIDER than the scaled 1581, so the wheels
+	#    sit outboard of where this body ends. Matching the real 135 mm/side clearance would inflate the
+	#    waist to 2.02 and lose the light coupe entirely; it stays 1.88 and the arches cover the wheels.
+	#  · docs/CARS.md pairs AE86-with-Ur-Quattro the way it paired 205-with-Delta. They separate on stance:
+	#    Fuse is 0.28 m shorter and 0.14 m LOWER than the Meridian, a low notchback against an upright boxy
+	#    widebody — and on the face, which is the real answer (see popup_lights at step 5).
+	"fuse": {
+		"brand": "mayfly",
+		"body_style": "hatch",                                       # liftback: backlight rakes to the tail
+		"L": 4.61, "body_w": 1.88,
+		# BASE RAISED +0.20 total (user call, in two passes). belt, roof and glass_top all move together — lifting belt alone
+		# squashes the greenhouse against a fixed roof and flattens the glass rake. Arch share goes 0.509
+		# -> 0.435, so the body reads heavier over the wheel and less arch-dominated.
+		"floor": 0.30, "belt": 1.18, "roof": 1.66, "glass_top": 1.61,
+		"roof_crown": 0.02, "tail_drop": 0.02, "shoulder_r": 0.06,   # crisp 80s creases, barely radiused
+		# Landmarks as fractions of L: cowl 0.30 / screen top 0.46 / roof end 0.66 / deck 0.83. Longitudinal
+		# front-engine RWD, so the bonnet is long for the size — the opposite of Spark's transverse hatch.
+		# roof_rear carried to 0.72 L. On a hatch the backlight always runs to L-0.12, so this is the only
+		# lever on tailgate rake; at 0.66 the glass sweeps 1.45 m and reads as a generic fastback rather
+		# than the liftback it is. deck_z is inert on a hatch, kept for reference.
+		"cowl": 1.38, "roof_front": 2.12, "roof_rear": 3.34, "deck_z": 3.83,
+		"green_belt_w": 1.80, "roof_w": 1.58,
+		"wz_f": 0.88, "wz_r": 3.68,                                  # overhangs 0.19 L front / 0.20 L rear
+		"skirt_h": 0.10, "skirt_out": 0.03,
+		# Hood rake sharpened 0.12 -> 0.22 (user call). The raised base lifts the cowl with it, so a
+		# steeper drop is what keeps the nose DOWN: top of the nose lands at 0.96, still clear of the
+		# rig-fixed 0.891 arch. Past ~0.28 the bonnet sinks BELOW the arch line and crown_clear has to
+		# grow with it (the Verdict runs 0.32 with crown_clear 0.13).
+		"hood_drop": 0.22, "deck_drop": 0.02,
+		"nose_taper": 0.05, "tail_taper": 0.05, "nose_drop": 0.08,
+		"nose_point_d": 0.14, "nose_side_d": 0.06, "nose_side_z": 0.30,
+		"nose_round": 0.04, "nose_upback": 0.04,
+		"tail_point_d": 0.10, "tail_cut_h": 0.40,
+		"tail_side_d": 0.05, "tail_side_z": 0.30, "tail_top_d": 0.08, "tail_round": 0.03,
+		"flare_w": 0.08, "crown_clear": 0.06,                        # flat bonnet over a rig-fixed arch
+		"spoiler": true, "spoiler_style": "arch",                    # tailgate-top lip (no deck on a hatch)
+		"roof_bulge": false, "hood_bulge": false, "hood_louvres": false,
+		"side_doors": 1,                                             # 2-door coupe
+		"antenna": true, "antenna_h": 0.38,
+		"lamp_outline": true,                                        # gold body swallows amber — ring the lamps
+		"popup_lights": true,                                        # THE AE86 face — docs/CARS.md: no other in the game
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
 }
 var SPEC: Dictionary = CARS[CAR]
 
@@ -857,10 +913,23 @@ func _front_details() -> void:
 	for x in range(c - _rz(0.05), c + _rz(0.05) + 1):
 		for y in range(gl + int(h * 0.08), gh - int(h * 0.08)):
 			_paint_front(x, y, S.acc)
-	# HEADLIGHTS. Default is a wide rectangular lamp band (80s hatch/saloon). `round_lights` swaps in a pair
-	# of circular semi-shrouded lamps set into the wing tops — the RS200's face, and unmistakably not the
-	# same car as a rectangular-lamp model at this resolution.
-	if SPEC.get("round_lights", false):
+	# HEADLIGHTS — three faces, and at 33 mm they read as three unmistakably different cars.
+	# `popup_lights`: CLOSED pop-ups. There is no lamp on the nose face at all; the whole giveaway is a
+	#   pair of rectangular doors lying flush in the wing tops. Drawn with _paint_top so they ride the
+	#   raked bonnet instead of sitting at a fixed height, and as an OUTLINE, not a filled panel — a
+	#   filled rectangle reads as paint, an outline reads as a shut line, which is the point of a lamp
+	#   that is hidden. Its indicators move down into the bumper (end of this function).
+	# `round_lights`: circular semi-shrouded lamps set into the wing tops — the RS200's face.
+	# default: a wide rectangular lamp band (80s hatch/saloon).
+	if SPEC.get("popup_lights", false):
+		var pz0 := _rz(SPEC.get("popup_z0", 0.10)); var pz1 := _rz(SPEC.get("popup_z1", 0.58))
+		var pa := int(hw * 0.34); var pb := int(hw * 0.86)
+		for sgn5 in [-1, 1]:
+			for z in range(pz0, pz1 + 1):
+				_paint_top(c + sgn5 * pa, z, S.shade); _paint_top(c + sgn5 * pb, z, S.shade)
+			for x in range(pa, pb + 1):
+				_paint_top(c + sgn5 * x, pz0, S.shade); _paint_top(c + sgn5 * x, pz1, S.shade)
+	elif SPEC.get("round_lights", false):
 		var lr := maxi(int(h * 0.20), 3)
 		for sgn3 in [-1, 1]:
 			var lx: int = c + sgn3 * int(hw * 0.60)
@@ -902,6 +971,22 @@ func _front_details() -> void:
 	for x in range(c - _rz(0.17), c + _rz(0.17) + 1):
 		for y in range(il + 1, ih - 1):
 			_paint_front(x, y, S.chrome)                             # licence plate
+	# A pop-up car has NO lamp on the nose, so without this it would carry no amber at all. The lenses go
+	# in the bumper corners, outboard of the fog lights, and are painted AFTER the lower band so the
+	# intake fill does not overwrite them.
+	if SPEC.get("popup_lights", false):
+		var po: bool = SPEC.get("lamp_outline", false)
+		for sgn6 in [-1, 1]:
+			var i0: int = c + sgn6 * int(hw * 0.74); var i1: int = c + sgn6 * int(hw * 0.90)
+			var ia := mini(i0, i1); var ib := maxi(i0, i1)
+			if po:
+				for x in range(ia - 1, ib + 2):
+					_paint_front(x, il, S.shade); _paint_front(x, ih - 1, S.shade)
+				for y in range(il, ih):
+					_paint_front(ia - 1, y, S.shade); _paint_front(ib + 1, y, S.shade)
+			for x in range(ia, ib + 1):
+				for y in range(il + 1, ih - 1):
+					_paint_front(x, y, S.amber)
 	for x in range(c - _rz(0.5), c + _rz(0.06)):                     # wiper resting across the cowl
 		_paint_top(x, _rz(SPEC.cowl), S.dark)
 
