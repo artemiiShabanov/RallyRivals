@@ -12,6 +12,11 @@ const VOX := 0.033
 # (livery stripes, roundel, prints). Wheels are a SEPARATE model — never here.
 const STEP := 7
 var grid := {}
+# Cells written by _spoiler(). A whale tail is BODYWORK that lands INSIDE the greenhouse z-range at glass
+# height, so without this the backlight paints straight over the tray and the spoiler comes out glazed —
+# 2695 glass voxels on the Strobe's tray and rear lip. Clamping the glass z-range instead would be wrong:
+# the columns AHEAD of where the tray rises are still genuine backlight.
+var _spoiler_cells := {}
 var _palette: Image
 var _cells := {}
 var S := {}   # resolved palette slots
@@ -24,7 +29,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "fuse"
+const CAR := "strobe"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -509,6 +514,59 @@ const CARS := {
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
 		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
 	},
+	# Mayfly B — Porsche 911 Turbo 3.3 (930) (4291x1775x1311, WB 2272, track 1438/1501) x1.2324, the
+	# BIGGEST scale-up in the game and the one docs/CARS.md warned about by name.
+	#  · Pure scaling gives 5.29 x 2.19 x 1.62 — longer than the Crowbar, which no 911 may ever be.
+	#    Overhangs held at their real absolute 0.94/1.08 (the Mule rule) -> L 4.82. Note they are
+	#    ASYMMETRIC and the rear is the long one: this is a rear-engine car and that is its stance.
+	#  · roof 1.44 by real height ORDER: 1311 mm is the lowest reference in the roster bar the Stratos,
+	#    so 1.48 x 1311/1354 = 1.433.
+	#  · floor 0.26, not the shared 0.30 — the SECOND car after the Verdict to earn it. Its 205/55VR16
+	#    scales to a 389 mm wheel against the rig's 400, just 3% of arcade inflation, so the body does not
+	#    need lifting off its wheels the way a 31%-inflated car does. Arch share lands at 0.535, right on
+	#    the Verdict's 0.534 — correct for a car whose arches are half its identity.
+	#  · belt 1.00 is the Spark arch floor again: it clears the rig-fixed 0.891 by 3.3 voxels. Glass band
+	#    0.39, the shallowest in the game, which a 911 greenhouse genuinely is.
+	#  · The rig track is 150 mm NARROWER than the scaled 1850, so the wheels sit INBOARD of where this
+	#    body ends — the Verdict/Mule direction, not the Crowbar's. Keeping the real 137 mm/side clearance
+	#    gives waist 2.04, and the Turbo is a widebody, so this one is honest rather than a compromise.
+	#  · WHALE TAIL: none of the four spoiler styles is one (a whale tail is a flat tray ON the engine lid,
+	#    not a deck wing, a lip, or a blade on stands). Built at step 2 as `whale`, the way popup_lights was
+	#    built for the Fuse — it is called out in docs/CARS.md as the car's signature.
+	"strobe": {
+		"brand": "mayfly",
+		"body_style": "hatch",                                       # backlight runs ALL the way to the tail
+		"L": 4.82, "body_w": 2.04,
+		"floor": 0.26, "belt": 1.00, "roof": 1.44, "glass_top": 1.39,
+		"roof_crown": 0.03, "tail_drop": 0.03, "shoulder_r": 0.08,   # softly rounded everywhere, no hard creases
+		# HOOD +30% (1.42 -> 1.85). The windscreen is unchanged, so the whole cabin shifts back by the same
+		# 0.43 rather than the screen stretching: its run stays 0.68 and the roof stays 0.82 long. The tail
+		# absorbs it, dropping 1.90 -> 1.47. Landmarks now 0.384 / 0.525 / 0.695 of L.
+		"cowl": 1.85, "roof_front": 2.53, "roof_rear": 3.35, "deck_z": 3.76,   # deck_z inert on a hatch
+		"green_belt_w": 1.84, "roof_w": 1.56,
+		"wz_f": 0.94, "wz_r": 3.74,                                  # overhangs 0.20 L front / 0.22 L rear
+		"skirt_h": 0.12, "skirt_out": 0.04,
+		"hood_drop": 0.06, "deck_drop": 0.02,                        # FLAT front lid; the fall is at the nose tip
+		"nose_taper": 0.10, "tail_taper": 0.06, "nose_drop": 0.10,
+		"nose_point_d": 0.18, "nose_side_d": 0.08, "nose_side_z": 0.32,
+		"nose_round": 0.08, "nose_upback": 0.06,
+		"tail_point_d": 0.14, "tail_cut_h": 0.42,
+		"tail_side_d": 0.05, "tail_side_z": 0.32, "tail_top_d": 0.10, "tail_round": 0.04,
+		"flare_w": 0.12,                                             # TURBO flares — 4 voxels vs the sill's 1
+		"crown_clear": 0.05,                                         # flat lid clears the arch; only a light crown
+		"round_lights": true,                                        # the 911 face: round lamps proud in the wings
+		"round_r": 0.30, "round_y": 0.85, "round_x": 0.62,           # big and set HIGH — most of a 911's face
+		"bumper_indicators": true,                                   # 911 amber lives in the bumper corners
+		"spoiler": true, "spoiler_style": "whale",                   # THE 930 signature (docs/CARS.md)
+		"whale_len": 1.25, "whale_rise": 0.16, "whale_th": 0.07, "whale_lip": 0.10, "whale_inset": 0.07,
+		"roof_bulge": false, "hood_bulge": false, "hood_louvres": false,
+		"side_doors": 1,
+		"antenna": true, "antenna_h": 0.36,
+		"lamp_outline": true,
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
 }
 var SPEC: Dictionary = CARS[CAR]
 
@@ -562,6 +620,7 @@ func _rz(m: float) -> int:
 var c := 0   # x-centre (voxels)
 func _car() -> void:
 	grid = {}
+	_spoiler_cells = {}
 	c = _rz(SPEC.body_w * 0.5) + _rz(0.14)
 	_lower_body()                       # 1 · base volume (+ arches: rig-fixed, all cars)
 	_fender_crowns()                    # wings hump over the wheels BEFORE the openings are cut
@@ -585,7 +644,7 @@ func _car() -> void:
 		_rear_valance()                 # re-apply: the tail chamfer erases the step-2 valance
 		# ...and so does it to a TAIL LIP, which rides the deck's trailing edge — exactly the material the
 		# top-rear chamfer cuts away. (The other spoiler styles sit forward or high enough to survive.)
-		if STEP >= 2 and SPEC.get("spoiler", true) and _spoiler_style() == "tail": _spoiler()
+		if STEP >= 2 and SPEC.get("spoiler", true) and _spoiler_style() in ["tail", "whale"]: _spoiler()
 		_rear_details()
 	if STEP >= 7:                       # 7 · accessories
 		_accessories()
@@ -719,6 +778,7 @@ func _glass() -> void:
 	var ops := []
 	for k in grid.keys():
 		if grid[k] != S.body or k.z < cowl or k.z > ht: continue
+		if _spoiler_cells.has(k): continue          # bodywork, not greenhouse — never glaze a spoiler
 		if k.y < belt + _rz(0.04) or k.y > header: continue
 		var xexp := not grid.has(k + Vector3i(1, 0, 0)) or not grid.has(k + Vector3i(-1, 0, 0))
 		var zc: int = k.z
@@ -930,10 +990,13 @@ func _front_details() -> void:
 			for x in range(pa, pb + 1):
 				_paint_top(c + sgn5 * x, pz0, S.shade); _paint_top(c + sgn5 * x, pz1, S.shade)
 	elif SPEC.get("round_lights", false):
-		var lr := maxi(int(h * 0.20), 3)
+		# Size/placement are per-car: an RS200's lamps are modest inserts, a 911's are big units set HIGH
+		# in the wings and are most of its face. Defaults reproduce the Stiletto exactly, whose STEP 7
+		# baseline is already committed.
+		var lr := maxi(int(h * float(SPEC.get("round_r", 0.20))), 3)
 		for sgn3 in [-1, 1]:
-			var lx: int = c + sgn3 * int(hw * 0.60)
-			var ly := gl + int(float(gh - gl) * 0.55)
+			var lx: int = c + sgn3 * int(hw * float(SPEC.get("round_x", 0.60)))
+			var ly := gl + int(float(gh - gl) * float(SPEC.get("round_y", 0.55)))
 			for dx in range(-lr, lr + 1):
 				for dy in range(-lr, lr + 1):
 					var d := sqrt(float(dx * dx + dy * dy))
@@ -974,7 +1037,9 @@ func _front_details() -> void:
 	# A pop-up car has NO lamp on the nose, so without this it would carry no amber at all. The lenses go
 	# in the bumper corners, outboard of the fog lights, and are painted AFTER the lower band so the
 	# intake fill does not overwrite them.
-	if SPEC.get("popup_lights", false):
+	# Round lamps carry no amber either, so this is not popup-only: default it to popup_lights so the Fuse
+	# keeps working untouched, and let any other lamp mode opt in.
+	if SPEC.get("bumper_indicators", SPEC.get("popup_lights", false)):
 		var po: bool = SPEC.get("lamp_outline", false)
 		for sgn6 in [-1, 1]:
 			var i0: int = c + sgn6 * int(hw * 0.74); var i1: int = c + sgn6 * int(hw * 0.90)
@@ -1366,6 +1431,46 @@ func _spoiler() -> void:
 				var zt := _rz(0.09) if blade else _rz(0.035)
 				for z in range(zc - zt, zc + zt + 1):
 					grid[Vector3i(x, y, z)] = S.body
+		return
+	if style == "whale":
+		# WHALE TAIL — a flat TRAY bolted over the engine lid. Not a wing on stanchions ("deck"), not a lip
+		# on the trailing edge ("tail"), not a blade on stands ("stand"): the 930's is a shelf that stands
+		# PROUD of a falling deck, which is why its height is sampled ONCE at the leading edge and then held
+		# constant to the tail. Sampling per column instead would let it ride the slope down and it would
+		# read as a bulge in the bodywork rather than a bolted-on tray.
+		var wz0 := _rz(float(SPEC.L) - float(SPEC.get("whale_len", 1.25)))
+		var wz1 := _rz(SPEC.L) - maxi(_rz(SPEC.get("whale_back", 0.14)), 1)
+		var whw := _rz(SPEC.body_w * 0.5) - _rz(SPEC.get("whale_inset", 0.07))
+		var wth := maxi(_rz(SPEC.get("whale_th", 0.07)), 2)              # tray thickness
+		var wlip := maxi(_rz(SPEC.get("whale_lip", 0.10)), 2)            # upturned rear + side lip
+		# Height is sampled at the TRAILING edge and lifted by `whale_rise`, NOT at the leading edge. Taking
+		# it from the front puts the tray up at backlight level and the fill below turns the whole fastback
+		# into a brick. From the back it sits low, and the tray then exists only across the columns where the
+		# body has already fallen beneath it — which is exactly the wedge-under-a-flat-shelf a whale tail is.
+		var wbase := -1
+		for x in range(c - whw, c + whw + 1):
+			for y in range(_rz(2.4), _rz(SPEC.floor), -1):
+				if grid.has(Vector3i(x, y, wz1)): wbase = maxi(wbase, y); break
+		if wbase < 0: return
+		var wtop := wbase + maxi(_rz(SPEC.get("whale_rise", 0.16)), 2) + wth
+		# Fill from whatever is under each column UP to the tray. This is what keeps it one solid piece: a
+		# free-floating shelf would be N orphan components the moment the deck falls away beneath it.
+		for z in range(wz0, wz1 + 1):
+			for x in range(c - whw, c + whw + 1):
+				var wt := -1
+				for y in range(wtop, _rz(SPEC.floor) - 1, -1):
+					if grid.has(Vector3i(x, y, z)): wt = y; break
+				if wt < 0: continue                                       # past the tail — nothing to stand on
+				for y in range(wt + 1, wtop + 1):
+					grid[Vector3i(x, y, z)] = S.body; _spoiler_cells[Vector3i(x, y, z)] = true
+		# Upturned lip: across the trailing edge and down both sides. Sits ON the tray, so always attached.
+		for y in range(wtop + 1, wtop + wlip):
+			for x in range(c - whw, c + whw + 1):
+				for z in range(wz1 - 1, wz1 + 1):
+					if grid.has(Vector3i(x, wtop, z)): grid[Vector3i(x, y, z)] = S.body; _spoiler_cells[Vector3i(x, y, z)] = true
+			for z in range(wz0, wz1 + 1):
+				for sx in [c - whw, c + whw]:
+					if grid.has(Vector3i(sx, wtop, z)): grid[Vector3i(sx, y, z)] = S.body; _spoiler_cells[Vector3i(sx, y, z)] = true
 		return
 	if style == "stand":
 		# Blade RAISED ON TWO STANDS at the tail (classic rally wing) — clear air under the blade.
