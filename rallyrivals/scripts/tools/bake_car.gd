@@ -13,7 +13,7 @@ const OY := -0.5
 # Per-car rig anchor. CY = (RIG_WHEEL_R - SPEC.floor)/VOX (wheel centre above the settled floor);
 # CZ = axle midpoint (wz_f+wz_r)/2 / VOX. CX is the spine, measured from the data. Getting these wrong
 # floats or buries the wheels, so they are per-car — never reuse one car's numbers for another.
-const CAR := "strobe"
+const CAR := "comet"
 const CARS := {
 	"delta":   {"src": "res://assets/voxels/cars/delta.vox",   "tres": "res://assets/voxels/cars/delta_body.tres",
 	            "uid": "uid://bk42crjm5lw41", "cy": 3.0, "cz": 69.7},
@@ -57,6 +57,10 @@ const CARS := {
 	# its wheels. cy = (0.40-0.26)/VOX = 4.24. Axles _rz(0.94)=28, _rz(3.74)=113 -> cz 70.5.
 	"strobe": {"src": "res://assets/voxels/cars/strobe.vox", "tres": "res://assets/voxels/cars/strobe_body.tres",
 	            "uid": "", "cy": 4.24, "cz": 70.5},
+	# Comet: floor 0.30 -> cy 3.0. Axles _rz(0.68)=21, _rz(3.48)=105 -> cz 63.0, the smallest in the
+	# roster — it has the shortest overhangs of any car, so its axle midpoint sits furthest forward.
+	"comet": {"src": "res://assets/voxels/cars/comet.vox", "tres": "res://assets/voxels/cars/comet_body.tres",
+	            "uid": "", "cy": 3.0, "cz": 63.0},
 }
 var CX := 32.0
 var CY: float = CARS[CAR]["cy"]

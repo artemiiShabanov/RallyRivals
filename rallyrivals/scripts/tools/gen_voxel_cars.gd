@@ -29,7 +29,7 @@ const RIG_WHEEL_R := 0.40
 # rig-fixed (radius RIG_WHEEL_R at wz_f/wz_r, half-track 0.85) -> identical on every car, shared wheel drops in.
 # `body_style`: "hatch" = the backlight rakes to the tail, no deck (rule 7) · "sedan" = the backlight lands on
 # a FLAT trunk deck at `deck_z`. References + rationale: docs/CARS.md. ----
-const CAR := "strobe"
+const CAR := "comet"
 const CARS := {
 	# Apex D — Lancia Delta HF Integrale Evoluzione (3900×1770×1365, WB 2480) ×1.13. Flat upright nose/tail,
 	# upright 80s greenhouse, widebody flares. DONE (hand-finished in MV -> assets/voxels/cars/delta.vox).
@@ -562,6 +562,56 @@ const CARS := {
 		"roof_bulge": false, "hood_bulge": false, "hood_louvres": false,
 		"side_doors": 1,
 		"antenna": true, "antenna_h": 0.36,
+		"lamp_outline": true,
+		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
+		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
+		"accent_flank_sweep": false, "accent_rocker": false, "accent_door_panel": false,
+	},
+	# Mayfly A — Lotus Elise S1 (3726x1702x1148, WB 2301, track 1440/1453) x1.2169.
+	#  · docs/CARS.md asks for ONE thing above all: "small, rounded and organic" in a roster of boxes and
+	#    wedges. So every rounding knob is pushed past anything else in the game — shoulder_r 0.14 against
+	#    the previous high of 0.10 (Verdict), plus the biggest nose_round, tail_round and roof_crown.
+	#    That, not the dimensions, is what separates it from the F40 it shares a layout with.
+	#  · Overhangs held absolute at 0.68/0.74 -> L 4.22, so it lands 0.02 m off the D-class Spark. That is
+	#    not an error: a 205 GTI is 3705 mm and an Elise 3726, they really are the same length. They
+	#    separate on the other two axes instead — Comet is 0.16 m WIDER and 0.12 m LOWER.
+	#  · L/W 2.11 makes it the squattest car in the game (Verdict 2.16), which is the Elise's whole stance.
+	#  · roof 1.36 is the LOWEST in the roster, under the Verdict's 1.45. Real height order would ask for
+	#    1.26, but the arch does not scale: at 1.36 it already eats 0.558 of the body, past the Verdict's
+	#    0.534 and the highest yet. Going lower would leave the openings dominating the bodywork entirely.
+	#    The Verdict set the precedent for lifting a very low car (1.45 against its own 1.22 by real order).
+	#  · belt 0.99 is the Spark arch floor. Its 185/55R15 scales to 356 mm vs the rig's 400 = 12% inflation,
+	#    mid-way between the 930's 3% and a typical 30%, so it keeps the shared floor 0.30.
+	"comet": {
+		"brand": "mayfly",
+		"body_style": "sedan",                                       # mid-engine: backlight -> engine deck -> tail
+		"L": 4.22, "body_w": 2.00,
+		"floor": 0.30, "belt": 0.99, "roof": 1.36, "glass_top": 1.31,
+		"deck_rise": 0.06,                                           # low engine cover, nothing like the Stratos hump
+		# ORGANIC: the roundest body in the game by a wide margin. These four knobs are the brief.
+		"roof_crown": 0.06, "tail_drop": 0.06, "shoulder_r": 0.14,
+		# Landmarks as fractions of L: cowl 0.279 / screen top 0.427 / roof end 0.616 / deck 0.735. A tiny
+		# cabin pushed forward over a short nose, with 1.12 m of engine deck behind it.
+		"cowl": 1.18, "roof_front": 1.80, "roof_rear": 2.60, "deck_z": 3.10,
+		"green_belt_w": 1.68, "roof_w": 1.42,                        # narrow cabin on a very wide body
+		"wz_f": 0.68, "wz_r": 3.48,                                  # overhangs 0.16 L front / 0.18 L rear
+		"skirt_h": 0.14, "skirt_out": 0.04,
+		"hood_drop": 0.22, "deck_drop": 0.02,
+		"nose_taper": 0.16, "tail_taper": 0.10, "nose_drop": 0.10,
+		"nose_point_d": 0.20, "nose_side_d": 0.10, "nose_side_z": 0.34,
+		"nose_round": 0.12, "nose_upback": 0.08,
+		"tail_point_d": 0.14, "tail_cut_h": 0.40,
+		"tail_side_d": 0.06, "tail_side_z": 0.34, "tail_top_d": 0.10, "tail_round": 0.08,
+		"flare_w": 0.09, "crown_clear": 0.09,                        # nose falls to 0.77, under the 0.891 arch
+		# The nose face is only ~14 voxels tall on a car this low, so 0.26 rounds down to the radius FLOOR
+		# of 3 and the lamps read as dots. 0.38 puts them at 5, which is most of the face height — which is
+		# what an Elise's lamps actually are. Fraction-of-face knobs need checking against short faces.
+		"round_lights": true, "round_r": 0.38, "round_y": 0.78, "round_x": 0.58,
+		"bumper_indicators": true,
+		"spoiler": true, "spoiler_style": "tail", "spoiler_h": 0.05, "spoiler_len": 0.18,   # integrated lip only
+		"roof_bulge": false, "hood_bulge": false, "hood_louvres": false,
+		"side_doors": 1,
+		"antenna": false,                                            # nothing breaks the roofline on this one
 		"lamp_outline": true,
 		# Livery hand-painted: step 8 is a no-op and STEP 7 is the diff baseline.
 		"accent_twin_stripe": false, "accent_belt_stripe": false, "accent_roundel": false,
