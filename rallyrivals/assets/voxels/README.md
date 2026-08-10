@@ -17,7 +17,7 @@
 | path | what |
 |------|------|
 | `cars/<id>.vox|.obj` | base shell, brand-tinted block-out until sculpted |
-| `cars/<id>_d1.*` / `_d2.*` | light/heavy damage variants — SCULPT AFTER code-vehicle-damage defines the read; stubs are copies of base |
+| ~~`cars/<id>_d1.*` / `_d2.*`~~ | **gone (2026-08-10).** Damage is VFX now — hood smoke + a body judder driven off `damage` in VehicleController — so there is ONE shell per car and no damage sculpts to author |
 | `wheels/wheel_<brand>.*` | shared wheel per brand, axle along X, radius exactly 0.4 m |
 
 Cars: forward = +Z (MagicaVoxel +Y after the z-up mapping), envelope 18x12x40 voxels.

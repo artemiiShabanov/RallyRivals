@@ -60,7 +60,7 @@ xychart-beta
 
 ## Available now (13 unblocked)
 
-- `art-vfx-damage` [art/vfx] (default) — Voxel-chipping damage FX
+- `art-vfx-damage` [art/vfx] (default) — Damage VFX look pass (hood smoke + body judder) — mechanism is in VehicleController; this is the art tuning
 - `balance-difficulty-pacing` [balance/difficulty] (default) — Chapter CP-gate % + progression pacing
 - `balance-economy-tables` [balance/economy] (default) — Payout/price tables (banked-best economy)
 - `balance-handling-feel` [balance/handling] (big) — Tune car feel constants (buttery pass)

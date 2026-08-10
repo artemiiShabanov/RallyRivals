@@ -55,19 +55,25 @@ extends VehicleBody3D
 @export_group("Damage")
 ## In-race damage (code-vehicle-damage, GDD §4). Any hard hit adds damage (impact impulse × the
 ## CarDef's damage_sensitivity); damage cuts top speed and bends the steering to one FIXED side (a bent
-## chassis you learn to counter). Visible by swapping to the CarDef's damaged body meshes at the two
-## thresholds. There is NO repair — a fresh car each race starts pristine (damage defaults to 0), and
-## reset_car does NOT clear it, so crashing can't be undone. `damage` (0..1) is the read art-vfx-damage
-## and any gauge consume.
+## chassis you learn to counter). There is NO repair — a fresh car each race starts pristine (damage
+## defaults to 0), and reset_car does NOT clear it, so crashing can't be undone.
+## SHOWN AS VFX, not as damaged sculpts (changed 2026-08-10). The old approach swapped the body to
+## model_damaged_1/_2 at two thresholds, which needed two extra hand-made shells per car — 30 sculpts
+## for a roster of 15, none of which existed. Smoke + judder costs nothing per car, applies to every
+## car including any added later, and reads CONTINUOUSLY instead of popping at two thresholds.
 @export var damage_per_ns := 0.000012    ## damage per N·s of impact (before damage_sensitivity) — tuned so it takes ~3 HARD hits to wreck, not one
 @export var damage_speed_loss := 0.25    ## fraction of top speed lost at full damage
 @export var damage_pull := 0.10          ## steering bias toward the bent side at full damage (of full lock)
-@export var damage_light := 0.40         ## damage at which the body swaps to model_damaged_1
-@export var damage_heavy := 0.75         ## ... and to model_damaged_2
+@export var smoke_start := 0.30          ## damage below this: no smoke at all
+@export var judder_start := 0.20         ## damage below this: the body sits perfectly still
+@export var judder_max := 0.0125         ## peak body shake in metres at full damage (~0.4 of a voxel)
 
 var damage := 0.0                        ## 0 pristine .. 1 wrecked — read by FX / gauges
 var _pull_dir := 1.0                     ## which way the bent chassis pulls (fixed per car, set in _ready)
-var _damage_stage := 0                   ## 0 pristine / 1 light / 2 heavy — tracks the visible mesh
+var _smoke: GPUParticles3D = null        ## built in code, NOT in car.tscn — see _setup_damage_fx
+var _body_mi: MeshInstance3D = null      ## cached: _process runs per car per frame, every frame
+var _body_rest := Transform3D.IDENTITY   ## the Body mesh's untouched transform, restored when undamaged
+var _judder_t := 0.0
 
 @export_group("Stats")
 @export var car: CarDef                  ## the roster car this body drives as (null = raw scene tuning)
@@ -164,6 +170,7 @@ func apply_car_def() -> void:
 		w.suspension_max_force = _base_max_force[w] * m
 	_apply_models()
 	_apply_collision()
+	_setup_damage_fx()
 
 # Resize the body box to THIS car's shell. The shared 2x1x4 box predates the voxel cars and no longer
 # fits any of them — the Crowbar is 1.21 m longer than it, so a quarter of that car (its boot) could not
@@ -268,7 +275,6 @@ func _physics_process(delta: float) -> void:
 
 	# Ease steering toward the target so input isn't twitchy. Damage adds a constant pull to the bent
 	# side (GDD §4) — you hold against it to drive straight.
-	_update_damage_visual()
 	var steer_target := clampf(steer_input + _pull_dir * damage_pull * damage, -1.0, 1.0)
 	steering = move_toward(steering, max_steer * steer_target, steer_speed * delta)
 
@@ -427,25 +433,152 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		var sens: float = car.damage_sensitivity if car != null else 1.0
 		damage = clampf(damage + strongest * damage_per_ns * sens, 0.0, 1.0)
 
-## Swap the body to the CarDef's damaged mesh once damage crosses a threshold (no-op if the slot is
-## empty or the stage hasn't changed). This is the "read" the damage-sculpt art tasks author against.
-func _update_damage_visual() -> void:
-	var stage := 2 if damage >= damage_heavy else (1 if damage >= damage_light else 0)
-	if stage == _damage_stage:
+## Build the damage smoke emitter. Deliberately created in CODE rather than added to car.tscn: the rig
+## scene is shared by every car and hand-maintained, so anything the controller can build itself should
+## not become a node someone has to keep in sync. Called from apply_car_def, after the collision box is
+## known — the box is the only per-car measurement available at runtime, so it is what places the
+## emitter over the bonnet (nose is +z; the bake puts model z=0 at positive rig z).
+func _setup_damage_fx() -> void:
+	_body_mi = get_node_or_null("Body") as MeshInstance3D
+	if _body_mi != null:
+		_body_rest = _body_mi.transform
+	if _smoke != null:
+		_place_smoke()
 		return
-	_damage_stage = stage
-	if car == null:
+	var p := GPUParticles3D.new()
+	p.name = "DamageSmoke"
+	p.emitting = false
+	p.amount = 24
+	p.lifetime = 1.3
+	p.local_coords = false                        # smoke is LEFT BEHIND, not dragged along with the car
+	var mat := ParticleProcessMaterial.new()
+	mat.direction = Vector3(0.0, 1.0, 0.0)
+	mat.spread = 26.0
+	mat.initial_velocity_min = 0.4
+	mat.initial_velocity_max = 1.2
+	mat.gravity = Vector3(0.0, 0.5, 0.0)          # positive: smoke rises rather than falls
+	# Born over a small volume, not a point — a point source reads as a jet, not a leak.
+	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	mat.emission_sphere_radius = 0.12
+	# Each puff spawns at a random roll and keeps turning, so no two are the same and the billboards
+	# never line up into a visible grid.
+	mat.angle_min = -180.0
+	mat.angle_max = 180.0
+	mat.angular_velocity_min = -35.0
+	mat.angular_velocity_max = 35.0
+	mat.scale_min = 0.5
+	mat.scale_max = 0.8
+	mat.scale_curve = _ramp_curve()               # puffs EXPAND as they cool and drift
+	mat.color_ramp = _smoke_gradient()            # dark at the leak -> pale and gone
+	mat.turbulence_enabled = true                 # breaks the plume up so it is not a clean cone
+	mat.turbulence_noise_strength = 0.22
+	mat.turbulence_noise_scale = 1.6
+	p.process_material = mat
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.62, 0.62)
+	var sm := StandardMaterial3D.new()
+	sm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	# BILLBOARD_PARTICLES, not BILLBOARD_ENABLED: the particle variant honours per-particle rotation
+	# and scale. Plain billboarding would ignore the spin set above and every puff would sit square-on.
+	sm.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
+	sm.vertex_color_use_as_albedo = true          # so color_ramp actually tints the puff
+	sm.albedo_texture = _puff_texture()
+	quad.material = sm
+	p.draw_pass_1 = quad
+	add_child(p)
+	_smoke = p
+	_place_smoke()
+
+## A quad with flat alpha IS a visible square — that is the whole reason the first pass looked blocky.
+## This gives each puff a soft radial falloff with a WOBBLY edge (two low-frequency angular terms), so
+## it reads as a torn ball of smoke rather than a disc or a box. Built once and shared by every car:
+## a 64x64 image per vehicle per race would be pure waste.
+static var _puff_tex: ImageTexture = null
+static func _puff_texture() -> ImageTexture:
+	if _puff_tex != null:
+		return _puff_tex
+	const N := 64
+	var img := Image.create(N, N, false, Image.FORMAT_RGBAF)
+	for y in N:
+		for x in N:
+			var dx := (float(x) + 0.5) / N * 2.0 - 1.0
+			var dy := (float(y) + 0.5) / N * 2.0 - 1.0
+			var r := sqrt(dx * dx + dy * dy)
+			var ang := atan2(dy, dx)
+			var wob := 1.0 + 0.17 * sin(ang * 3.0 + 1.1) + 0.11 * sin(ang * 5.0 + 2.7)
+			var a := clampf(1.0 - r / maxf(0.94 * wob, 0.01), 0.0, 1.0)
+			a = a * a * (3.0 - 2.0 * a)               # smoothstep: no hard rim
+			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, a))
+	_puff_tex = ImageTexture.create_from_image(img)
+	return _puff_tex
+
+## Dark and fairly opaque where it leaves the bonnet, pale and gone by the end of its life.
+static var _smoke_grad: GradientTexture1D = null
+static func _smoke_gradient() -> GradientTexture1D:
+	if _smoke_grad != null:
+		return _smoke_grad
+	var g := Gradient.new()
+	g.set_offset(0, 0.0); g.set_color(0, Color(0.17, 0.17, 0.19, 0.62))
+	g.add_point(0.35, Color(0.30, 0.30, 0.32, 0.42))
+	g.add_point(1.0, Color(0.55, 0.55, 0.58, 0.0))
+	var t := GradientTexture1D.new()
+	t.gradient = g
+	_smoke_grad = t
+	return _smoke_grad
+
+## Puffs start small and expand — smoke cools and spreads, and a constant-size particle reads as a
+## sprite being carried along rather than as gas.
+static var _scale_curve: CurveTexture = null
+static func _ramp_curve() -> CurveTexture:
+	if _scale_curve != null:
+		return _scale_curve
+	var c := Curve.new()
+	c.add_point(Vector2(0.0, 0.45))
+	c.add_point(Vector2(0.45, 1.0))
+	c.add_point(Vector2(1.0, 1.7))
+	var t := CurveTexture.new()
+	t.curve = c
+	_scale_curve = t
+	return _scale_curve
+
+func _place_smoke() -> void:
+	if _smoke == null:
 		return
-	var body := get_node_or_null("Body") as MeshInstance3D
-	if body == null:
+	var top := 0.45
+	var fwd := 1.2
+	if car != null and car.collision_size != Vector3.ZERO:
+		top = car.collision_offset_y + car.collision_size.y * 0.5
+		fwd = car.collision_size.z * 0.28          # over the bonnet, not the windscreen
+	_smoke.position = Vector3(0.0, top - 0.08, fwd)
+
+## Damage READ, per frame. Two channels, both continuous in `damage` so there is no threshold pop:
+##  · SMOKE from the bonnet. amount_ratio scales emission WITHOUT restarting the system — restarting
+##    would fire a fresh full puff every frame.
+##  · JUDDER: the body shivers in place. Two sines at unrelated frequencies so it never settles into a
+##    visible loop, on a squared ramp so it is a shiver at half damage and a shake at full. VISUAL ONLY
+##    — it moves the Body MeshInstance3D, never the VehicleBody3D, so physics and the collision shape
+##    are untouched and a damaged car still drives exactly as its stats say.
+func _process(delta: float) -> void:
+	if _smoke != null:
+		var want := damage > smoke_start
+		if _smoke.emitting != want:
+			_smoke.emitting = want
+		if want:
+			_smoke.amount_ratio = clampf((damage - smoke_start) / maxf(1.0 - smoke_start, 0.001), 0.15, 1.0)
+	if _body_mi == null:
 		return
-	var m: Mesh = car.model
-	if stage == 1 and car.model_damaged_1 != null:
-		m = car.model_damaged_1
-	elif stage == 2 and car.model_damaged_2 != null:
-		m = car.model_damaged_2
-	if m != null:
-		body.mesh = m
+	var ramp := clampf((damage - judder_start) / maxf(1.0 - judder_start, 0.001), 0.0, 1.0)
+	if ramp <= 0.0:
+		if _body_mi.transform != _body_rest:
+			_body_mi.transform = _body_rest  # snap back to rest rather than leaving it parked off-centre
+		return
+	_judder_t += delta
+	var amp := judder_max * ramp * ramp
+	var t := _body_rest
+	t.origin += Vector3(sin(_judder_t * 47.0) * amp, sin(_judder_t * 61.0 + 1.7) * amp, 0.0)
+	t.basis = t.basis.rotated(Vector3.FORWARD, sin(_judder_t * 53.0) * amp * 0.5)
+	_body_mi.transform = t
 
 ## Roll-righting assist: a torque about the car's OWN forward axis that pulls its roll back to level.
 ## Only the roll axis, so steering (yaw) and ramp pitch are left alone — that's how cars stay hard to

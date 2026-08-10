@@ -25,9 +25,10 @@ extends Resource
 @export var damage_sensitivity := 1.0   ## multiplies performance-damage effects
 
 @export_group("Models (assets/voxels)")
+## ONE shell per car. There are no damaged variants: damage is shown with VFX instead (hood smoke +
+## a body judder, both in VehicleController), so a car needs no extra sculpts and every car gets the
+## damage read for free. The old model_damaged_1/_2 slots were removed 2026-08-10.
 @export var model: Mesh                 ## base shell
-@export var model_damaged_1: Mesh       ## light damage (swapped by code-vehicle-damage)
-@export var model_damaged_2: Mesh       ## heavy damage
 @export var wheel_model: Mesh           ## brand wheel, axle along X (no corrective rotation)
 
 @export_group("Collision")

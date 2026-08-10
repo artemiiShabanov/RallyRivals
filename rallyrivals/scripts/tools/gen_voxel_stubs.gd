@@ -2,7 +2,6 @@ extends SceneTree
 ## Scaffolds the whole voxel-model inventory (ADR-003 pipeline) so filling is "open the .vox
 ## in MagicaVoxel, sculpt, re-export over the stub":
 ##   assets/voxels/cars/<id>.vox|.obj|.mtl|.png        base shell (blockout tinted per brand)
-##   assets/voxels/cars/<id>_d1|_d2.*                  damage-variant slots (copies for now)
 ##   assets/voxels/wheels/wheel_<brand>.*              shared voxel wheel, axle along X
 ## .vox files are REAL MagicaVoxel files (VOX 150) with the master palette embedded — they are
 ## the sources to sculpt over. .obj/.png follow the MV export conventions (palette-texel UVs).
@@ -42,7 +41,8 @@ func _initialize() -> void:
 		if def == null:
 			continue
 		_build_car(BRAND_SLOTS[def.brand])
-		for variant in ["", "_d1", "_d2"]:
+		# ONE shell per car. The _d1/_d2 damage variants were dropped 2026-08-10 — damage is VFX now.
+		for variant in [""]:
 			var model: String = def.id + variant
 			_write_vox(cars_dir + model + ".vox", Vector3i(W, L, H))
 			_write_obj(cars_dir, model, Vector3(W * 0.5, -Y0 / VOX, L * 0.5))
