@@ -151,7 +151,7 @@ tasks:
   - {id: art-vfx-juice, title: "Screen shake + landing thump (+ VHS glitch spike)", type: art, group: vfx, size: micro, status: done, blockers: [code-vehicle-controller]}
   - {id: art-vfx-surface-particles, title: "Per-surface particles (dust/snow/spray)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-surface-grip]}
   - {id: art-vfx-skidmarks, title: "Tyre skid marks (per-surface ribbon under sliding wheels)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-surface-grip]}
-  - {id: art-vfx-damage, title: "Damage VFX look pass (hood smoke + body judder) — mechanism is in VehicleController; this is the art tuning", type: art, group: vfx, size: default, status: todo, blockers: [code-vehicle-damage]}
+  - {id: art-vfx-damage, title: "Damage VFX (hood smoke + body judder)", type: art, group: vfx, size: default, status: done, blockers: [code-vehicle-damage]}
   - {id: art-vfx-weather, title: "Weather visuals (rain/snow/fog)", type: art, group: vfx, size: big, status: done, blockers: [code-track-generator]}
   - {id: art-ui-hud-gfx, title: "HUD scorebug graphics (VHS register)", type: art, group: ui-art, size: default, status: done, blockers: []}
   - {id: art-ui-theme, title: "VHS UI theme (white-on-blue OSD) + font", type: art, group: ui-art, size: big, status: done, blockers: []}
