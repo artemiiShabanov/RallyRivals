@@ -44,6 +44,9 @@ var _prop_hover := Vector2i(-1, -1) # last hovered pixel — draws the live aim 
 var _prop_rings: Array = []         # per-instance overlay dots
 var _prop_lines: Array = []         # oriented/sign facing segments + the live aim preview
 var _prop_count: Label
+var _prop_brush := false            # drag to lay props instead of clicking one at a time
+var _prop_spacing: HSlider          # px between placements along the drag
+var _prop_carry := 0.0              # distance still to travel before the next placement (spans events)
 
 var _undo: Array = []               # snapshots: {"kind": layer name or "hpoints", "data": ...}
 var _redo: Array = []
@@ -70,7 +73,9 @@ func _ready() -> void:
 	split.add_child(_build_panel())
 	canvas = MapCanvas.new()
 	canvas.pixel_hovered.connect(_on_pixel_hovered)
-	canvas.stroke_begun.connect(func() -> void: _push_undo("surface"))
+	canvas.stroke_begun.connect(func() -> void:
+		_prop_carry = 0.0                                     # first press places immediately
+		_push_undo("props" if _prop_brushing() else "surface"))
 	canvas.stroke.connect(_on_stroke)
 	canvas.clicked.connect(_on_clicked)
 	split.add_child(canvas)
@@ -206,6 +211,29 @@ func _build_panel() -> Control:
 		btn.toggled.connect(_on_prop_tool.bind(t))
 		props_grid.add_child(btn)
 	vb.add_child(props_grid)
+	# PROP BRUSH: drag-to-place. Scatter types get a jitter so a dragged line of trees does not read as
+	# a fence; AIMED types (fence/barrier/sign) instead take their `deg` from the drag DIRECTION, which
+	# is the whole point — dragging along a verge lays a run of barriers already facing the right way,
+	# where the click-click aim flow needs two clicks per instance.
+	var pbrush := CheckButton.new()
+	pbrush.text = "Brush: drag to place (right-drag erases)"
+	pbrush.toggled.connect(func(on: bool) -> void:
+		_prop_brush = on
+		_update_brush())
+	vb.add_child(pbrush)
+	var sp_row := HBoxContainer.new()
+	var sp_label := Label.new()
+	sp_label.text = "gap 10"
+	sp_label.custom_minimum_size = Vector2(58, 0)
+	_prop_spacing = HSlider.new()
+	_prop_spacing.min_value = 3; _prop_spacing.max_value = 60; _prop_spacing.value = 10
+	_prop_spacing.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_prop_spacing.value_changed.connect(func(v: float) -> void:
+		sp_label.text = "gap %d" % int(v)
+		_update_brush())
+	sp_row.add_child(sp_label)
+	sp_row.add_child(_prop_spacing)
+	vb.add_child(sp_row)
 	_prop_count = Label.new()
 	_prop_count.modulate = Color(1, 1, 1, 0.7)
 	vb.add_child(_prop_count)
@@ -347,12 +375,25 @@ func _swatch(s: SurfaceType) -> Button:
 		_update_brush())
 	return b
 
+## The canvas only emits `stroke` while brush_radius > 0, so the prop brush borrows the same channel:
+## its "radius" is half the placement gap, which also makes the on-canvas ring show the real spacing.
+func _prop_brushing() -> bool:
+	return _prop_brush and _prop_mode != "" and _race_mode == "" and not _height_mode
+
 func _update_brush() -> void:
-	canvas.brush_radius = _brush_slider.value if _brush_surface != null else 0.0
+	if _prop_brushing():
+		canvas.brush_radius = maxf(_prop_spacing.value * 0.5, 2.0)
+	else:
+		canvas.brush_radius = _brush_slider.value if _brush_surface != null else 0.0
 	canvas.queue_redraw()
 
 func _on_stroke(from_px: Vector2i, to_px: Vector2i, erase: bool) -> void:
-	if doc == null or _brush_surface == null:
+	if doc == null:
+		return
+	if _prop_brushing():
+		_prop_brush_stroke(from_px, to_px, erase)
+		return
+	if _brush_surface == null:
 		return
 	_analysis = null   # road may change shape under the brush
 	var col := _off_road.color if erase else _brush_surface.color
@@ -411,6 +452,8 @@ func _on_clicked(px: Vector2i, button: int) -> void:
 		_height_click(px, button)
 		return
 	if _prop_mode != "" and _race_mode == "":
+		if _prop_brushing():
+			return          # the drag places these; _prop_click would double up on the press
 		_prop_click(px, button)
 		return
 	if _race_mode == "":
@@ -623,6 +666,7 @@ func _on_prop_tool(on: bool, t: String) -> void:
 		_prop_mode = t
 	elif _prop_mode == t:
 		_prop_mode = ""
+	_update_brush()
 	_rebuild_prop_overlay()
 	_refresh_overlays()
 
@@ -665,6 +709,54 @@ func _delete_nearest_prop(px: Vector2i) -> void:
 			best_d = d; best = i
 	if best >= 0:
 		doc.props.remove_at(best)
+
+## Walk the dragged segment placing one prop every `gap` px. `_prop_carry` is the distance still to
+## travel before the next placement and PERSISTS across motion events, so spacing stays even along the
+## whole drag instead of restarting at every mouse-move (which would clump props at every event boundary).
+func _prop_brush_stroke(from_px: Vector2i, to_px: Vector2i, erase: bool) -> void:
+	var a := Vector2(from_px)
+	var b := Vector2(to_px)
+	var seg := a.distance_to(b)
+	var gap := maxf(_prop_spacing.value, 2.0)
+	if erase:
+		var steps := maxi(1, int(seg / 3.0) + 1)
+		for i in steps:
+			_delete_props_within(a.lerp(b, float(i) / maxf(1.0, steps - 1.0)), gap)
+		_after_prop_edit()
+		return
+	var aimed := PropCatalog.needs_aim(_prop_mode)
+	var deg := 0.0
+	if aimed and seg > 0.5:
+		var d := b - a
+		deg = roundf(rad_to_deg(atan2(d.x, d.y)))
+	var travelled := 0.0
+	var left := seg
+	while _prop_carry <= left:
+		travelled += _prop_carry
+		left -= _prop_carry
+		_place_brushed_prop(a if seg < 0.001 else a.lerp(b, travelled / seg), deg, aimed)
+		_prop_carry = gap
+	_prop_carry -= left
+	_after_prop_edit()
+
+func _place_brushed_prop(p: Vector2, deg: float, aimed: bool) -> void:
+	var q := p
+	if not aimed:
+		var j := maxf(_prop_spacing.value * 0.3, 1.0)   # scatter reads natural, not like a fence
+		q += Vector2(randf_range(-j, j), randf_range(-j, j))
+	if doc == null or q.x < 0.0 or q.y < 0.0 or q.x >= doc.size or q.y >= doc.size:
+		return
+	var e := {"type": _prop_mode, "x": int(round(q.x)), "y": int(round(q.y))}
+	if aimed:
+		e["deg"] = deg
+	doc.props.append(e)
+
+func _delete_props_within(p: Vector2, r: float) -> void:
+	var r2 := r * r
+	for i in range(doc.props.size() - 1, -1, -1):
+		var pr: Dictionary = doc.props[i]
+		if Vector2(int(pr["x"]), int(pr["y"])).distance_squared_to(p) <= r2:
+			doc.props.remove_at(i)
 
 func _after_prop_edit() -> void:
 	_set_dirty(true)

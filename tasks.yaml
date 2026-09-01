@@ -49,6 +49,7 @@ tasks:
   - {id: code-tools-map-editor-props, title: "Map editor: prop stamp tool", type: code, group: tools, size: small, status: done, blockers: [code-tools-map-editor-shell]}
   - {id: code-tools-map-editor-height, title: "Map editor: auto-heightmap from road + height control points", type: code, group: tools, size: huge, status: done, blockers: [code-tools-map-editor-surface]}
   - {id: code-tools-map-editor-export, title: "Map editor: export 4 images + one-click bake", type: code, group: tools, size: default, status: done, blockers: [code-tools-map-editor-surface, code-tools-map-editor-race]}
+  - {id: code-tools-map-editor-speed, title: "Map editor: shift-drag straight lines + prop brush (drag to lay props, aimed types take the drag direction)", type: code, group: tools, size: default, status: done, blockers: [code-tools-map-editor-surface, code-tools-map-editor-props]}
 
   # ---------- code: track — point-to-point (sprint) support ----------
   - {id: code-track-point-to-point, title: "Point-to-point tracks (cyan finish pair: open march/curve, finish gate, editor tool)", type: code, group: track, size: big, status: done, blockers: [code-track-checkpoints, code-tools-map-editor-race]}

@@ -25,6 +25,15 @@ var _dragging := false
 var _space := false
 var _paint_btn := 0       # mouse button currently stroking (0 = none)
 var _last_px := Vector2i.ZERO
+# SHIFT-LINE. Holding shift when the stroke starts turns the whole drag into ONE straight segment:
+# nothing is painted while dragging (a live preview is drawn instead) and a single stroke from the
+# anchor to the release point is emitted on mouse-up. Painting incrementally would fan a new line from
+# the anchor on every motion event and leave all of them on the image; deferring keeps it to one line
+# AND to one undo step. The mode is latched at PRESS time, so releasing shift mid-drag will not switch
+# a line back into a freehand smear halfway through.
+var _line_mode := false
+var _line_from := Vector2i.ZERO
+var _line_to := Vector2i.ZERO
 var _hover := Vector2.ZERO
 var _has_hover := false
 
@@ -60,6 +69,11 @@ func _draw() -> void:
 	for lb in overlay_labels:
 		var sp: Vector2 = pan + ((lb["p"] as Vector2) + Vector2(0.5, 0.5)) * zoom + Vector2(9, -9)
 		draw_string(font, sp, lb["text"], HORIZONTAL_ALIGNMENT_LEFT, -1, 12, lb["col"])
+	if _line_mode:
+		var a := pan + (Vector2(_line_from) + Vector2(0.5, 0.5)) * zoom
+		var b := pan + (Vector2(_line_to) + Vector2(0.5, 0.5)) * zoom
+		draw_line(a, b, Color(0, 0, 0, 0.65), maxf(brush_radius * 2.0 * zoom, 3.0))
+		draw_line(a, b, Color(1, 1, 1, 0.55), 1.0)
 	if brush_radius > 0.0 and _has_hover:
 		draw_arc(_hover, brush_radius * zoom, 0.0, TAU, 48, Color(0, 0, 0, 0.7), 3.0)
 		draw_arc(_hover, brush_radius * zoom, 0.0, TAU, 48, Color(1, 1, 1, 0.9), 1.0)
@@ -80,18 +94,35 @@ func _gui_input(event: InputEvent) -> void:
 				grab_focus()
 			if brush_radius > 0.0:
 				# left = paint, right = off-road erase; both stamp immediately on press
+				var was_line := _line_mode
+				var line_btn := _paint_btn
 				_paint_btn = mb.button_index if mb.pressed else 0
 				if mb.pressed:
 					stroke_begun.emit()   # one undo step per drag
 					_last_px = pixel_at(mb.position)
-					stroke.emit(_last_px, _last_px, mb.button_index == MOUSE_BUTTON_RIGHT)
+					_line_mode = mb.shift_pressed
+					_line_from = _last_px
+					_line_to = _last_px
+					if not _line_mode:
+						stroke.emit(_last_px, _last_px, mb.button_index == MOUSE_BUTTON_RIGHT)
+					else:
+						queue_redraw()
+				elif was_line:
+					# release: commit the whole straight segment as ONE stroke
+					_line_mode = false
+					stroke.emit(_line_from, pixel_at(mb.position), line_btn == MOUSE_BUTTON_RIGHT)
+					queue_redraw()
 	elif event is InputEventMouseMotion:
 		var mm := event as InputEventMouseMotion
 		if _dragging:
 			pan += mm.relative
 			queue_redraw()
 		var px := pixel_at(mm.position)
-		if _paint_btn != 0 and px != _last_px:
+		if _line_mode:
+			if px != _line_to:
+				_line_to = px          # preview only — the paint happens once, on release
+				queue_redraw()
+		elif _paint_btn != 0 and px != _last_px:
 			stroke.emit(_last_px, px, _paint_btn == MOUSE_BUTTON_RIGHT)
 			_last_px = px
 		_hover = mm.position
