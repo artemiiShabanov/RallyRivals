@@ -1,0 +1,252 @@
+# Единый источник плана RallyRivals. Из него генерируются docs/PLAN.md и метки/вехи/issues на GitHub:
+#   python3 tools/sync_plan.py            # обновить PLAN.md
+#   python3 tools/sync_plan.py --github   # плюс создать метки, вехи и issues (идемпотентно)
+#
+# size: S = полдня, M = день, L = два дня, XL = три дня
+# Задачи атомарны. Issue закрываются на GitHub; done: true здесь только для уже закрытых при миграции.
+# Сконвертировано из tasks.yaml 2026-10-25 (micro/small -> S, default -> M, big -> L, huge -> XL);
+# старые id и блокеры сохранены в body каждой задачи.
+
+project: RallyRivals
+labels:
+  types:
+    'type: code':
+      color: 1d76db
+      desc: Геймплей, системы, инструменты
+    'type: 3d':
+      color: 8e44ad
+      desc: Модели, риги, анимации, сцены
+    'type: design':
+      color: 0e8a16
+      desc: Контент, баланс, правила
+    'type: vfx':
+      color: f39c12
+      desc: Частицы, шейдеры, свет, пост-обработка
+    'type: ui':
+      color: e91e63
+      desc: HUD, меню, экраны
+    'type: audio':
+      color: 1abc9c
+      desc: Звук и музыка
+    'type: art':
+      color: fbca04
+      desc: '2D-арт: иконки, капсула, текстуры'
+    'type: release':
+      color: 5a5a5a
+      desc: Сборки, магазины, инфраструктура
+  sizes:
+    'size: S':
+      color: c5def5
+      desc: Полдня
+    'size: M':
+      color: 9ec5e8
+      desc: День
+    'size: L':
+      color: 6fa8dc
+      desc: Два дня
+    'size: XL':
+      color: 3d85c6
+      desc: Три дня
+  owners:
+    'owner: artemii':
+      color: c2e0c6
+      desc: Делает Артемий
+    'owner: claude':
+      color: bfd4f2
+      desc: Делает Claude
+    'owner: both':
+      color: e6d7f5
+      desc: Совместно
+  status:
+    'status: needs decision':
+      color: b60205
+      desc: Нужно решение Артемия по дизайну
+    'status: in progress':
+      color: fef2c0
+      desc: В работе
+    'status: blocked':
+      color: d93f0b
+      desc: Заблокировано
+    'status: needs playtest':
+      color: d4c5f9
+      desc: Готово, ждёт проверки в игре
+phases:
+- id: M0
+  title: M0 Сделано до миграции
+  goal: 'Всё, что было закрыто в tasks.yaml до перехода на GitHub Issues (сентябрь 2026): ядро, трек-пайплайн, редактор карт, 15 воксельных машин, UI, аудио, экономика, кампания.'
+  done_when: Закрыта при миграции.
+  status: done
+  issues:
+  - {title: 'Project scaffold, folders, renderer/display config', types: [code], size: M, done: true, body: 'Старый id: `setup-config-scaffold` (setup/config, default).'}
+  - {title: Input map (keyboard + gamepad), types: [code], size: M, done: true, body: 'Старый id: `setup-config-input` (setup/config, default).'}
+  - {title: Repo conventions + prototypes/ excluded from release, types: [code], size: S, done: true, body: 'Старый id: `setup-repo-conventions` (setup/repo, small).'}
+  - {title: Three design pillars, types: [design], size: M, done: true, body: 'Старый id: `design-gdd-pillars` (design/gdd, default).'}
+  - {title: Fill canonical GDD, types: [design], size: L, done: true, body: 'Старый id: `design-gdd-fill` (design/gdd, big). Блокеры: «Three design pillars» (`design-gdd-pillars`).'}
+  - {title: 'ADR-001: vehicle physics model', types: [design], size: L, done: true, body: 'Старый id: `design-adr-physics` (design/adr, big).'}
+  - {title: 'ADR-002: track representation', types: [design], size: XL, done: true, body: 'Старый id: `design-adr-track` (design/adr, huge). Блокеры: «ADR-001: vehicle physics model» (`design-adr-physics`).'}
+  - {title: Image-driven track baker (images -> static scene) to scripts/, types: [code], size: L, done: true, body: 'Старый id: `code-track-generator` (code/track, big). Блокеры: «ADR-002: track representation» (`design-adr-track`).'}
+  - {title: Gray-box test track (authored images + tuned TrackPath), types: [code], size: M, done: true, body: 'Старый id: `code-track-test-track` (code/track, default). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: Checkpoint gates baked from the spline, types: [code], size: M, done: true, body: 'Старый id: `code-track-checkpoints` (code/track, default). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: Bake tool as in-editor @tool button, types: [code], size: M, done: true, body: 'Старый id: `code-track-bake-tool` (code/tools, default). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: 'Apply region per race (runtime reskin: off-road grip+colour + prop tints + dressing; RaceDef.region replaces .season)', types: [code], size: L, done: true, body: 'Старый id: `code-track-regions` (code/track, big). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: 'Prop system: catalog + props.json (scatter/oriented) + collisions + editor authoring', types: [code], size: M, done: true, body: 'Старый id: `code-track-props` (code/track, default). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: Bake AI racing line from the spline, types: [code], size: M, done: true, body: 'Старый id: `code-track-ai-line` (code/track, default). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: Weather grip modifier (stacks on surface grip), types: [code], size: S, done: true, body: 'Старый id: `code-track-weather-grip` (code/track, small). Блокеры: «Per-surface grip via SurfaceType» (`code-vehicle-surface-grip`).'}
+  - {title: Apply per-race time-of-day + weather visuals, types: [code], size: M, done: true, body: 'Старый id: `code-track-conditions` (code/track, default). Блокеры: «RaceDef resource (track, type, culture, conditions, reward pools)» (`code-race-defs`).'}
+  - {title: 'Debug overlay/tools (perf, physics, state readouts)', types: [code], size: M, done: true, body: 'Старый id: `code-tools-debug` (code/tools, default).'}
+  - {title: 'Map editor: canvas shell (zoom/pan, blueprint underlay, layer toggles, save/load)', types: [code], size: XL, done: true, body: 'Старый id: `code-tools-map-editor-shell` (code/tools, huge).'}
+  - {title: 'Map editor: surface paint brush (palette from .tres, sizes, off-road eraser)', types: [code], size: L, done: true, body: 'Старый id: `code-tools-map-editor-surface` (code/tools, big). Блокеры: «Map editor: canvas shell (zoom/pan, blueprint underlay, layer toggles, save/load)» (`code-tools-map-editor-shell`).'}
+  - {title: 'Map editor: race tools (start/dir/gate pairs + validation)', types: [code], size: L, done: true, body: 'Старый id: `code-tools-map-editor-race` (code/tools, big). Блокеры: «Map editor: canvas shell (zoom/pan, blueprint underlay, layer toggles, save/load)» (`code-tools-map-editor-shell`).'}
+  - {title: 'Map editor: prop stamp tool', types: [code], size: S, done: true, body: 'Старый id: `code-tools-map-editor-props` (code/tools, small). Блокеры: «Map editor: canvas shell (zoom/pan, blueprint underlay, layer toggles, save/load)» (`code-tools-map-editor-shell`).'}
+  - {title: 'Map editor: auto-heightmap from road + height control points', types: [code], size: XL, done: true, body: 'Старый id: `code-tools-map-editor-height` (code/tools, huge). Блокеры: «Map editor: surface paint brush (palette from .tres, sizes, off-road eraser)» (`code-tools-map-editor-surface`).'}
+  - {title: 'Map editor: export 4 images + one-click bake', types: [code], size: M, done: true, body: 'Старый id: `code-tools-map-editor-export` (code/tools, default). Блокеры: «Map editor: surface paint brush (palette from .tres, sizes, off-road eraser)» (`code-tools-map-editor-surface`); «Map editor: race tools (start/dir/gate pairs + validation)» (`code-tools-map-editor-race`).'}
+  - {title: 'Map editor: shift-drag straight lines + prop brush (drag to lay props, aimed types take the drag direction)', types: [code], size: M, done: true, body: 'Старый id: `code-tools-map-editor-speed` (code/tools, default). Блокеры: «Map editor: surface paint brush (palette from .tres, sizes, off-road eraser)» (`code-tools-map-editor-surface`); «Map editor: prop stamp tool» (`code-tools-map-editor-props`).'}
+  - {title: 'Point-to-point tracks (cyan finish pair: open march/curve, finish gate, editor tool)', types: [code], size: L, done: true, body: 'Старый id: `code-track-point-to-point` (code/track, big). Блокеры: «Checkpoint gates baked from the spline» (`code-track-checkpoints`); «Map editor: race tools (start/dir/gate pairs + validation)» (`code-tools-map-editor-race`).'}
+  - {title: Promote VehicleBody3D controller to scripts/, types: [code], size: L, done: true, body: 'Старый id: `code-vehicle-controller` (code/vehicle, big). Блокеры: «ADR-001: vehicle physics model» (`design-adr-physics`).'}
+  - {title: Front/rear grip + handbrake drift layer, types: [code], size: M, done: true, body: 'Старый id: `code-vehicle-grip` (code/vehicle, default). Блокеры: «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`).'}
+  - {title: Per-surface grip via SurfaceType, types: [code], size: M, done: true, body: 'Старый id: `code-vehicle-surface-grip` (code/vehicle, default). Блокеры: «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`); «SurfaceType resources (asphalt/dirt/snow/sand/gravel/ice)» (`content-surfaces-defs`).'}
+  - {title: Damage system (visible + performance), types: [code], size: L, done: true, body: 'Старый id: `code-vehicle-damage` (code/vehicle, big). Блокеры: «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`).'}
+  - {title: Drive handling from the 5 stat bars, types: [code], size: M, done: true, body: 'Старый id: `code-vehicle-stats` (code/vehicle, default). Блокеры: «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`).'}
+  - {title: Chase camera (promote from prototype), types: [code], size: M, done: true, body: 'Старый id: `code-core-camera` (code/core, default). Блокеры: «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`).'}
+  - {title: Scene/flow manager + pause, types: [code], size: M, done: true, body: 'Старый id: `code-core-scene-flow` (code/core, default).'}
+  - {title: Save system, types: [code], size: M, done: true, body: 'Старый id: `code-core-save` (code/core, default). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`).'}
+  - {title: Pooling / perf helpers (perf-first rule), types: [code], size: M, done: true, body: 'Старый id: `code-core-pooling` (code/core, default).'}
+  - {title: Apply graphics/audio/control settings, types: [code], size: S, done: true, body: 'Старый id: `code-core-settings-apply` (code/core, small). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`).'}
+  - {title: 'RaceDef resource (track, type, culture, conditions, reward pools)', types: [code], size: M, done: true, body: 'Старый id: `code-race-defs` (code/race, default).'}
+  - {title: Lap/stage timing, types: [code], size: M, done: true, body: 'Старый id: `code-race-timing` (code/race, default). Блокеры: «Checkpoint gates baked from the spline» (`code-track-checkpoints`).'}
+  - {title: Race lifecycle director (grid -> 3-2-1-GO countdown -> run -> finish -> freeze -> hand to results), types: [code], size: L, done: true, body: 'Старый id: `code-race-director` (code/race, big). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`); «Lap/stage timing» (`code-race-timing`).'}
+  - {title: Win/lose + finishing place, types: [code], size: M, done: true, body: 'Старый id: `code-race-result` (code/race, default). Блокеры: «Lap/stage timing» (`code-race-timing`); «Race lifecycle director (grid -> 3-2-1-GO countdown -> run -> finish -> freeze -> hand to results)» (`code-race-director`).'}
+  - {title: 'Race types: sprint + circuit', types: [code], size: L, done: true, body: 'Старый id: `code-race-types` (code/race, big). Блокеры: «Lap/stage timing» (`code-race-timing`).'}
+  - {title: 'Race type: time trial vs clock', types: [code], size: S, done: true, body: 'Старый id: `code-race-timetrial` (code/race, small). Блокеры: «Lap/stage timing» (`code-race-timing`).'}
+  - {title: 'Race type: endurance / attrition', types: [code], size: M, done: true, body: 'Старый id: `code-race-endurance` (code/race, default). Блокеры: «Race types: sprint + circuit» (`code-race-types`).'}
+  - {title: 'Race type: grand prix (qualify + grid + class gate)', types: [code], size: L, done: true, body: 'Старый id: `code-race-grandprix` (code/race, big). Блокеры: «Race types: sprint + circuit» (`code-race-types`); «Class system S-D + class gating» (`code-meta-classes`).'}
+  - {title: Officials penalty vs Wilds ramming rules, types: [code], size: M, done: true, body: 'Старый id: `code-race-contact` (code/race, default). Блокеры: «Win/lose + finishing place» (`code-race-result`); «RaceDef resource (track, type, culture, conditions, reward pools)» (`code-race-defs`).'}
+  - {title: 'Assemble the race field: class band + size by type, drawn from the chapter roster', types: [code], size: M, done: true, body: 'Старый id: `code-race-field` (code/race, default). Блокеры: «RaceDef resource (track, type, culture, conditions, reward pools)» (`code-race-defs`); «Chapter driver rosters (9 per chapter: name, number, brand, behaviour)» (`content-rivals-roster`).'}
+  - {title: 'Spawn + score the assembled field in open races (physical grid, band-paced sim times, live gap-to-leader standings)', types: [code], size: M, done: true, body: 'Старый id: `code-race-grid` (code/race, default). Блокеры: «Assemble the race field: class band + size by type, drawn from the chapter roster» (`code-race-field`); «AI rival driving a baked spline line» (`code-ai-rival`); «Win/lose + finishing place» (`code-race-result`).'}
+  - {title: AI rival driving a baked spline line, types: [code], size: XL, done: true, body: 'Старый id: `code-ai-rival` (code/ai, huge). Блокеры: «Bake AI racing line from the spline» (`code-track-ai-line`); «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`).'}
+  - {title: Boss-rival duel behavior, types: [code], size: M, done: true, body: 'Старый id: `code-ai-boss` (code/ai, default). Блокеры: «AI rival driving a baked spline line» (`code-ai-rival`).'}
+  - {title: Five stat bars display widget, types: [ui], size: S, done: true, body: 'Старый id: `code-ui-statbars` (code/ui, small).'}
+  - {title: Basic HUD (speed / position / timer), types: [ui], size: M, done: true, body: 'Старый id: `code-ui-hud` (code/ui, default). Блокеры: «Lap/stage timing» (`code-race-timing`).'}
+  - {title: Title / main menu (New / Continue / Settings / Quit), types: [ui], size: S, done: true, body: 'Старый id: `code-ui-title` (code/ui, small). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`).'}
+  - {title: Settings + input remap screen, types: [ui], size: M, done: true, body: 'Старый id: `code-ui-settings` (code/ui, default). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`).'}
+  - {title: 'Save-slot select screen (3 slots: new/continue/delete)', types: [ui], size: M, done: true, body: 'Старый id: `code-ui-save-slots` (code/ui, default). Блокеры: «Save system» (`code-core-save`); «Title / main menu (New / Continue / Settings / Quit)» (`code-ui-title`).'}
+  - {title: Career hub shell (stub tiles Map/Shop/Garage + live RACE tile), types: [ui], size: M, done: true, body: 'Старый id: `code-ui-career-hub` (code/ui, default). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`); «Save system» (`code-core-save`).'}
+  - {title: Loading screen (async scene load), types: [ui], size: S, done: true, body: 'Старый id: `code-ui-loading` (code/ui, small). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`).'}
+  - {title: Pre-race info screen, types: [ui], size: M, done: true, body: 'Старый id: `code-ui-prerace` (code/ui, default). Блокеры: «Five stat bars display widget» (`code-ui-statbars`); «RaceDef resource (track, type, culture, conditions, reward pools)» (`code-race-defs`).'}
+  - {title: Post-race results + rewards screen (reward line stubbed until economy), types: [ui], size: M, done: true, body: 'Старый id: `code-ui-results` (code/ui, default). Блокеры: «Win/lose + finishing place» (`code-race-result`).'}
+  - {title: Region map of races + CP/boss progress, types: [ui], size: L, done: true, body: 'Старый id: `code-ui-career-map` (code/ui, big). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`); «Chapter CP gate (~70%) + advance on boss win» (`code-meta-chapters`); «RaceDef resource (track, type, culture, conditions, reward pools)» (`code-race-defs`).'}
+  - {title: Car preview component (3D model turntable), types: [ui], size: M, done: true, body: 'Старый id: `code-ui-car-view` (code/ui, default). Блокеры: «CarDef model refs: body/wheel meshes swap with the car» (`code-vehicle-model-wiring`).'}
+  - {title: Car shop screen, types: [ui], size: M, done: true, body: 'Старый id: `code-ui-shop` (code/ui, default). Блокеры: «Always-open price-gated car shop» (`code-meta-shop`); «Car preview component (3D model turntable)» (`code-ui-car-view`).'}
+  - {title: Garage / car-select screen, types: [ui], size: M, done: true, body: 'Старый id: `code-ui-garage` (code/ui, default). Блокеры: «Owned-cars garage + selection» (`code-meta-garage`); «Car preview component (3D model turntable)» (`code-ui-car-view`).'}
+  - {title: Change car from pre-race (owned-car picker), types: [ui], size: S, done: true, body: 'Старый id: `code-ui-prerace-carselect` (code/ui, small). Блокеры: «Pre-race info screen» (`code-ui-prerace`); «Owned-cars garage + selection» (`code-meta-garage`).'}
+  - {title: Pause menu, types: [ui], size: S, done: true, body: 'Старый id: `code-ui-pause` (code/ui, small). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`).'}
+  - {title: Restyle HUD as a broadcast scorebug, types: [ui], size: S, done: true, body: 'Старый id: `code-ui-scorebug` (code/ui, small). Блокеры: «Basic HUD (speed / position / timer)» (`code-ui-hud`); «HUD scorebug graphics (VHS register)» (`art-ui-hud-gfx`).'}
+  - {title: Money + CP wallets (seed money + debug top-up; real earn = economy), types: [code], size: S, done: true, body: 'Старый id: `code-meta-currencies` (code/meta, small).'}
+  - {title: Car catalog registry (all/owned/by-class + placeholder prices), types: [code], size: S, done: true, body: 'Старый id: `code-meta-car-catalog` (code/meta, small). Блокеры: «Define car stat roster (classes S-D)» (`content-cars-roster`).'}
+  - {title: Banked-best top-up payout economy, types: [code], size: L, done: true, body: 'Старый id: `code-meta-economy` (code/meta, big). Блокеры: «Win/lose + finishing place» (`code-race-result`); «Money + CP wallets (seed money + debug top-up; real earn = economy)» (`code-meta-currencies`); «RaceDef resource (track, type, culture, conditions, reward pools)» (`code-race-defs`).'}
+  - {title: Class system S-D + class gating, types: [code], size: M, done: true, body: 'Старый id: `code-meta-classes` (code/meta, default). Блокеры: «Define car stat roster (classes S-D)» (`content-cars-roster`).'}
+  - {title: Always-open price-gated car shop, types: [code], size: M, done: true, body: 'Старый id: `code-meta-shop` (code/meta, default). Блокеры: «Money + CP wallets (seed money + debug top-up; real earn = economy)» (`code-meta-currencies`); «Car catalog registry (all/owned/by-class + placeholder prices)» (`code-meta-car-catalog`).'}
+  - {title: Owned-cars garage + selection, types: [code], size: M, done: true, body: 'Старый id: `code-meta-garage` (code/meta, default). Блокеры: «Money + CP wallets (seed money + debug top-up; real earn = economy)» (`code-meta-currencies`); «Car catalog registry (all/owned/by-class + placeholder prices)» (`code-meta-car-catalog`).'}
+  - {title: Beat rival -> win their car (pink-slip), types: [code], size: M, done: true, body: 'Старый id: `code-meta-pinkslip` (code/meta, default). Блокеры: «Owned-cars garage + selection» (`code-meta-garage`); «Boss-rival duel behavior» (`code-ai-boss`).'}
+  - {title: Chapter CP gate (~70%) + advance on boss win, types: [code], size: L, done: true, body: 'Старый id: `code-meta-chapters` (code/meta, big). Блокеры: «Banked-best top-up payout economy» (`code-meta-economy`); «Boss-rival duel behavior» (`code-ai-boss`).'}
+  - {title: SurfaceType resources (asphalt/dirt/snow/sand/gravel/ice), types: [design], size: M, done: true, body: 'Старый id: `content-surfaces-defs` (content/surfaces, default).'}
+  - {title: Define car stat roster (classes S-D), types: [design], size: M, done: true, body: 'Старый id: `content-cars-roster` (content/cars, default).'}
+  - {title: Define 3-4 manufacturers (identity + brand feature), types: [design], size: M, done: true, body: 'Старый id: `content-cars-manufacturers` (content/cars, default).'}
+  - {title: Define 4 boss-rivals (brand + class per chapter), types: [design], size: M, done: true, body: 'Старый id: `content-rivals-defs` (content/rivals, default).'}
+  - {title: '4-chapter structure (class mixes, boss per chapter)', types: [design], size: M, done: true, body: 'Старый id: `content-rivals-campaign` (content/rivals, default). Блокеры: «Define 4 boss-rivals (brand + class per chapter)» (`content-rivals-defs`).'}
+  - {title: 'Chapter driver rosters (9 per chapter: name, number, brand, behaviour)', types: [design], size: M, done: true, body: 'Старый id: `content-rivals-roster` (content/rivals, default). Блокеры: «4-chapter structure (class mixes, boss per chapter)» (`content-rivals-campaign`).'}
+  - {title: Placeholder voxel car block-out, types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-blockout` (art/voxel, default).'}
+  - {title: 'Voxel inventory scaffold: 45 car + 3 wheel stubs with .vox sources', types: [3d], size: S, done: true, body: 'Старый id: `art-voxel-stubs` (art/voxel, small). Блокеры: «Placeholder voxel car block-out» (`art-voxel-car-blockout`); «Master colour palette (voxel + terrain ramps, ADR-003)» (`art-world-palette`).'}
+  - {title: 'CarDef model refs: body/wheel meshes swap with the car', types: [code], size: S, done: true, body: 'Старый id: `code-vehicle-model-wiring` (code/vehicle, small). Блокеры: «Drive handling from the 5 stat bars» (`code-vehicle-stats`); «Voxel inventory scaffold: 45 car + 3 wheel stubs with .vox sources» (`art-voxel-stubs`).'}
+  - {title: 'Head/taillights: night beams via LightingPreset + brake flare', types: [code], size: S, done: true, body: 'Старый id: `code-vehicle-lights` (code/vehicle, small). Блокеры: «Time-of-day lighting presets» (`art-world-lighting`).'}
+  - {title: Voxel prop set (rocks/signs/barriers) — each prop authored per region x3 for scatter variety, types: [3d], size: L, done: true, body: 'Старый id: `art-voxel-props` (art/voxel, big).'}
+  - {title: Voxel scenery/buildings set, types: [3d], size: L, done: true, body: 'Старый id: `art-voxel-environment` (art/voxel, big).'}
+  - {title: Visual family per manufacturer, types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-brand-families` (art/voxel, default). Блокеры: «Define car stat roster (classes S-D)» (`content-cars-roster`).'}
+  - {title: 'Voxel car: Kerb (Apex D, starter) — MV pipeline validation', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-kerb` (art/voxel, default).'}
+  - {title: 'Voxel car: Mule (Wreckhouse D)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-mule` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Spark (Mayfly D)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-spark` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Tangent (Apex C)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-tangent` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Crowbar (Wreckhouse C)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-crowbar` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Fuse (Mayfly C)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-fuse` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Meridian (Apex B)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-meridian` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Anvil (Wreckhouse B)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-anvil` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Strobe (Mayfly B)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-strobe` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Verdict (Apex A)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-verdict` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Sledge (Wreckhouse A)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-sledge` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Comet (Mayfly A)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-comet` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Stiletto (Apex S)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-stiletto` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Juggernaut (Wreckhouse S)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-juggernaut` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel car: Nova (Mayfly S)', types: [3d], size: M, done: true, body: 'Старый id: `art-voxel-car-nova` (art/voxel, default). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+  - {title: 'Voxel wheel: Apex Cartel rim', types: [3d], size: S, done: true, body: 'Старый id: `art-voxel-wheel-apex` (art/voxel, small). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`).'}
+  - {title: 'Voxel wheel: Wreckhouse rim', types: [3d], size: S, done: true, body: 'Старый id: `art-voxel-wheel-wreck` (art/voxel, small). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`).'}
+  - {title: 'Voxel wheel: Mayfly Speedworks rim', types: [3d], size: S, done: true, body: 'Старый id: `art-voxel-wheel-mayfly` (art/voxel, small). Блокеры: «Visual family per manufacturer» (`art-voxel-brand-families`).'}
+  - {title: Screen shake + landing thump (+ VHS glitch spike), types: [vfx], size: S, done: true, body: 'Старый id: `art-vfx-juice` (art/vfx, micro). Блокеры: «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`).'}
+  - {title: Per-surface particles (dust/snow/spray), types: [vfx], size: M, done: true, body: 'Старый id: `art-vfx-surface-particles` (art/vfx, default). Блокеры: «Per-surface grip via SurfaceType» (`code-vehicle-surface-grip`).'}
+  - {title: Tyre skid marks (per-surface ribbon under sliding wheels), types: [vfx], size: M, done: true, body: 'Старый id: `art-vfx-skidmarks` (art/vfx, default). Блокеры: «Per-surface grip via SurfaceType» (`code-vehicle-surface-grip`).'}
+  - {title: Damage VFX (hood smoke + body judder), types: [vfx], size: M, done: true, body: 'Старый id: `art-vfx-damage` (art/vfx, default). Блокеры: «Damage system (visible + performance)» (`code-vehicle-damage`).'}
+  - {title: Weather visuals (rain/snow/fog), types: [vfx], size: L, done: true, body: 'Старый id: `art-vfx-weather` (art/vfx, big). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: HUD scorebug graphics (VHS register), types: [ui], size: M, done: true, body: 'Старый id: `art-ui-hud-gfx` (art/ui-art, default).'}
+  - {title: VHS UI theme (white-on-blue OSD) + font, types: [ui], size: L, done: true, body: 'Старый id: `art-ui-theme` (art/ui-art, big).'}
+  - {title: Stylized VHS scene transition (channel-change / tracking-glitch wipe), types: [ui], size: M, done: true, body: 'Старый id: `art-ui-transition` (art/ui-art, default). Блокеры: «Scene/flow manager + pause» (`code-core-scene-flow`); «VHS tape post-process (grain/bleed/tracking; intensity slider + off switch)» (`art-shader-vhs`).'}
+  - {title: 'Master colour palette (voxel + terrain ramps, ADR-003)', types: [art], size: S, done: true, body: 'Старый id: `art-world-palette` (art/world, small).'}
+  - {title: Weather-driven sky sets (VHS banded sky shader), types: [vfx], size: M, done: true, body: 'Старый id: `art-world-skybox` (art/world, default). Блокеры: «Weather visuals (rain/snow/fog)» (`art-vfx-weather`).'}
+  - {title: Time-of-day lighting presets, types: [vfx], size: M, done: true, body: 'Старый id: `art-world-lighting` (art/world, default).'}
+  - {title: Terrain surface/splat-blend shader, types: [vfx], size: M, done: true, body: 'Старый id: `art-shader-surface` (art/shader, default). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: 'Per-surface material response: matte/gloss + fake blocky relief', types: [vfx], size: M, done: true, body: 'Старый id: `art-shader-road` (art/shader, default). Блокеры: «Image-driven track baker (images -> static scene) to scripts/» (`code-track-generator`).'}
+  - {title: VHS tape post-process (grain/bleed/tracking; intensity slider + off switch), types: [vfx], size: M, done: true, body: 'Старый id: `art-shader-vhs` (art/shader, default).'}
+  - {title: 'SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds', types: [audio], size: M, done: true, body: 'Старый id: `audio-sfx-core` (audio/sfx, default).'}
+  - {title: 'Engine audio: 3 RPM bands crossfaded + start/off cues', types: [audio], size: M, done: true, body: 'Старый id: `audio-sfx-engine` (audio/sfx, default). Блокеры: «SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds» (`audio-sfx-core`); «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`).'}
+  - {title: 'Per-surface tyre roll + skid, crossfaded on surface change', types: [audio], size: M, done: true, body: 'Старый id: `audio-sfx-surface` (audio/sfx, default). Блокеры: «SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds» (`audio-sfx-core`); «Per-surface grip via SurfaceType» (`code-vehicle-surface-grip`).'}
+  - {title: Impact SFX scaled by collision impulse + debris burst, types: [audio], size: S, done: true, body: 'Старый id: `audio-sfx-impact` (audio/sfx, small). Блокеры: «SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds» (`audio-sfx-core`); «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`).'}
+  - {title: UI clicks/confirms (wired in debug menu; real menus reuse), types: [audio], size: S, done: true, body: 'Старый id: `audio-sfx-ui` (audio/sfx, small). Блокеры: «SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds» (`audio-sfx-core`).'}
+  - {title: 'Ambient beds: festival crowd + per-weather (rain/snow/wind/fog) + thunder', types: [audio], size: M, done: true, body: 'Старый id: `audio-sfx-ambient` (audio/sfx, default). Блокеры: «SFX infrastructure: buses, pooled Sfx autoload, SfxDef, placeholder sounds» (`audio-sfx-core`).'}
+  - {title: Music direction + sourcing plan, types: [audio], size: L, done: true, body: 'Старый id: `audio-music-direction` (audio/music, big).'}
+  - {title: Menu/career music track (breezy city pop), types: [audio], size: M, done: true, body: 'Старый id: `audio-music-menu` (audio/music, default). Блокеры: «Music direction + sourcing plan» (`audio-music-direction`).'}
+  - {title: 'Race music set: one loop per race type (city-pop palette)', types: [audio], size: L, done: true, body: 'Старый id: `audio-music-race` (audio/music, big). Блокеры: «Music direction + sourcing plan» (`audio-music-direction`).'}
+  - {title: Boss-duel music (distinct track), types: [audio], size: S, done: true, body: 'Старый id: `audio-music-boss` (audio/music, small). Блокеры: «Music direction + sourcing plan» (`audio-music-direction`).'}
+  - {title: 'ADR: voxel art pipeline (export/runtime, FX, coherence)', types: [design], size: M, done: true, body: 'Старый id: `design-adr-voxel-pipeline` (design/adr, default).'}
+  - {title: Sync GDD 4/7 with decided ADR-001/002, types: [design], size: S, done: true, body: 'Старый id: `design-gdd-adr-sync` (design/gdd, small).'}
+  - {title: 'Spec: field-matching rule for open (non-GP) races', types: [design], size: S, done: true, body: 'Старый id: `design-spec-field-matching` (design/spec, small).'}
+  - {title: 'Spec: banked-best reward economy', types: [design], size: S, done: true, body: 'Старый id: `design-spec-economy` (design/spec, small).'}
+  - {title: 'Fun verdict: first drive (feel/flow)', types: [design], size: M, done: true, body: 'Старый id: `design-playtest-firstdrive` (design/playtest, default). Блокеры: «Promote VehicleBody3D controller to scripts/» (`code-vehicle-controller`); «Gray-box test track (authored images + tuned TrackPath)» (`code-track-test-track`); «Chase camera (promote from prototype)» (`code-core-camera`).'}
+- id: M1
+  title: M1 Чувство езды и честная гонка
+  goal: 'Довести ощущение руля и гонку против ИИ до «весело и честно»: тюнинг констант, различия классов и покрытий, кривая сложности ИИ.'
+  done_when: Плейтест полной гонки даёт вердикт «напряжённо и честно».
+  status: open
+  issues:
+  - {title: Tune car feel constants (buttery pass), types: [design], size: L, owner: both, body: 'Старый id: `balance-handling-feel` (balance/handling, big). Блокеры: «Front/rear grip + handbrake drift layer» (`code-vehicle-grip`).'}
+  - {title: Differentiate feel across classes/brands, types: [design], size: M, owner: both, body: 'Старый id: `balance-handling-classes` (balance/handling, default). Блокеры: «Define car stat roster (classes S-D)» (`content-cars-roster`); «Drive handling from the 5 stat bars» (`code-vehicle-stats`).'}
+  - {title: Tune grip values per surface + weather modifiers, types: [design], size: M, owner: both, body: 'Старый id: `balance-surfaces-grip` (balance/surfaces, default). Блокеры: «SurfaceType resources (asphalt/dirt/snow/sand/gravel/ice)» (`content-surfaces-defs`); «Weather grip modifier (stacks on surface grip)» (`code-track-weather-grip`).'}
+  - {title: Difficulty via opponents + track complexity, types: [code], size: M, owner: claude, body: 'Старый id: `code-ai-difficulty` (code/ai, default). Блокеры: «AI rival driving a baked spline line» (`code-ai-rival`).'}
+  - {title: AI pace/aggression curve, types: [design], size: M, owner: both, body: 'Старый id: `balance-difficulty-ai` (balance/difficulty, default). Блокеры: «Difficulty via opponents + track complexity» (`code-ai-difficulty`).'}
+  - {title: 'Fun verdict: full race (tense + fair)', types: [design], size: M, owner: artemii, body: 'Старый id: `design-playtest-race` (design/playtest, default). Блокеры: «Win/lose + finishing place» (`code-race-result`); «AI rival driving a baked spline line» (`code-ai-rival`).'}
+- id: M2
+  title: M2 Вертикальный срез
+  goal: Одна настоящая трасса и одна отполированная гонка от пре-рейса до результатов, с боссом.
+  done_when: Плейтест вертикального среза пройден; первая трасса собрана из авторских карт.
+  status: open
+  issues:
+  - {title: First real track (heightmap/surface/markers images), types: [design], size: L, owner: both, body: 'Старый id: `content-tracks-first` (content/tracks, big). Блокеры: «Bake tool as in-editor @tool button» (`code-track-bake-tool`).'}
+  - {title: Boss-rival intro screen (car + class), types: [ui], size: M, owner: claude, body: 'Старый id: `code-ui-boss-intro` (code/ui, default). Блокеры: «Define 4 boss-rivals (brand + class per chapter)» (`content-rivals-defs`).'}
+  - {title: 'Fun verdict: vertical slice (one polished race)', types: [design], size: M, owner: artemii, body: 'Старый id: `design-playtest-slice` (design/playtest, default). Блокеры: «Post-race results + rewards screen (reward line stubbed until economy)» (`code-ui-results`); «Engine audio: 3 RPM bands crossfaded + start/off cues» (`audio-sfx-engine`); «Voxel car: Kerb (Apex D, starter) — MV pipeline validation» (`art-voxel-car-kerb`).'}
+- id: M3
+  title: M3 Контент кампании
+  goal: Набор трасс на 4 главы, таблицы выплат и цен, пейсинг прогрессии.
+  done_when: Кампания проходится от первой гонки до четвёртого босса; плейтест цикла даёт «хочу следующую победу».
+  status: open
+  issues:
+  - {title: Campaign track set (v1 regions x races), types: [design], size: XL, owner: both, body: 'Старый id: `content-tracks-campaign` (content/tracks, huge). Блокеры: «First real track (heightmap/surface/markers images)» (`content-tracks-first`); «4-chapter structure (class mixes, boss per chapter)» (`content-rivals-campaign`). Зонтичная задача: разбить на задачи по трекам, когда объём v1 (главы x трассы) зафиксируется в GDD.'}
+  - {title: Payout/price tables (banked-best economy), types: [design], size: M, owner: both, body: 'Старый id: `balance-economy-tables` (balance/economy, default).'}
+  - {title: Chapter CP-gate % + progression pacing, types: [design], size: M, owner: both, body: 'Старый id: `balance-difficulty-pacing` (balance/difficulty, default). Блокеры: «Chapter CP gate (~70%) + advance on boss win» (`code-meta-chapters`).'}
+  - {title: 'Fun verdict: campaign loop (want-next-win)', types: [design], size: M, owner: artemii, body: 'Старый id: `design-playtest-loop` (design/playtest, default). Блокеры: «Chapter CP gate (~70%) + advance on boss win» (`code-meta-chapters`); «Region map of races + CP/boss progress» (`code-ui-career-map`).'}
+- id: M4
+  title: M4 Релиз
+  goal: Экспорт под три ОС, Steam-ачивки, чеклист запуска и упаковка для магазина.
+  done_when: Сборки собираются на mac/win/linux, LAUNCH_CHECKLIST.md закрыт.
+  status: open
+  issues:
+  - {title: Export presets + exclude prototypes/* from release, types: [release], size: M, owner: claude, body: 'Старый id: `setup-build-export` (setup/build, default).'}
+  - {title: Per-OS export configs (mac/win/linux), types: [release], size: S, owner: claude, body: 'Старый id: `setup-build-platforms` (setup/build, small). Блокеры: «Export presets + exclude prototypes/* from release» (`setup-build-export`).'}
+  - {title: 'Steam achievements (event-triggered, no in-game unlocks)', types: [code], size: M, owner: claude, body: 'Старый id: `code-meta-achievements` (code/meta, default). Блокеры: «Export presets + exclude prototypes/* from release» (`setup-build-export`). Steam-ачивки по событиям, без внутриигровых анлоков.'}
+  - {title: Launch checklist + store packaging, types: [release], size: M, owner: both, body: 'Старый id: `setup-build-launch` (setup/build, default). Блокеры: «Export presets + exclude prototypes/* from release» (`setup-build-export`).'}

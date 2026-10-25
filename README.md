@@ -2,6 +2,10 @@
 
 Arcade 3D rally racing against AI rivals. Built with **Godot 4.4.1** (Forward Plus).
 
+Plan and progress: [docs/PLAN.md](docs/PLAN.md), [issues](https://github.com/artemiiShabanov/RallyRivals/issues).
+Design: [docs/GDD.md](docs/GDD.md), [docs/PILLARS.md](docs/PILLARS.md), specs in [docs/specs/](docs/specs/).
+Workflow shared with the other games: [gamedev-hub/WORKFLOW.md](https://github.com/artemiiShabanov/gamedev-hub/blob/main/WORKFLOW.md).
+
 ## Project layout
 
 ```

@@ -1,0 +1,8 @@
+# Метаданные для gamedev-hub. Хаб читает этот файл из main и показывает на дашборде.
+# phase: idea | prototype | vertical-slice | content | polish | released | paused | archived
+name: RallyRivals
+tagline: Аркадные ралли-гонки против ИИ-соперников, 3D
+engine: Godot 4.4
+phase: content
+tracker: github-issues
+next: "M1: тюнинг чувства езды и честная гонка против ИИ, затем первая настоящая трасса"

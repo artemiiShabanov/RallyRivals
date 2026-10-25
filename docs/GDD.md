@@ -211,4 +211,4 @@ See [PILLARS.md](PILLARS.md). In short:
   brand-feature candidate — v1 brands are pure stat personalities, §8).
 - **v1 scoping (Open):** number of chapters (= regions, 1:1), rivals/tiers, total cars,
   tracks, and how many regions get full dressing. Trim to a shippable vertical slice first
-  (work tracked in `tasks.yaml` / `STATUS.md`).
+  (work tracked in `docs/plan.yaml` / GitHub Issues).
